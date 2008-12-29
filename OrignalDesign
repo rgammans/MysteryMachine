@@ -1,0 +1,338 @@
+==============
+MysteryMachine
+==============
+
+Synopsis
+========
+
+The mystery machine is an application for writing freeform games.
+
+In particular in is a database ,targeted at building highly intricate and linked
+documents. These documents are expected to be in a natural language . The system
+has to merge paragraphs from different sources. This paragraphs can contain
+embedded references and conditionals based on other parts of the system.
+
+The system is built around the idea of using the filesystem as a simple object
+database. The idea is a directory per object and file per attribute or field.
+
+Object Model
+============
+THe 'prototype' object model will be the dominant object model used by the 
+system although it will make rudimentary use of classes.
+
+A number of classes can be defined by the users, and these classes are broadly aligned
+with the different types of documents the system will need to produce
+
+  ie.
+   Character Sheets
+   Rule books
+   Item Cards
+   GM Plot Summary's 
+
+
+Object Identity
+---------------
+
+The other primary use for the class system is to provide a structure for naming the
+objects in a consistent and unambiguous way. Each object will be designated a 
+auto incrementing integer id, which is unique only within it's class. As such
+a Objects can be referred to as Plot:1 , or Character:10. The ':' Character is
+used as the seperator.
+
+Templates
+---------
+
+Templates are the prototypes used by the object system - and are used to help predefine
+and new object in the system when one is created. 
+
+I currently have a choice about when vivifying an object whether I copy all the data
+actually out of the template object into the new object or just use the system to
+fall back to the 'prototype' object when an undefined value is referenced.
+
+Templates must will be stored within each project so they are also under revision control,
+this is critical if editing a template can effect it's children.
+
+However I suspect the application will have to provide support for a template catalogue
+so that user less familiar with some the advanced concepts in the system can get started.
+
+FileStore
+=========
+Above the concept of using the filing system to produce an object Database.
+I expect to see a dir structure like this:-
+	
+	Game
+	|
+	+---- .hg  [Mercurial] - Revision control info
+	|
+	+----- .templates                      -  Directory to store templates
+	|        |
+	|	 +-------- Characters          -  Character template
+	|	 |		+-------Name    \
+	|	 |		+-------Age     +- Attributes fro characters
+	|	 |		+-------Code    |
+	|	 |		+-------Gender  /
+	|	 |
+	|	 +-------  Plots
+	|	             +---- Name
+	|		     .
+	|		     .
+	|
+	+------Characters
+	|	+----------1
+	|	|	   +----- Name
+	|	|	   +      .
+	|	|	   +----- Gender
+	|	|	   
+	|       +----------2
+	|	|      .
+	|	|      .
+	|	|      .
+	|	+..........21.
+	|
+	|
+	+-----Plots
+	|	+-----Name
+
+
+So as you can see each class stores the main objects associated with it under a
+directory with the appropriate name and inside a number directory. Templates are stored
+in similar way inside a directory but just named with the default object type
+they are the default template for.
+
+Additionally inside the object directories you may find directories named after the
+other classes such as Plots, may well each have a Character directory which would #
+contain files number for the Character Id, contained information linking them to the
+plots - this is likely to be the plot paragraph for their backgrounds.
+
+Additionally Characters may also have a characters subdirectory to document their
+relationships with the other characters in the game.
+
+Finally we allow macro references in each of these attributes to other attributes
+within the system.
+
+An export to Zip Or at least zip of the .hg should be supported.
+
+The downside of this structure is that it is not particularlhy efficent use of on disk space
+as many file systems will have problems wiht the large number of small files this system creates.
+
+The alternative is to use  something like XML (or even LARP ML - www.aegames.org) to store
+the whole thing. Or just bind together the small attributes in XML. However I can see this
+causing greater trouble in the long term as stuff like whitespace won't necessairly be 
+preserved (although with CDATA and whatever they should ). 
+Overall I keep it as above and consider doing clever stuff in later revisions of the
+format.
+
+
+Preliminarily Set Issues
+========================
+
+
+
+Attribute descriptors
+---------------------
+The current api for fetching attributes - as used in FreeformObject - is not feature complete for our
+software. Most particularly it is missing any way to list the applied attributes.(Actually it misses
+having write support as well but that is easy to implement).
+Note that the parent inherits model currently favoured in the inheritance question makes ennumeration
+of the attributes available more complicated. (But not a lot).
+This requires each object having a new .parent attribute which points at the base path for this 
+object's prototype.
+
+
+
+Templates
+---------
+Lose or strictly coupled - as above.
+  I'm tempted to go for lose coupled and make non-existence of the file
+  the hint to resolve using the template data. 
+  add a .parent reference.
+ 
+Parent Ref
+''''''''''
+
+Pros
+....
+Easier bulk updates
+Easier creating of bulk objects.
+Allows object redirection after an object is deleted.
+
+Cons
+....
+Makes enumerating attributes harder. ( Union of attributes on object and on the list of parents )
+Complicate deleting an attribute on a object whose parent has the attr set (0-length file a soln?).
+
+Template Storage
+----------------
+Have a list of prototype temples
+ in say  System (/usr/share, ) + Per user  ($HOME/.MysteryMachine/templates.or $PROFILEDIR%/AppSettings%/MM/%Templates. )
+locations to be drawn on as defaults. 
+
+These defaults are copied into the project when invoked, into say .template in the 
+object types base dir.
+
+SO we need the UI to edit project defaults and the system/user global templates.
+
+
+Filenames / Case sensitivity
+----------------------------
+If this application is going to work on a broad range of platforms - (since we depend already depend
+on python for hg we have some limits) - we need to be able to support platforms with case-insensitive
+file systems. The most common of these being MS-Windows.
+This most obviously translates into a requirement for case insensitive attributes, and additionally for
+attributes names to be safe from casefolded collisions.
+Internally do we need to handle finding an attribute file whose case has been mangled by an editing
+session on a non-case preserving FS. Although MS_Windows itself is case preserving - a number of transfer methods
+are not case preserving - also users on MS-Windows tend to be more sloppy about case as they haven't found
+a need to be precise ans the FS is case-insensitive.
+
+Mercurial has internally some routines to handle to effects of this so we have some protection but
+we need to be careful as well - probably.
+
+I think we could get by - by defining all LC filename to be used for attributes, and rely on windows
+case preserving behavior . It only need to preserve the case as far as an 'hg add' then mercurial will
+handle the case management for us.
+
+Propose test:-
+	On Windows
+	> hg init
+	> echo stuff > test
+	> hg add test
+	> erase test
+	> echo 'other stuff' > TEST
+	> hg commit.
+	> erase *
+	> hg update
+
+The case of the resultant file will be useful to see.
+
+Did this it was 'test'.
+
+Document creation
+-----------------
+Somewhere - in templates? we need to store instructions/master documents for the
+character sheet etc.
+System (/usr/share, ) + Per user  ($HOME/.MysteryMachine/docform.or $PROFILEDIR%/AppSettings/MM/Docform. )
+
+And again these need somewhere within the actual project to be stored , I suggest .docform, in the
+base of the object types catalogue directory , .xxx if we move the default store to  xxx - so we kept the 
+name the same to avoid confusion.
+
+This also means the handling for these and prototypes can be somewhat shared.
+
+The remaining part of the to be settled is the internal format of this file/dir.
+
+Critical Open Issues
+====================
+
+Depth of relationships
+----------------------
+We have attributes in the link files between objects, this link aren't object themselves
+(ie. Plot/4/Character/4 - is a file not a dir.) should we allow them to be objects?
+This is probably related to the attribute types issues.
+
+In the games I've worked I've never built a layer of indirection between the
+characters and their partipation in plots, however the ability to add such indirection
+whould give the system substantial extra power. Such an indirection syste would
+probably require an addition `datatype'.
+
+What if we enforced these link files to contain Object references such as to the
+roles in the plot the characters where taking, and/or to entry in a character
+relationships table.
+
+This would create a new ObjectType of PlotRole, which we then need to consider
+at what level it is created. Presumably it ought to be created inside the Plot for
+sainty - but traditionally in RDBMS these have the same level as Plot and a PlotId
+member - this would require substatial continuall generation of id  numbers for these
+'join' tables. Ick. However multi-level table raises the issues of to we allow
+deep references. And to some extent we need to.
+
+Additional layers of indirection aren't actually necessary - this is the normalisation
+sutff of Codd's normal forms. So we don't need to create additional layers, such layering
+should be handled by creating special link objects. In fact we should probably flatten 
+the existing hierachry we are using where we have a 'Plot/n/Character/y' attribute.
+
+This is going to make macro harder to track - so auto insertion stuff very useful, the
+templates may need some metadata to aid the UI in this.
+
+Attribute types
+---------------
+We implicitly have a number of different types of attributes, some attributes are raw text (modulo macro) but
+other attributes may be such as a reference to another object an Game Items 'StartsWith_Character' attribute
+is a case in point.
+
+We need to be able to distinguish between these types , and specifically identify the latter type so that
+we can do integrity checks.
+
+Our 'Background' data type is also envisaged to be a patch file applied on top of a macro file.
+
+Further below we mention symlinks, but these would be better managed as ptr files, which
+directly reference the destintation file, as part of the type of link mentioned above.
+
+Suggestion: 
+'''''''''''
+Have a set of extensions which and then an order of application of those consituent
+files of each attribure to make up the final attribute.
+
+============ =====================================================
+.prepatch     A patch applied to base before macros are expanded           
+(no ext)      A macro txt.rst document file.
+.postpatch    A patch applied after macro expansion.
+.objref       A macro to reference the object.
+============ =====================================================
+
+If there is an objref file it is an consisentcy error to have any of the
+other file types as well.
+
+
+Format of MasterDoc
+------------------
+Need to narrow down how we define what the output documents look like:-
+
+Ok what we need is some sort of macro language which 
+   1) References the attributes in this and related Objects.
+   2) Can applied predefined transforms to those objects.
+
+This means we need a way of defining the transforms too, either all the transforms
+must be defined with the project or we support a core number of transforms.
+In the latter case these transforms will undoubtedly grow over time so a version
+number on the Masterdocs would be helpful,and minor/major would be wise to support
+completely incompatible changes.
+
+It would be naive to also believe all our existing macro language can reference the 
+attributes properly. As we need to be able to reference the attributes in bulk, so
+that for instance all the plot paragraph related to a single character can be pulled
+in. (Or is this a good use for symlinks).
+
+Alternatively we can expand our macro language to use wildcards such as ${Plot:*:}
+
+I think useing the existing model in mkDocument and exposing the documentType
+dict to the user solves many of those issues. Other issues can be handled by adding
+a openoffice/Uno database access interface.
+
+
+Non-critical Open Issues
+========================
+
+Display hints
+-------------
+We probably need to store hints about how to display the various attributes
+to the user in the creation system. Has some relationship to attr types, but 
+also covers user/project preferences .
+Again a file in the object catalogue directory seems sensible here.
+
+Question should indiviula usr be able to override project settings outside of
+RC. 
+
+Possibly - it is a display setting and not a related to the output / final games/databases
+actual state.
+
+Rememebr we also want to have multiple display modes per object type
+
+Format of Display Hints
+'''''''''''''''''''''''
+Exactly? - I think this can be a test base python pickle though.
+ as long as our class for the display type as a good __repr__() fn that contains
+ enough to instatiate the object anew we will be fine.
+
+But the program must the able to work then with a sane default if the file doesn't 
+exist.
