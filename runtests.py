@@ -31,7 +31,7 @@ UNITTEST ='/usr/lib/python2.6/unittest.py'
 TESTSDIR ='tests'
 
 STRIP   = re.compile('\.py$')
-INVALID = re.compile('\.py[co~]$')
+INVALID = re.compile('(\.py[co~]$)|(\..*\.swp)')
 
 sys.path.insert(0,"./%s" % TESTSDIR )
 
@@ -45,17 +45,5 @@ for python in (PYTHONS):
 		#Turn filenmae into module name
 		if re.search(INVALID,module) != None: continue
 		testname=re.sub(STRIP,"",module)
-		#Load module.
-		fp,pathname,desc=imp.find_module(testname)
-		ThisMod=imp.load_module(testname,fp,pathname,desc)
-		#safely Query module about available tests
-		func=getattr(ThisMod,'getTestNames',NoTests)
-		testsAvail=func()
-		if len(testsAvail) > 0 :
-			#If we have some available tests then run them.
-			testList=" ".join(testsAvail);
-			print testList
-			#FIXME: Adjust python path for the new python.
-			os.putenv("PYTHONPATH","./%s"%TESTSDIR)
-			os.system("%s %s %s" % ( python, UNITTEST, testList))
-
+		#run tests.
+		os.system("%s %s/%s" % ( python,  TESTSDIR, module))
