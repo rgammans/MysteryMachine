@@ -31,7 +31,6 @@ UNITTEST ='/usr/lib/python2.6/unittest.py'
 TESTSDIR ='tests'
 
 STRIP   = re.compile('\.py$')
-INVALID = re.compile('(\.py[co~]$)|(\..*\.swp)')
 
 sys.path.insert(0,"./%s" % TESTSDIR )
 
@@ -52,7 +51,8 @@ for python in (PYTHONS):
 	#TODO: should this inner loop go inside tests/__init__.py ?
 	for module in os.listdir('tests/'):
 		#Turn filenmae into module name
-		if re.search(INVALID,module) != None: continue
-		testname=re.sub(STRIP,"",module)
+		testname , replaced =re.subn(STRIP,"",module)
+		# SKip invalid module names
+		if not replaced: continue
 		#run tests.
 		os.system("%s %s/%s" % ( python,  TESTSDIR, module))
