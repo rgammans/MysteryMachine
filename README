@@ -1,0 +1,16 @@
+Installation
+============
+
+None, currently not enough the project is complete to make the 
+concept of installatio useful.
+
+You can however run the system tests.
+
+
+Libraries Required
+------------------
+
+You will need to install the following Python packages to use the 
+MysteryMachine .
+
+Yapsy > 1.x : A Patch for versions lower than this can be found patches

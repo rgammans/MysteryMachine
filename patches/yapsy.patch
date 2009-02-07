@@ -1,0 +1,249 @@
+diff -urN --exclude '*~' --exclude '*.pyc' Yapsy-1.7/test/plugins/configplugin.yapsy-filter-plugin Yapsy-1.7+/test/plugins/configplugin.yapsy-filter-plugin
+--- Yapsy-1.7/test/plugins/configplugin.yapsy-filter-plugin	1970-01-01 01:00:00.000000000 +0100
++++ Yapsy-1.7+/test/plugins/configplugin.yapsy-filter-plugin	2009-02-01 16:03:46.000000000 +0000
+@@ -0,0 +1,9 @@
++[Core]
++Name = Config Plugin
++Module = ConfigPlugin
++
++[Documentation]
++Author = Thibauld Nion
++Version = 0.1
++Website = http://mathbench.sourceforge.net
++Description = A simple plugin with configuration handling
+diff -urN --exclude '*~' --exclude '*.pyc' Yapsy-1.7/test/plugins/simpleplugin.yapsy-filter-plugin Yapsy-1.7+/test/plugins/simpleplugin.yapsy-filter-plugin
+--- Yapsy-1.7/test/plugins/simpleplugin.yapsy-filter-plugin	1970-01-01 01:00:00.000000000 +0100
++++ Yapsy-1.7+/test/plugins/simpleplugin.yapsy-filter-plugin	2008-04-06 11:32:18.000000000 +0100
+@@ -0,0 +1,9 @@
++[Core]
++Name = Simple Plugin
++Module = SimplePlugin
++
++[Documentation]
++Author = Thibauld Nion
++Version = 0.1
++Website = http://mathbench.sourceforge.net
++Description = A simple plugin usefull for basic testing
+diff -urN --exclude '*~' --exclude '*.pyc' Yapsy-1.7/test/test_All.py Yapsy-1.7+/test/test_All.py
+--- Yapsy-1.7/test/test_All.py	2008-04-06 15:39:16.000000000 +0100
++++ Yapsy-1.7+/test/test_All.py	2009-02-01 16:26:39.000000000 +0000
+@@ -18,6 +18,7 @@
+ import test_ConfigPlugin
+ import test_VersionedPlugin
+ import test_AutoInstallPlugin
++import test_FilterPlugin
+ 
+ 
+ # add them to a common test suite
+@@ -28,5 +29,6 @@
+ 		test_ConfigPlugin.suite,
+ 		test_VersionedPlugin.suite,
+ 		test_AutoInstallPlugin.suite,
++		test_FilterPlugin.suite,
+ 		])
+ 
+diff -urN --exclude '*~' --exclude '*.pyc' Yapsy-1.7/test/test_FilterPlugin.py Yapsy-1.7+/test/test_FilterPlugin.py
+--- Yapsy-1.7/test/test_FilterPlugin.py	1970-01-01 01:00:00.000000000 +0100
++++ Yapsy-1.7+/test/test_FilterPlugin.py	2009-02-01 16:54:34.000000000 +0000
+@@ -0,0 +1,89 @@
++from test_settings import *
++import unittest
++import os 
++import re
++
++from yapsy.FilteredPluginManager import FilteredPluginManager
++
++
++class testFilter(FilteredPluginManager):
++	"""
++		Test filter class.
++		Refused to load plugins whose Name starts with 'C'.
++	"""
++	_bannednames = re.compile("^C")
++
++	def isPluginOk(self,infofile,filepath,info):
++		return not self._bannednames.match(info.name)
++
++
++class FilteredTestsCase(unittest.TestCase):
++    """
++    Test the correct loading of a simple plugin as well as basic
++    commands.
++    """
++    
++    def setUp(self):
++        """
++        init
++        """
++        # create the plugin manager
++#        print os.path.join(os.path.dirname(os.path.abspath(__file__)),"plugins")
++        self.filteredPluginManager = testFilter(
++            directories_list=[os.path.join(
++					os.path.dirname(os.path.abspath(__file__)),"plugins")],
++			      plugin_info_ext="yapsy-filter-plugin",
++      	)
++        # load the plugins that may be found
++        self.filteredPluginManager.collectPlugins()
++        # Will be used later
++        self.plugin_info = None
++
++    def plugin_loading_check(self):
++        """
++        Test if the correct plugins have been loaded.
++        """
++        # check nb of categories
++        self.assertEqual(len(self.filteredPluginManager.getCategories()),1)
++        sole_category = self.filteredPluginManager.getCategories()[0]
++        # check the number of plugins
++        self.assertEqual(len(self.filteredPluginManager.getPluginsOfCategory(sole_category)),1)
++        plugins = self.filteredPluginManager.getPluginsOfCategory(sole_category)
++        for plugin_info in plugins:
++		TEST_MESSAGE("plugin info: %s" % plugin_info)
++		self.plugin_info = plugin_info	
++		self.assert_(self.plugin_info)
++		self.assertEqual(self.plugin_info.name,"Simple Plugin")
++		self.assertEqual(sole_category,self.plugin_info.category)
++
++    def testLoaded(self):
++        """
++        Test if the correct plugin has been loaded.
++        """
++        self.plugin_loading_check()
++        
++
++    def testActivationAndDeactivation(self):
++        """
++        Test if the activation procedure works.
++        """
++        self.plugin_loading_check()
++        self.assert_(not self.plugin_info.plugin_object.is_activated)
++        TEST_MESSAGE("plugin object = %s" % self.plugin_info.plugin_object)
++        self.plugin_info.plugin_object.activate()
++        self.assert_(self.plugin_info.plugin_object.is_activated)
++        self.plugin_info.plugin_object.deactivate()
++        self.assert_(not self.plugin_info.plugin_object.is_activated)	
++
++
++    def testRejectedList(self):
++    	"""
++    	Test if the list of rejected plugins is correct.
++    	"""
++        for plugin_info in self.filteredPluginManager.getRejectedPluginInfo():
++            TEST_MESSAGE("plugin info: %s" % plugin_info)
++            self.assertEqual(plugin_info.name,"Config Plugin")
++
++suite = unittest.TestSuite([
++        unittest.TestLoader().loadTestsFromTestCase(FilteredTestsCase),
++        ])
+Binary files Yapsy-1.7/test/.test_SimplePlugin.py.swp and Yapsy-1.7+/test/.test_SimplePlugin.py.swp differ
+diff -urN --exclude '*~' --exclude '*.pyc' Yapsy-1.7/yapsy/FilteredPluginManager.py Yapsy-1.7+/yapsy/FilteredPluginManager.py
+--- Yapsy-1.7/yapsy/FilteredPluginManager.py	1970-01-01 01:00:00.000000000 +0100
++++ Yapsy-1.7+/yapsy/FilteredPluginManager.py	2009-02-01 16:49:16.000000000 +0000
+@@ -0,0 +1,70 @@
++#!/usr/bin/python
++
++"""
++Defines a basic interface for plugin managers which filter the
++available list of plugins before loading.
++
++One use fo this would be to prevent untrusted plugins from entering the system
++"""
++ 
++
++
++from PluginManager import  PluginManagerDecorator
++from IPlugin import IPlugin
++
++
++class FilteredPluginManager(PluginManagerDecorator):
++	"""
++	Base class for decorators which filter the plugins list
++	before they are loaded.
++	"""
++
++	def __init__(self, 
++				 decorated_manager=None,
++				 categories_filter={"Default":IPlugin}, 
++				 directories_list=None, 
++				 plugin_info_ext="yapsy-plugin"):
++		"""
++		"""
++		# Create the base decorator class
++		PluginManagerDecorator.__init__(self,decorated_manager,
++										categories_filter,
++										directories_list,
++										plugin_info_ext)
++		# prepare the mapping of the latest version of each plugin
++		self.rejectedPlugins =  [ ] 
++
++
++
++	def filterPlugins(self):
++		"""
++		This is a helper function to be overridden by subclass to remove
++		the unwanted extensions from the main extension list.
++		"""
++		candidates = self._component._candidates 
++		self._component._candidates= [ ]
++		for candidate_infofile, candidate_filepath, plugin_info in candidates:
++			if self.isPluginOk(candidate_infofile, candidate_filepath, plugin_info):
++				self._component._candidates.append(  [ candidate_infofile, candidate_filepath, plugin_info ])
++			else:
++				self.rejectedPlugins.append( [ candidate_infofile, candidate_filepath, plugin_info ] )
++
++        def isPluginOk(self,infofile,filepath,info):
++		"""
++		Sentinel function to detect if a plugin should be filtered.
++
++		Subclasses should override this function and return false for
++		any plugin which they do not want to be loadabele.
++		"""
++		return true
++
++	def locatePlugins(self):
++		"""
++		locate and filter plugins.
++		"""
++		self._component.locatePlugins()
++		self.filterPlugins()
++
++	def getRejectedPluginInfo(self):
++		for dummy1 , dummy2 ,info in self.rejectedPlugins:
++			yield info
+diff -urN --exclude '*~' --exclude '*.pyc' Yapsy-1.7/Yapsy.egg-info/SOURCES.txt Yapsy-1.7+/Yapsy.egg-info/SOURCES.txt
+--- Yapsy-1.7/Yapsy.egg-info/SOURCES.txt	2008-04-09 11:26:48.000000000 +0100
++++ Yapsy-1.7+/Yapsy.egg-info/SOURCES.txt	2009-02-01 16:54:36.000000000 +0000
+@@ -1,5 +1,6 @@
+ LICENSE.txt
+ README.txt
++setup.cfg
+ setup.py
+ Yapsy.egg-info/PKG-INFO
+ Yapsy.egg-info/SOURCES.txt
+@@ -14,6 +15,7 @@
+ test/test_All.py
+ test/test_AutoInstallPlugin.py
+ test/test_ConfigPlugin.py
++test/test_FilterPlugin.py
+ test/test_SimplePlugin.py
+ test/test_Singleton.py
+ test/test_VersionedPlugin.py
+@@ -26,7 +28,6 @@
+ test/plugins/VersionedPlugin12.py
+ test/plugins/VersionedPlugin12a1.py
+ test/plugins/configplugin.yapsy-config-plugin
+-test/plugins/simpleplugin.yapsy-plugin
+ test/plugins/versioned10.version-plugin
+ test/plugins/versioned11.version-plugin
+ test/plugins/versioned111.version-plugin
+@@ -38,7 +39,8 @@
+ test/pluginstoinstall/autoinstalldirplugin/__init__.py
+ yapsy/AutoInstallPluginManager.py
+ yapsy/ConfigurablePluginManager.py
++yapsy/FilteredPluginManager.py
+ yapsy/IPlugin.py
+ yapsy/PluginManager.py
+ yapsy/VersionedPluginManager.py
+-yapsy/__init__.py
++yapsy/__init__.py
+\ No newline at end of file
