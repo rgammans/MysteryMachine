@@ -78,5 +78,8 @@ class ExtensionSecureID(object):
     @param ExtensionSecureID other : 
     @return bool :
     """
-    return self._value == other._value
+    return [self._hashtype, self._value] == [self._hashtype , other._value ]
+
+  def __hash__(self):
+    return ("%s[%s|%s]" % (self.__class__,self._hashtype,self._value)).__hash__() 
 
