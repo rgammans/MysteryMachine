@@ -35,6 +35,15 @@ INVALID = re.compile('(\.py[co~]$)|(\..*\.swp)')
 
 sys.path.insert(0,"./%s" % TESTSDIR )
 
+path=os.getenv("PYTHONPATH")
+if path == None:
+	path = "."
+else:
+	#FIXME: Needs to be ';' under windows
+	path = path+":."
+
+os.putenv("PYTHONPATH",path)
+
 def NoTests():
 	return( )
 
