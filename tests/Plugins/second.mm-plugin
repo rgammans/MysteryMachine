@@ -1,0 +1,8 @@
+[Core]
+Name = SecondPlugin
+Module = Second
+
+[Documentation]
+Author = Roger Gammans
+Version =0.1
+Description= A simple plugin for basic testing (second)

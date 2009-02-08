@@ -1,0 +1,8 @@
+[Core]
+Name = FirstPlugin
+Module = First
+
+[Documentation]
+Author = Roger Gammans
+Version =0.1
+Description= A simple plugin for basic testing (first)

@@ -14,3 +14,13 @@ You will need to install the following Python packages to use the
 MysteryMachine .
 
 Yapsy > 1.x : A Patch for versions lower than this can be found patches
+
+Yapsy 
+'''''
+Yapsy does not currently meet our python3 requirements, and tin fact the use of 
+exec, rather than execfile creates a small security race hazard. Wether
+our application's useis sensitive enough to worry about this is a moot point
+though. 
+
+Having said that since for python3 we need to fix yapsy - changing it to be
+secure as well strikes me as a good idea.
