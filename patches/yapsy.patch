@@ -1,6 +1,14 @@
-diff -urN --exclude '*~' --exclude '*.pyc' Yapsy-1.7/test/plugins/configplugin.yapsy-filter-plugin Yapsy-1.7+/test/plugins/configplugin.yapsy-filter-plugin
---- Yapsy-1.7/test/plugins/configplugin.yapsy-filter-plugin	1970-01-01 01:00:00.000000000 +0100
-+++ Yapsy-1.7+/test/plugins/configplugin.yapsy-filter-plugin	2009-02-01 16:03:46.000000000 +0000
+# HG changeset patch
+# User Roger Gammans <rgammans@computer-surgery.co.uk>
+# Date 1235599336 0
+# Branch yapsy
+# Node ID 3348054d8fceb6b77fab3cadb09bfbaa02b6377b
+# Parent  b70ea7217e783067d0e6a4d7eba31e29e750b85a
+[mq]: filterman.patch
+
+diff -r b70ea7217e78 -r 3348054d8fce yapsydir/trunk/test/plugins/configplugin.yapsy-filter-plugin
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/yapsydir/trunk/test/plugins/configplugin.yapsy-filter-plugin	Wed Feb 25 22:02:16 2009 +0000
 @@ -0,0 +1,9 @@
 +[Core]
 +Name = Config Plugin
@@ -11,9 +19,9 @@ diff -urN --exclude '*~' --exclude '*.pyc' Yapsy-1.7/test/plugins/configplugin.y
 +Version = 0.1
 +Website = http://mathbench.sourceforge.net
 +Description = A simple plugin with configuration handling
-diff -urN --exclude '*~' --exclude '*.pyc' Yapsy-1.7/test/plugins/simpleplugin.yapsy-filter-plugin Yapsy-1.7+/test/plugins/simpleplugin.yapsy-filter-plugin
---- Yapsy-1.7/test/plugins/simpleplugin.yapsy-filter-plugin	1970-01-01 01:00:00.000000000 +0100
-+++ Yapsy-1.7+/test/plugins/simpleplugin.yapsy-filter-plugin	2008-04-06 11:32:18.000000000 +0100
+diff -r b70ea7217e78 -r 3348054d8fce yapsydir/trunk/test/plugins/simpleplugin.yapsy-filter-plugin
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/yapsydir/trunk/test/plugins/simpleplugin.yapsy-filter-plugin	Wed Feb 25 22:02:16 2009 +0000
 @@ -0,0 +1,9 @@
 +[Core]
 +Name = Simple Plugin
@@ -24,9 +32,9 @@ diff -urN --exclude '*~' --exclude '*.pyc' Yapsy-1.7/test/plugins/simpleplugin.y
 +Version = 0.1
 +Website = http://mathbench.sourceforge.net
 +Description = A simple plugin usefull for basic testing
-diff -urN --exclude '*~' --exclude '*.pyc' Yapsy-1.7/test/test_All.py Yapsy-1.7+/test/test_All.py
---- Yapsy-1.7/test/test_All.py	2008-04-06 15:39:16.000000000 +0100
-+++ Yapsy-1.7+/test/test_All.py	2009-02-01 16:26:39.000000000 +0000
+diff -r b70ea7217e78 -r 3348054d8fce yapsydir/trunk/test/test_All.py
+--- a/yapsydir/trunk/test/test_All.py	Wed Apr 09 12:05:36 2008 +0100
++++ b/yapsydir/trunk/test/test_All.py	Wed Feb 25 22:02:16 2009 +0000
 @@ -18,6 +18,7 @@
  import test_ConfigPlugin
  import test_VersionedPlugin
@@ -42,9 +50,9 @@ diff -urN --exclude '*~' --exclude '*.pyc' Yapsy-1.7/test/test_All.py Yapsy-1.7+
 +		test_FilterPlugin.suite,
  		])
  
-diff -urN --exclude '*~' --exclude '*.pyc' Yapsy-1.7/test/test_FilterPlugin.py Yapsy-1.7+/test/test_FilterPlugin.py
---- Yapsy-1.7/test/test_FilterPlugin.py	1970-01-01 01:00:00.000000000 +0100
-+++ Yapsy-1.7+/test/test_FilterPlugin.py	2009-02-01 16:54:34.000000000 +0000
+diff -r b70ea7217e78 -r 3348054d8fce yapsydir/trunk/test/test_FilterPlugin.py
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/yapsydir/trunk/test/test_FilterPlugin.py	Wed Feb 25 22:02:16 2009 +0000
 @@ -0,0 +1,89 @@
 +from test_settings import *
 +import unittest
@@ -135,10 +143,9 @@ diff -urN --exclude '*~' --exclude '*.pyc' Yapsy-1.7/test/test_FilterPlugin.py Y
 +suite = unittest.TestSuite([
 +        unittest.TestLoader().loadTestsFromTestCase(FilteredTestsCase),
 +        ])
-Binary files Yapsy-1.7/test/.test_SimplePlugin.py.swp and Yapsy-1.7+/test/.test_SimplePlugin.py.swp differ
-diff -urN --exclude '*~' --exclude '*.pyc' Yapsy-1.7/yapsy/FilteredPluginManager.py Yapsy-1.7+/yapsy/FilteredPluginManager.py
---- Yapsy-1.7/yapsy/FilteredPluginManager.py	1970-01-01 01:00:00.000000000 +0100
-+++ Yapsy-1.7+/yapsy/FilteredPluginManager.py	2009-02-01 16:49:16.000000000 +0000
+diff -r b70ea7217e78 -r 3348054d8fce yapsydir/trunk/yapsy/FilteredPluginManager.py
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/yapsydir/trunk/yapsy/FilteredPluginManager.py	Wed Feb 25 22:02:16 2009 +0000
 @@ -0,0 +1,70 @@
 +#!/usr/bin/python
 +
@@ -186,7 +193,7 @@ diff -urN --exclude '*~' --exclude '*.pyc' Yapsy-1.7/yapsy/FilteredPluginManager
 +		candidates = self._component._candidates 
 +		self._component._candidates= [ ]
 +		for candidate_infofile, candidate_filepath, plugin_info in candidates:
-+			if self.isPluginOk(candidate_infofile, candidate_filepath, plugin_info):
++			if self.isPluginOk(plugin_info):
 +				self._component._candidates.append(  [ candidate_infofile, candidate_filepath, plugin_info ])
 +			else:
 +				self.rejectedPlugins.append( [ candidate_infofile, candidate_filepath, plugin_info ] )
@@ -210,40 +217,3 @@ diff -urN --exclude '*~' --exclude '*.pyc' Yapsy-1.7/yapsy/FilteredPluginManager
 +	def getRejectedPluginInfo(self):
 +		for dummy1 , dummy2 ,info in self.rejectedPlugins:
 +			yield info
-diff -urN --exclude '*~' --exclude '*.pyc' Yapsy-1.7/Yapsy.egg-info/SOURCES.txt Yapsy-1.7+/Yapsy.egg-info/SOURCES.txt
---- Yapsy-1.7/Yapsy.egg-info/SOURCES.txt	2008-04-09 11:26:48.000000000 +0100
-+++ Yapsy-1.7+/Yapsy.egg-info/SOURCES.txt	2009-02-01 16:54:36.000000000 +0000
-@@ -1,5 +1,6 @@
- LICENSE.txt
- README.txt
-+setup.cfg
- setup.py
- Yapsy.egg-info/PKG-INFO
- Yapsy.egg-info/SOURCES.txt
-@@ -14,6 +15,7 @@
- test/test_All.py
- test/test_AutoInstallPlugin.py
- test/test_ConfigPlugin.py
-+test/test_FilterPlugin.py
- test/test_SimplePlugin.py
- test/test_Singleton.py
- test/test_VersionedPlugin.py
-@@ -26,7 +28,6 @@
- test/plugins/VersionedPlugin12.py
- test/plugins/VersionedPlugin12a1.py
- test/plugins/configplugin.yapsy-config-plugin
--test/plugins/simpleplugin.yapsy-plugin
- test/plugins/versioned10.version-plugin
- test/plugins/versioned11.version-plugin
- test/plugins/versioned111.version-plugin
-@@ -38,7 +39,8 @@
- test/pluginstoinstall/autoinstalldirplugin/__init__.py
- yapsy/AutoInstallPluginManager.py
- yapsy/ConfigurablePluginManager.py
-+yapsy/FilteredPluginManager.py
- yapsy/IPlugin.py
- yapsy/PluginManager.py
- yapsy/VersionedPluginManager.py
--yapsy/__init__.py
-+yapsy/__init__.py
-\ No newline at end of file

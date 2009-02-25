@@ -37,7 +37,8 @@ import logging
 
 class ExtInfoTest(unittest.TestCase):
 	def setUp(self):
-		# create the plugin manager
+		# create the plugin manager - use the base plugin manager to
+                # remove any unecessary dependencies
 		self.simplePluginManager = PluginManager(directories_list=[
 				os.path.join(
 					os.path.dirname(os.path.abspath(__file__)),"Plugins")
