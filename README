@@ -14,6 +14,7 @@ You will need to install the following Python packages to use the
 MysteryMachine .
 
 Yapsy > 1.x : A Patch for versions lower than this can be found patches
+pyparsing > 1.5.0
 
 Yapsy 
 '''''
@@ -24,3 +25,15 @@ though.
 
 Having said that since for python3 we need to fix yapsy - changing it to be
 secure as well strikes me as a good idea.
+
+Pyparsing
+'''''''''
+
+Actually you may be able to make MysteryMachine work with Pyparsing 1.4, and the
+parser was orginally written for it.
+However the whitespace handling code is different between the two releases and 1.4
+may damage rst documents when used with the settings required for 1.5.
+
+Also Pyparsing 1.4 did not throw and exception if it couldn't parse the whole string
+it would just silently discard the remaining output. SO don't blame me if you
+attempt to use it with and early version and find your mssing half your character sheet.

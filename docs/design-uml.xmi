@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<XMI xmlns:UML="http://schema.omg.org/spec/UML/1.3" verified="false" timestamp="2009-02-07T14:52:56" xmi.version="1.2" >
+<XMI xmlns:UML="http://schema.omg.org/spec/UML/1.3" verified="false" timestamp="2009-03-10T21:12:43" xmi.version="1.2" >
  <XMI.header>
   <XMI.documentation>
    <XMI.exporter>umbrello uml modeller http://uml.sf.net</XMI.exporter>
@@ -54,7 +54,7 @@
         <UML:Attribute isSpecification="false" visibility="private" xmi.id="171" type="21" name="working_uri" />
         <UML:Attribute isSpecification="false" visibility="private" xmi.id="414" type="407" name="controllers" />
         <UML:Attribute isSpecification="false" visibility="private" xmi.id="3462" type="3307" name="objCache" />
-        <UML:Operation comment="This lists all the existing categories in the MysteryMachine system." isSpecification="false" isLeaf="false" visibility="public" xmi.id="35" isRoot="false" isAbstract="false" isQuery="true" name="getObjectCaterogies" />
+        <UML:Operation comment="This lists all the existing categories in the MysteryMachine system." isSpecification="false" isLeaf="false" visibility="public" xmi.id="35" isRoot="false" isAbstract="false" isQuery="true" name="EnumCategories" />
         <UML:Operation comment="Returns a list of all the objects in the specified category." isSpecification="false" isLeaf="false" visibility="public" xmi.id="36" isRoot="false" isAbstract="false" isQuery="true" name="EnumObjects" >
          <UML:BehavioralFeature.parameter>
           <UML:Parameter comment="The category to enumerate the object from" isSpecification="false" visibility="private" xmi.id="37" value="" type="21" name="category" />
@@ -197,6 +197,12 @@
          </UML:BehavioralFeature.parameter>
         </UML:Operation>
         <UML:Operation isSpecification="false" isLeaf="false" visibility="public" xmi.id="363" isRoot="false" isAbstract="false" isQuery="false" name="getViews" />
+        <UML:Operation isSpecification="false" isLeaf="false" visibility="public" xmi.id="ffHAeucC6QsA" isRoot="false" isAbstract="false" isQuery="false" name="unRegisterView" >
+         <UML:BehavioralFeature.parameter>
+          <UML:Parameter kind="return" xmi.id="01hwWX39CKHq" type="13" />
+          <UML:Parameter isSpecification="false" visibility="private" xmi.id="J28SnihgyjFy" value="" type="33" name="view" />
+         </UML:BehavioralFeature.parameter>
+        </UML:Operation>
        </UML:Classifier.feature>
       </UML:Class>
       <UML:Class comment="This class encapsulates the Users idea of a view type . It will create the Panels and MMViews (or slices) which allow a user to edit and view a MMSystem." isSpecification="false" isLeaf="false" visibility="private" namespace="1" xmi.id="33" isRoot="false" isAbstract="true" name="View" >
@@ -337,8 +343,6 @@ It provides support to create and apply patches to different values." isSpecific
 It supports the concept of trusted and untrusted extensions, untrusted extensions cannot be used at runtime.
 The set of available extensions and the set of trusted extensions are completely distinct.  Meta data can only be enumurated fro available extensions." isSpecification="false" isLeaf="false" visibility="public" namespace="1" xmi.id="4971" isRoot="false" isAbstract="false" name="ExtensionLib" >
        <UML:Classifier.feature>
-        <UML:Attribute isSpecification="false" visibility="private" xmi.id="5128" type="4NyYZsFdim2i" name="known_extensions" />
-        <UML:Attribute isSpecification="false" visibility="private" xmi.id="6958" type="4NyYZsFdim2i" name="trusted_extensions" />
         <UML:Attribute isSpecification="false" visibility="private" xmi.id="arWDkPiFtMcF" type="OhenemhVlFc8" name="plugin_man" />
         <UML:Operation isSpecification="false" isLeaf="false" visibility="public" xmi.id="5401" isRoot="false" isAbstract="false" isQuery="false" name="register" >
          <UML:BehavioralFeature.parameter>
@@ -368,6 +372,8 @@ The set of available extensions and the set of trusted extensions are completely
           <UML:Parameter isSpecification="false" visibility="private" xmi.id="22912" value="" type="21" name="name" />
          </UML:BehavioralFeature.parameter>
         </UML:Operation>
+        <UML:Operation isSpecification="false" isLeaf="false" visibility="public" xmi.id="aEph6tAyBmZH" isRoot="false" isAbstract="false" isQuery="false" name="getPluginsAvail" />
+        <UML:Operation isSpecification="false" isLeaf="false" visibility="public" xmi.id="tI2b2JmjyUr9" isRoot="false" isAbstract="false" isQuery="false" name="iterPluginAvail" />
        </UML:Classifier.feature>
       </UML:Class>
       <UML:Interface stereotype="34" isSpecification="false" isLeaf="false" visibility="public" namespace="1" xmi.id="5074" isRoot="false" isAbstract="true" name="Extension" >
@@ -713,7 +719,7 @@ It exists to helps us provide a UI for merging work from different users." isSpe
         <UML:Operation isSpecification="false" isLeaf="false" visibility="public" xmi.id="57926" isRoot="false" isAbstract="false" isQuery="false" name="getAsNodes" />
        </UML:Classifier.feature>
       </UML:Class>
-      <UML:Class comment="This is our application instance ." isSpecification="false" isLeaf="false" visibility="public" namespace="1" xmi.id="58625" isRoot="false" isAbstract="false" name="MMMain" >
+      <UML:Class stereotype="5216" comment="This is our application instance ." isSpecification="false" isLeaf="false" visibility="public" namespace="1" xmi.id="58625" isRoot="false" isAbstract="false" name="MMApp" >
        <UML:Classifier.feature>
         <UML:Attribute isSpecification="false" visibility="private" xmi.id="fMRrTOLadBAP" type="23" name="windows" />
        </UML:Classifier.feature>
@@ -741,26 +747,26 @@ It exists to helps us provide a UI for merging work from different users." isSpe
       </UML:Class>
       <UML:Association isSpecification="false" visibility="public" namespace="1" xmi.id="25" name="" >
        <UML:Association.connection>
-        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="k3TC37RvWTth" aggregation="none" type="23" name="" />
-        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="pgnf5f88cU6l" aggregation="none" type="24" name="" />
+        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="ZurkS7eSTzc3" aggregation="none" type="23" name="" />
+        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="XvjgTpzX8FbY" aggregation="none" type="24" name="" />
        </UML:Association.connection>
       </UML:Association>
       <UML:Association isSpecification="false" visibility="public" namespace="1" xmi.id="29" name="" >
        <UML:Association.connection>
-        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="DBJ0ESZwV27W" aggregation="composite" type="24" name="" />
-        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="7YRd2KIrz3U2" aggregation="none" type="28" name="" />
+        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="5Yqt4XzcRqMs" aggregation="composite" type="24" name="" />
+        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="v0IO0vRXoABI" aggregation="none" type="28" name="" />
        </UML:Association.connection>
       </UML:Association>
       <UML:Association isSpecification="false" visibility="public" namespace="1" xmi.id="1029" name="" >
        <UML:Association.connection>
-        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="gcAJ6H2IQKId" aggregation="composite" type="28" name="" />
-        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="mpZIrgmxDCaF" aggregation="none" type="28" name="" />
+        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="0An6NOeQwSJz" aggregation="composite" type="28" name="" />
+        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="zIbO8vG4uZQs" aggregation="none" type="28" name="" />
        </UML:Association.connection>
       </UML:Association>
       <UML:Association isSpecification="false" visibility="public" namespace="1" xmi.id="1050" name="" >
        <UML:Association.connection>
-        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="Wr4TuWVZ8eqC" aggregation="composite" type="28" name="" />
-        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="tsSJCkuxZUDP" aggregation="none" type="971" name="" />
+        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="SqNE0YUygI24" aggregation="composite" type="28" name="" />
+        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="egUZ8oW545UD" aggregation="none" type="971" name="" />
        </UML:Association.connection>
       </UML:Association>
       <UML:Generalization isSpecification="false" child="971" visibility="public" namespace="1" xmi.id="5879" parent="5739" discriminator="" name="" />
@@ -778,8 +784,8 @@ It exists to helps us provide a UI for merging work from different users." isSpe
       <UML:Generalization isSpecification="false" child="15544" visibility="public" namespace="1" xmi.id="15610" parent="14376" discriminator="" name="" />
       <UML:Association isSpecification="false" visibility="public" namespace="1" xmi.id="23774" name="" >
        <UML:Association.connection>
-        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="8zKJBuYgja9c" aggregation="none" type="14376" name="" />
-        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="6dBCH1N8rpR4" aggregation="none" type="676" name="" />
+        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="0iFuFdmfT7uS" aggregation="none" type="14376" name="" />
+        <UML:AssociationEnd isSpecification="false" visibility="public" changeability="changeable" isNavigable="true" xmi.id="fOOMeRQJ5sqC" aggregation="none" type="676" name="" />
        </UML:Association.connection>
       </UML:Association>
       <UML:Generalization isSpecification="false" child="24198" visibility="public" namespace="1" xmi.id="25755" parent="25529" discriminator="" name="" />
@@ -875,12 +881,12 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
      </UML:Namespace.ownedElement>
      <XMI.extension xmi.extender="umbrello" >
       <diagrams>
-       <diagram snapgrid="0" showattsig="1" fillcolor="#ffffc0" linewidth="0" zoom="50" showgrid="0" showopsig="1" usefillcolor="1" snapx="10" canvaswidth="2374" snapy="10" showatts="1" xmi.id="9" documentation="" type="1" showops="1" showpackage="0" name="class diagram" localid="900000" showstereotype="0" showscope="1" snapcsgrid="0" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="#ff0000" canvasheight="4016" >
+       <diagram snapgrid="0" showattsig="1" fillcolor="#ffffc0" linewidth="0" zoom="75" showgrid="0" showopsig="1" usefillcolor="1" snapx="10" canvaswidth="2018" snapy="10" showatts="1" xmi.id="9" documentation="" type="1" showops="1" showpackage="0" name="class diagram" localid="900000" showstereotype="0" showscope="1" snapcsgrid="0" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="#ff0000" canvasheight="2377" >
         <widgets>
          <classwidget usesdiagramfillcolor="0" width="181" showattsigs="601" x="319" fillcolor="#ffffc0" y="105" showopsigs="601" linewidth="none" height="63" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="23" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
-         <classwidget usesdiagramfillcolor="0" width="511" showattsigs="601" x="715" fillcolor="#ffffc0" y="278" showopsigs="601" linewidth="none" height="414" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="24" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
+         <classwidget usesdiagramfillcolor="0" width="500" showattsigs="601" x="715" fillcolor="#ffffc0" y="278" showopsigs="601" linewidth="none" height="414" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="24" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,75,0,0,0,0,0" linecolor="#ff0000" />
          <classwidget usesdiagramfillcolor="0" width="348" showattsigs="601" x="781" fillcolor="#ffffc0" y="902" showopsigs="601" linewidth="none" height="162" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="28" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
-         <classwidget usesdiagramfillcolor="0" width="352" showattsigs="601" x="18" fillcolor="#ffffc0" y="214" showopsigs="601" linewidth="none" height="72" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="32" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
+         <classwidget usesdiagramfillcolor="0" width="339" showattsigs="601" x="18" fillcolor="#ffffc0" y="214" showopsigs="601" linewidth="none" height="90" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="32" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
          <classwidget usesdiagramfillcolor="0" width="182" showattsigs="600" x="29" fillcolor="#ffffc0" y="1215" drawascircle="0" showopsigs="601" linewidth="none" height="72" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="33" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
          <datatypewidget usesdiagramfillcolor="1" width="91" x="1389" fillcolor="none" y="504" linewidth="none" height="36" usefillcolor="1" isinstance="0" xmi.id="116" showstereotype="1" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          <classwidget usesdiagramfillcolor="0" width="227" showattsigs="601" x="282" fillcolor="#ffffc0" y="1186" drawascircle="0" showopsigs="601" linewidth="none" height="90" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="407" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
@@ -890,8 +896,8 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
          <enumwidget usesdiagramfillcolor="0" width="116" x="910" fillcolor="#ffffc0" y="1313" linewidth="none" height="131" usefillcolor="1" isinstance="0" xmi.id="1245" showpackage="0" showstereotype="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
          <classwidget usesdiagramfillcolor="0" width="250" showattsigs="601" x="457" fillcolor="#ffffc0" y="1926" showopsigs="601" linewidth="none" height="81" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="2370" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
          <classwidget usesdiagramfillcolor="0" width="205" showattsigs="601" x="1423" fillcolor="#ffffc0" y="932" showopsigs="601" linewidth="none" height="63" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="3307" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
-         <classwidget usesdiagramfillcolor="0" width="310" showattsigs="601" x="395" fillcolor="#ffffc0" y="481" showopsigs="601" linewidth="none" height="162" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="4971" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
-         <interfacewidget usesdiagramfillcolor="0" width="204" x="332" fillcolor="#ffffc0" y="1031" drawascircle="0" showopsigs="601" linewidth="none" height="81" usefillcolor="1" showpubliconly="0" isinstance="0" xmi.id="5074" showoperations="1" showpackage="0" showscope="1" showstereotype="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,75,1,0,0,0,0" linecolor="#ff0000" />
+         <classwidget usesdiagramfillcolor="0" width="310" showattsigs="601" x="396" fillcolor="#ffffc0" y="536" showopsigs="601" linewidth="none" height="162" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="4971" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
+         <interfacewidget usesdiagramfillcolor="0" width="204" x="332" fillcolor="#ffffc0" y="1031" drawascircle="0" showopsigs="601" linewidth="none" height="81" usefillcolor="1" showpubliconly="0" isinstance="0" xmi.id="5074" showoperations="1" showpackage="0" showscope="1" showstereotype="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
          <classwidget usesdiagramfillcolor="0" width="221" showattsigs="601" x="1448" fillcolor="#ffffc0" y="1389" showopsigs="601" linewidth="none" height="99" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="5739" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
          <classwidget usesdiagramfillcolor="0" width="286" showattsigs="601" x="512" fillcolor="#ffffc0" y="722" showopsigs="601" linewidth="none" height="99" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="6675" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
          <classwidget usesdiagramfillcolor="0" width="231" showattsigs="601" x="318" fillcolor="#ffffc0" y="311" showopsigs="601" linewidth="none" height="72" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="8935" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
@@ -913,13 +919,13 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
          <classwidget usesdiagramfillcolor="0" width="131" showattsigs="601" x="1408" fillcolor="#ffffc0" y="2193" showopsigs="601" linewidth="none" height="36" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="49879" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
          <classwidget usesdiagramfillcolor="1" width="124" showattsigs="601" x="961" fillcolor="none" y="2193" showopsigs="601" linewidth="none" height="36" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="50399" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          <classwidget usesdiagramfillcolor="0" width="176" showattsigs="601" x="1838" fillcolor="#ffffc0" y="1604" showopsigs="601" linewidth="none" height="72" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="51238" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
-         <classwidget usesdiagramfillcolor="0" width="135" showattsigs="601" x="877" fillcolor="#ffffc0" y="90" showopsigs="601" linewidth="none" height="45" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="58625" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
+         <classwidget usesdiagramfillcolor="0" width="127" showattsigs="601" x="877" fillcolor="#ffffc0" y="90" showopsigs="601" linewidth="none" height="45" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="58625" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
          <classwidget usesdiagramfillcolor="0" width="403" showattsigs="601" x="1580" fillcolor="#ffffc0" y="606" showopsigs="601" linewidth="none" height="81" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="60173" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="#ff0000" />
          <classwidget usesdiagramfillcolor="0" width="248" showattsigs="601" x="238" fillcolor="#ffffc0" y="725" showopsigs="601" linewidth="none" height="108" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="4NyYZsFdim2i" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
          <packagewidget usesdiagramfillcolor="1" width="70" x="241" fillcolor="none" y="969" linewidth="none" height="46" usefillcolor="1" isinstance="0" xmi.id="L5URolz9UcK5" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,75,0,0,0,0,0" linecolor="none" />
-         <classwidget usesdiagramfillcolor="0" width="143" showattsigs="601" x="528" fillcolor="#ffffc0" y="878" showopsigs="601" linewidth="none" height="63" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="UfTGhAZkezYN" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,75,0,0,0,0,0" linecolor="#ff0000" />
+         <classwidget usesdiagramfillcolor="0" width="143" showattsigs="601" x="528" fillcolor="#ffffc0" y="878" showopsigs="601" linewidth="none" height="63" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="UfTGhAZkezYN" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
          <classwidget usesdiagramfillcolor="0" width="112" showattsigs="601" x="293" fillcolor="#ffffc0" y="865" showopsigs="601" linewidth="none" height="63" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="ygpYythyeBfm" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
-         <classwidget usesdiagramfillcolor="0" width="276" showattsigs="601" x="75" fillcolor="#ffffc0" y="506" showopsigs="601" linewidth="none" height="90" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="OhenemhVlFc8" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
+         <classwidget usesdiagramfillcolor="0" width="276" showattsigs="601" x="65" fillcolor="#ffffc0" y="483" showopsigs="601" linewidth="none" height="90" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="OhenemhVlFc8" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="0" font="Sans Serif,10,-1,5,50,0,0,0,0,0" linecolor="#ff0000" />
          <classwidget usesdiagramfillcolor="1" width="161" showattsigs="601" x="117" fillcolor="none" y="872" showopsigs="601" linewidth="none" height="36" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="HW9NAwBdyTAK" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          <classwidget usesdiagramfillcolor="1" width="95" showattsigs="601" x="86" fillcolor="none" y="796" showopsigs="601" linewidth="none" height="36" usefillcolor="1" showpubliconly="0" showattributes="1" isinstance="0" xmi.id="t8mXz1zs8oZx" showoperations="1" showpackage="0" showscope="1" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
         </widgets>
@@ -927,47 +933,47 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
         <associations>
          <assocwidget totalcounta="6" indexa="2" totalcountb="3" indexb="1" linewidth="none" widgetbid="28" widgetaid="24" xmi.id="29" type="510" linecolor="none" >
           <linepath>
-           <startpoint startx="885" starty="692" />
+           <startpoint startx="881" starty="692" />
            <endpoint endx="897" endy="902" />
            <point x="942" y="846" />
           </linepath>
          </assocwidget>
          <assocwidget totalcounta="2" indexa="1" visibilityB="200" totalcountb="2" indexb="1" linewidth="none" widgetbid="116" widgetaid="24" xmi.id="137" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
-           <startpoint startx="1226" starty="485" />
+           <startpoint startx="1215" starty="485" />
            <endpoint endx="1389" endy="522" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="48" x="1302" fillcolor="none" y="489" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="0G6frD2xQhug" text="repo" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="48" x="1302" fillcolor="none" y="489" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="BJ6glOaWNZwI" text="repo" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="3" indexa="2" visibilityB="200" totalcountb="2" indexb="1" linewidth="none" widgetbid="24" widgetaid="23" xmi.id="230" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
            <startpoint startx="439" starty="168" />
            <endpoint endx="715" endy="485" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="65" x="597" fillcolor="none" y="413" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="lUBdc68Slvo9" showstereotype="1" text="thisdoc" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="65" x="597" fillcolor="none" y="413" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="KQsmNX06sodG" showstereotype="1" text="thisdoc" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="3" indexa="1" visibilityB="200" totalcountb="2" indexb="1" linewidth="none" widgetbid="32" widgetaid="23" xmi.id="282" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
            <startpoint startx="379" starty="168" />
-           <endpoint endx="194" endy="214" />
+           <endpoint endx="187" endy="214" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="75" x="207" fillcolor="none" y="126" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="MxLXE6YFMesC" text="viewman" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="75" x="200" fillcolor="none" y="126" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="M6pGN9XYQdC9" text="viewman" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="2" indexa="1" visibilityB="200" totalcountb="2" indexb="1" linewidth="none" widgetbid="33" widgetaid="32" xmi.id="318" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
-           <startpoint startx="194" starty="286" />
+           <startpoint startx="187" starty="304" />
            <endpoint endx="120" endy="1215" />
            <point x="44" y="496" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="32" x="75" fillcolor="none" y="1179" linewidth="none" posttext="" role="702" height="32" usefillcolor="1" pretext="" isinstance="0" xmi.id="85YuyM3LHOqU" showstereotype="1" text="*" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
-          <floatingtext usesdiagramfillcolor="1" width="53" x="22" fillcolor="none" y="1189" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="ru9Fb1tMV4x5" showstereotype="1" text="views" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="32" x="75" fillcolor="none" y="1179" linewidth="none" posttext="" role="702" height="32" usefillcolor="1" pretext="" isinstance="0" xmi.id="2PTuD4AXBxlY" showstereotype="1" text="*" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="53" x="22" fillcolor="none" y="1189" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="1nfMKZeezWOM" showstereotype="1" text="views" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="2" indexa="1" visibilityB="200" totalcountb="2" indexb="1" linewidth="none" widgetbid="33" widgetaid="407" xmi.id="470" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
            <startpoint startx="282" starty="1231" />
            <endpoint endx="211" endy="1251" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="46" x="266" fillcolor="none" y="1205" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="TOjn0ZzpT624" text="view" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="46" x="266" fillcolor="none" y="1205" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="4I4StHbu2EGM" text="view" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="8" indexa="5" totalcountb="3" indexb="1" linewidth="none" widgetbid="971" widgetaid="28" xmi.id="1050" type="510" linecolor="none" >
           <linepath>
@@ -975,27 +981,27 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
            <endpoint endx="1194" endy="1379" />
           </linepath>
          </assocwidget>
-         <assocwidget totalcounta="6" indexa="1" visibilityB="200" totalcountb="2" indexb="2" linewidth="none" widgetbid="407" widgetaid="24" xmi.id="414" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
+         <assocwidget totalcounta="6" indexa="1" visibilityB="200" totalcountb="2" indexb="1" linewidth="none" widgetbid="407" widgetaid="24" xmi.id="414" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
-           <startpoint startx="800" starty="692" />
-           <endpoint endx="509" endy="1186" />
+           <startpoint startx="798" starty="692" />
+           <endpoint endx="395" endy="1186" />
            <point x="826" y="843" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="86" x="445" fillcolor="none" y="1150" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="6vPZxMf5QDxM" text="controllers" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="86" x="445" fillcolor="none" y="1150" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="ntzmPN7PkYKx" text="controllers" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="2" indexa="1" visibilityB="200" totalcountb="2" indexb="1" linewidth="none" widgetbid="3307" widgetaid="28" xmi.id="3382" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
            <startpoint startx="1129" starty="983" />
            <endpoint endx="1423" endy="963" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="94" x="1274" fillcolor="none" y="946" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="X0foNVIqrzbr" text="AttribCache" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="94" x="1274" fillcolor="none" y="946" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="cSTnOEJSVOvO" text="AttribCache" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="6" indexa="5" visibilityB="200" totalcountb="2" indexb="1" linewidth="none" widgetbid="3307" widgetaid="24" xmi.id="3462" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
-           <startpoint startx="1140" starty="692" />
+           <startpoint startx="1131" starty="692" />
            <endpoint endx="1525" endy="932" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="78" x="1435" fillcolor="none" y="875" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="YZgzfi2jbRJW" text="objCache" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="78" x="1435" fillcolor="none" y="875" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="dUHfjV1WO0Hm" text="objCache" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="2" indexa="1" totalcountb="2" indexb="1" linewidth="none" widgetbid="5739" widgetaid="971" xmi.id="5879" type="500" linecolor="none" >
           <linepath>
@@ -1011,7 +1017,7 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
          </assocwidget>
          <assocwidget totalcounta="6" indexa="4" totalcountb="3" indexb="2" linewidth="none" widgetbid="5739" widgetaid="24" xmi.id="6058" type="500" linecolor="none" >
           <linepath>
-           <startpoint startx="1055" starty="692" />
+           <startpoint startx="1048" starty="692" />
            <endpoint endx="1595" endy="1389" />
            <point x="1072" y="718" />
           </linepath>
@@ -1033,7 +1039,7 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
            <startpoint startx="1113" starty="1451" />
            <endpoint endx="1026" endy="1378" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="47" x="1028" fillcolor="none" y="1380" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="lycB9ZWeYBQv" showstereotype="1" text="type" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="47" x="1028" fillcolor="none" y="1380" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="MMB6uT2WwTIK" showstereotype="1" text="type" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="2" indexa="1" totalcountb="6" indexb="2" linewidth="none" widgetbid="14376" widgetaid="11061" xmi.id="14438" type="500" linecolor="none" >
           <linepath>
@@ -1059,42 +1065,42 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
            <startpoint startx="1194" starty="1595" />
            <endpoint endx="1374" endy="1964" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="66" x="959" fillcolor="none" y="1968" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="hjjYgIODr2AV" text="raw_val" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="66" x="959" fillcolor="none" y="1968" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="hbkAzfZaAqFr" text="raw_val" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="3" indexa="1" visibilityB="200" totalcountb="3" indexb="1" linewidth="none" widgetbid="2370" widgetaid="11061" xmi.id="11460" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
            <startpoint startx="709" starty="1874" />
            <endpoint endx="540" endy="1926" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="83" x="611" fillcolor="none" y="1892" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="jCEKdXrNTRWa" showstereotype="1" text="pre_patch" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="83" x="611" fillcolor="none" y="1892" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="LFNiDcUZydes" showstereotype="1" text="pre_patch" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="3" indexa="2" visibilityB="200" totalcountb="3" indexb="2" linewidth="none" widgetbid="2370" widgetaid="11061" xmi.id="11714" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
            <startpoint startx="777" starty="1874" />
            <endpoint endx="623" endy="1926" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="90" x="694" fillcolor="none" y="1897" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="02EWEfPtM6P0" text="post_patch" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="90" x="694" fillcolor="none" y="1897" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="7eN37fLmG5xE" text="post_patch" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="3" indexa="2" visibilityB="200" totalcountb="6" indexb="3" linewidth="none" widgetbid="24" widgetaid="28" xmi.id="17266" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
            <startpoint startx="1013" starty="902" />
-           <endpoint endx="970" endy="692" />
+           <endpoint endx="965" endy="692" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="66" x="1075" fillcolor="none" y="670" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="PnBGoMlXYyrA" showstereotype="1" text="system" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="66" x="1070" fillcolor="none" y="670" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="jWorK4ifJ3LW" showstereotype="1" text="system" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="3" indexa="2" visibilityB="200" totalcountb="8" indexb="6" linewidth="none" widgetbid="28" widgetaid="971" xmi.id="17702" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
            <startpoint startx="1275" starty="1379" />
            <endpoint endx="1042" endy="1064" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="58" x="1061" fillcolor="none" y="1061" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="TgXx73V64icI" showstereotype="1" text="object" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="58" x="1061" fillcolor="none" y="1061" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="gn4eRgVYKsZR" showstereotype="1" text="object" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="4" indexa="2" visibilityB="200" totalcountb="3" indexb="2" linewidth="none" widgetbid="971" widgetaid="14376" xmi.id="18173" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
            <startpoint startx="1418" starty="1964" />
            <endpoint endx="1275" endy="1595" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="42" x="1137" fillcolor="none" y="1523" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="L09f6YdVKpk8" showstereotype="1" text="attr" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="42" x="1137" fillcolor="none" y="1523" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="XuBnx8zgcoXw" showstereotype="1" text="attr" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="6" indexa="5" totalcountb="2" indexb="1" linewidth="none" widgetbid="676" widgetaid="14376" xmi.id="23774" type="503" linecolor="none" >
           <linepath>
@@ -1107,7 +1113,7 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
            <startpoint startx="384" starty="2208" />
            <endpoint endx="1331" endy="2072" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="48" x="906" fillcolor="none" y="2027" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="9TffRUpvBKqG" text="data" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="48" x="906" fillcolor="none" y="2027" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="qFa7HvbxjfZA" text="data" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="2" indexa="1" totalcountb="2" indexb="1" linewidth="none" widgetbid="25529" widgetaid="24198" xmi.id="25755" type="500" linecolor="none" >
           <linepath>
@@ -1126,8 +1132,8 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
            <startpoint startx="312" starty="1647" />
            <endpoint endx="295" endy="2186" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="32" x="294" fillcolor="none" y="2151" linewidth="none" posttext="" role="702" height="32" usefillcolor="1" pretext="" isinstance="0" xmi.id="NdVhSFpZiSE8" text="1..*" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
-          <floatingtext usesdiagramfillcolor="1" width="67" x="232" fillcolor="none" y="2162" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="MJMQ1xgKvpz1" showstereotype="1" text="widgets" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="32" x="294" fillcolor="none" y="2151" linewidth="none" posttext="" role="702" height="32" usefillcolor="1" pretext="" isinstance="0" xmi.id="MCjz0EtoSTvj" text="1..*" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="67" x="232" fillcolor="none" y="2162" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="L4gdwD2R7ED2" showstereotype="1" text="widgets" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="3" indexa="2" visibilityB="200" totalcountb="8" indexb="2" linewidth="none" widgetbid="28" widgetaid="35059" xmi.id="36640" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
@@ -1135,7 +1141,7 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
            <endpoint endx="868" endy="1064" />
            <point x="620" y="1224" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="69" x="861" fillcolor="none" y="1066" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="x238MrOgAj6A" showstereotype="1" text="baseobj" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="69" x="861" fillcolor="none" y="1066" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="NXg6CFEWIs7E" showstereotype="1" text="baseobj" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="5" indexa="1" totalcountb="2" indexb="1" linewidth="none" widgetbid="37105" widgetaid="34783" xmi.id="37381" type="500" linecolor="none" >
           <linepath>
@@ -1148,21 +1154,21 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
            <startpoint startx="375" starty="1647" />
            <endpoint endx="434" endy="1709" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="78" x="341" fillcolor="none" y="1749" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="ekUZZUYv73aX" showstereotype="1" text="mainview" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="78" x="341" fillcolor="none" y="1749" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="5AgAOrCi3vf2" showstereotype="1" text="mainview" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="2" indexa="1" visibilityB="200" totalcountb="2" indexb="1" linewidth="none" widgetbid="38666" widgetaid="33" xmi.id="38614" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
            <startpoint startx="120" starty="1287" />
            <endpoint endx="29" endy="2220" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="65" x="31" fillcolor="none" y="2196" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="IO6zqI5nK6tf" text="Display" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="65" x="31" fillcolor="none" y="2196" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="AZqc0mJNJzTT" text="Display" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="5" indexa="2" visibilityB="200" totalcountb="5" indexb="3" linewidth="none" widgetbid="40947" widgetaid="34783" xmi.id="40946" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
            <startpoint startx="249" starty="1647" />
            <endpoint endx="163" endy="2337" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="61" x="156" fillcolor="none" y="2313" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="xGL5xQFbAk8i" showstereotype="1" text="parent" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="61" x="156" fillcolor="none" y="2313" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="CfxUX5haFLkb" showstereotype="1" text="parent" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="2" indexa="1" totalcountb="5" indexb="1" linewidth="none" widgetbid="40947" widgetaid="38666" xmi.id="42146" type="500" linecolor="none" >
           <linepath>
@@ -1187,21 +1193,21 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
            <startpoint startx="832" starty="1455" />
            <endpoint endx="955" endy="1064" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="69" x="866" fillcolor="none" y="1066" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="CgdHiBmyZqvQ" showstereotype="1" text="baseobj" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="69" x="866" fillcolor="none" y="1066" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="CxJFqzHyW6YW" showstereotype="1" text="baseobj" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="2" indexa="1" visibilityB="200" totalcountb="8" indexb="3" linewidth="none" widgetbid="28" widgetaid="689" xmi.id="44201" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
            <startpoint startx="747" starty="1242" />
            <endpoint endx="911" endy="1064" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="69" x="846" fillcolor="none" y="1066" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="80BT6581LR7G" text="baseobj" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="69" x="846" fillcolor="none" y="1066" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="sruBqLc1zaVU" text="baseobj" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="5" indexa="1" visibilityB="200" totalcountb="4" indexb="1" linewidth="none" widgetbid="689" widgetaid="43498" xmi.id="44467" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
            <startpoint startx="731" starty="1455" />
            <endpoint endx="691" endy="1332" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="64" x="697" fillcolor="none" y="1331" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="rKp02xiEbJTH" text="part_of" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="64" x="697" fillcolor="none" y="1331" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="fA5uVpThkmvb" text="part_of" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="4" indexa="2" totalcountb="5" indexb="2" linewidth="none" widgetbid="43498" widgetaid="689" xmi.id="46764" type="500" linecolor="none" >
           <linepath>
@@ -1214,7 +1220,7 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
            <startpoint startx="803" starty="1332" />
            <endpoint endx="798" endy="1455" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="72" x="751" fillcolor="none" y="1430" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="UFG45BSECdfG" showstereotype="1" text="sections" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="72" x="751" fillcolor="none" y="1430" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="jAZFG8k8zcHo" showstereotype="1" text="sections" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="2" indexa="1" totalcountb="2" indexb="1" linewidth="none" widgetbid="49879" widgetaid="14376" xmi.id="50229" type="500" linecolor="none" >
           <linepath>
@@ -1233,21 +1239,21 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
            <startpoint startx="1896" starty="1676" />
            <endpoint endx="1505" endy="2018" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="38" x="1643" fillcolor="none" y="1935" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="ilI1CNH2h62k" text="old" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="38" x="1643" fillcolor="none" y="1935" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="vunuUGP7RUzw" text="old" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="3" indexa="2" visibilityB="200" totalcountb="3" indexb="2" linewidth="none" widgetbid="14376" widgetaid="51238" xmi.id="51648" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
            <startpoint startx="1955" starty="1676" />
            <endpoint endx="1505" endy="2072" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="44" x="1592" fillcolor="none" y="2023" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="1iwb1QsTd8Xj" showstereotype="1" text="new" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="44" x="1592" fillcolor="none" y="2023" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="HSc2EXdwhA9y" showstereotype="1" text="new" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="2" indexa="1" visibilityB="200" totalcountb="2" indexb="1" linewidth="none" widgetbid="23" widgetaid="58625" xmi.id="fMRrTOLadBAP" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
            <startpoint startx="877" starty="112" />
            <endpoint endx="500" endy="136" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="70" x="502" fillcolor="none" y="112" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="IxvSbaiHJyHT" text="windows" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="70" x="502" fillcolor="none" y="112" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="Ir4GTM4PErHi" text="windows" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="2" indexa="1" visibilityB="200" totalcountb="3" indexb="2" linewidth="none" widgetbid="UfTGhAZkezYN" widgetaid="L5URolz9UcK5" roleBdoc="" documentation="" roleAdoc="" type="509" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
@@ -1267,26 +1273,12 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
            <endpoint endx="349" endy="865" />
           </linepath>
          </assocwidget>
-         <assocwidget totalcounta="3" indexa="1" visibilityB="200" totalcountb="3" indexb="1" linewidth="none" widgetbid="4NyYZsFdim2i" widgetaid="4971" xmi.id="6958" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
-          <linepath>
-           <startpoint startx="498" starty="643" />
-           <endpoint endx="320" endy="725" />
-          </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="135" x="361" fillcolor="none" y="630" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="LWV1bVjaDdBC" text="trusted_extensions" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
-         </assocwidget>
-         <assocwidget totalcounta="3" indexa="2" visibilityB="200" totalcountb="3" indexb="2" linewidth="none" widgetbid="4NyYZsFdim2i" widgetaid="4971" xmi.id="5128" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
-          <linepath>
-           <startpoint startx="601" starty="643" />
-           <endpoint endx="403" endy="725" />
-          </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="129" x="375" fillcolor="none" y="702" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="14gfABOS7Hui" text="known_extensions" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
-         </assocwidget>
          <assocwidget totalcounta="2" indexa="1" visibilityB="200" totalcountb="2" indexb="1" linewidth="none" widgetbid="6675" widgetaid="4NyYZsFdim2i" xmi.id="19MPLfk1O9Lb" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
            <startpoint startx="486" starty="779" />
            <endpoint endx="512" endy="771" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="67" x="443" fillcolor="none" y="773" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="rbx8ZEbtj5sK" text="secureId" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="67" x="443" fillcolor="none" y="773" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="7gnW8mTOE3QQ" text="secureId" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="3" indexa="1" visibilityB="200" totalcountb="2" indexb="1" linewidth="none" widgetbid="HW9NAwBdyTAK" widgetaid="L5URolz9UcK5" roleBdoc="" documentation="" roleAdoc="" type="509" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
@@ -1296,37 +1288,37 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
          </assocwidget>
          <assocwidget totalcounta="3" indexa="2" totalcountb="2" indexb="1" linewidth="none" widgetbid="HW9NAwBdyTAK" widgetaid="OhenemhVlFc8" xmi.id="wltD5fPRnulV" type="500" linecolor="none" >
           <linepath>
-           <startpoint startx="259" starty="596" />
+           <startpoint startx="249" starty="573" />
            <endpoint endx="197" endy="872" />
           </linepath>
-         </assocwidget>
-         <assocwidget totalcounta="2" indexa="1" visibilityB="200" totalcountb="2" indexb="1" linewidth="none" widgetbid="OhenemhVlFc8" widgetaid="4971" xmi.id="arWDkPiFtMcF" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
-          <linepath>
-           <startpoint startx="395" starty="562" />
-           <endpoint endx="351" endy="551" />
-          </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="87" x="238" fillcolor="none" y="543" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="abumE4yE6ctG" text="plugin_man" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="2" indexa="1" visibilityB="200" totalcountb="3" indexb="1" linewidth="none" widgetbid="UfTGhAZkezYN" widgetaid="ygpYythyeBfm" xmi.id="9B7HItcG0Zdw" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
            <startpoint startx="405" starty="896" />
            <endpoint endx="528" endy="899" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="51" x="468" fillcolor="none" y="881" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="mFhtWZZL8WTi" text="plugin" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="51" x="468" fillcolor="none" y="881" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="Y1KFBUBULGkn" text="plugin" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="3" indexa="1" visibilityB="200" totalcountb="2" indexb="1" linewidth="none" widgetbid="t8mXz1zs8oZx" widgetaid="OhenemhVlFc8" xmi.id="LhHpSM9fmX9F" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
           <linepath>
-           <startpoint startx="167" starty="596" />
+           <startpoint startx="157" starty="573" />
            <endpoint endx="133" endy="796" />
           </linepath>
-          <floatingtext usesdiagramfillcolor="1" width="15" x="116" fillcolor="none" y="772" linewidth="none" posttext="" role="702" height="22" usefillcolor="1" pretext="" isinstance="0" xmi.id="gQQm3J1nYig4" text="*" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
-          <floatingtext usesdiagramfillcolor="1" width="65" x="135" fillcolor="none" y="772" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="j4ZS9Rki0cUC" text="trustList" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="15" x="116" fillcolor="none" y="772" linewidth="none" posttext="" role="702" height="22" usefillcolor="1" pretext="" isinstance="0" xmi.id="3gcFh2dF3ySF" text="*" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
+          <floatingtext usesdiagramfillcolor="1" width="65" x="135" fillcolor="none" y="772" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="amCobTUi8HDE" text="trustList" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
          <assocwidget totalcounta="2" indexa="1" totalcountb="2" indexb="1" linewidth="none" widgetbid="5074" widgetaid="UfTGhAZkezYN" xmi.id="cwhPTN5XcIv0" type="511" linecolor="none" >
           <linepath>
            <startpoint startx="599" starty="941" />
            <endpoint endx="434" endy="1031" />
           </linepath>
+         </assocwidget>
+         <assocwidget totalcounta="2" indexa="1" visibilityB="200" totalcountb="2" indexb="1" linewidth="none" widgetbid="OhenemhVlFc8" widgetaid="4971" xmi.id="arWDkPiFtMcF" type="510" changeabilityA="900" changeabilityB="900" linecolor="none" visibilityA="200" >
+          <linepath>
+           <startpoint startx="396" starty="617" />
+           <endpoint endx="341" endy="528" />
+          </linepath>
+          <floatingtext usesdiagramfillcolor="1" width="87" x="297" fillcolor="none" y="591" linewidth="none" posttext="" role="710" height="22" usefillcolor="1" pretext="-" isinstance="0" xmi.id="SehlsRYQDiEm" text="plugin_man" usesdiagramusefillcolor="1" font="Sans Serif,10,-1,0,50,0,0,0,0,0" linecolor="none" />
          </assocwidget>
         </associations>
        </diagram>
@@ -1349,7 +1341,7 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
   </UML:Model>
  </XMI.content>
  <XMI.extensions xmi.extender="umbrello" >
-  <docsettings viewid="9" documentation="" uniqueid="8au19XflTKAw" />
+  <docsettings viewid="9" documentation="" uniqueid="01hwWX39CKHq" />
   <listview>
    <listitem open="1" type="800" label="Views" >
     <listitem open="1" type="801" id="1" >
@@ -1373,20 +1365,23 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
       <listitem open="0" type="815" id="D4wdBEi9ZI6g" />
      </listitem>
      <listitem open="1" type="813" id="4971" >
-      <listitem open="0" type="814" id="5128" />
-      <listitem open="0" type="814" id="6958" />
       <listitem open="0" type="814" id="arWDkPiFtMcF" />
       <listitem open="0" type="815" id="5401" />
       <listitem open="0" type="815" id="5654" />
       <listitem open="0" type="815" id="8678" />
       <listitem open="0" type="815" id="8722" />
       <listitem open="0" type="815" id="22911" />
+      <listitem open="1" type="815" id="aEph6tAyBmZH" />
+      <listitem open="1" type="815" id="tI2b2JmjyUr9" />
      </listitem>
      <listitem open="0" type="813" id="6675" >
       <listitem open="0" type="815" id="7048" />
       <listitem open="0" type="815" id="23097" />
       <listitem open="0" type="815" id="23135" />
       <listitem open="0" type="815" id="23213" />
+     </listitem>
+     <listitem open="1" type="813" id="58625" >
+      <listitem open="0" type="814" id="fMRrTOLadBAP" />
      </listitem>
      <listitem open="0" type="813" id="971" >
       <listitem open="0" type="814" id="1081" />
@@ -1439,9 +1434,6 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
       <listitem open="0" type="814" id="44467" />
       <listitem open="0" type="815" id="44578" />
       <listitem open="0" type="815" id="46011" />
-     </listitem>
-     <listitem open="1" type="813" id="58625" >
-      <listitem open="0" type="814" id="fMRrTOLadBAP" />
      </listitem>
      <listitem open="0" type="813" id="28" >
       <listitem open="0" type="814" id="3382" />
@@ -1550,10 +1542,11 @@ Well behaved plugins will do their best on deactivate" isSpecification="false" i
       <listitem open="0" type="815" id="1767" />
       <listitem open="0" type="815" id="4575" />
      </listitem>
-     <listitem open="0" type="813" id="32" >
+     <listitem open="1" type="813" id="32" >
       <listitem open="0" type="814" id="318" />
       <listitem open="0" type="815" id="251" />
       <listitem open="0" type="815" id="363" />
+      <listitem open="0" type="815" id="ffHAeucC6QsA" />
      </listitem>
      <listitem open="0" type="813" id="23" >
       <listitem open="0" type="814" id="230" />
