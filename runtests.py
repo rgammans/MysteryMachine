@@ -46,6 +46,15 @@ os.putenv("PYTHONPATH",path)
 def NoTests():
 	return( )
 
+#Allow the ability to run tests under a single python.
+if len(sys.argv) > 1:
+    DEFPYTHONS=PYTHONS
+    PYTHONS = []
+    
+    for arg in sys.argv[1:]:
+        print arg
+        PYTHONS += [ 'python%s' % arg ]
+
 for python in (PYTHONS):
 	print "Testing under %s:\n" % python
 	#TODO: should this inner loop go inside tests/__init__.py ?
@@ -55,4 +64,5 @@ for python in (PYTHONS):
 		# SKip invalid module names
 		if not replaced: continue
 		#run tests.
+		print "Running %s (%s)" % (module,python)
 		os.system("%s %s/%s" % ( python,  TESTSDIR, module))

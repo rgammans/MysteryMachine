@@ -20,9 +20,9 @@
 # This file was generated on Mon Feb 2 2009 at 20:18:08
 # The original location of this file is /home/roger/sources/MysteryMachine/generated/MMBase.py
 #
-#
 
-
+from  MysteryMachine import GetExtLib 
+ 
 class MMBase(object):
 
   """
@@ -41,10 +41,11 @@ class MMBase(object):
     @return  :
     @author
     """
-    self.__bases__ += GetExtLib().getMixinsFor(self.__class__)
-    for helper in GetExtLib().getHelpersFor(self.__class__):
+    print "In MMBase.__init__ %s" % self.__class__
+    for helper in GetExtLib().get_helpers_for(self.__class__):
+        if not hasattr(self,"_helpers"): self._helpers=[]
         #Instatiante a helper instance.
-        self._helpers += helper(self)
+        self._helpers += [ helper(self) ] 
 
   def getRequiredVersions(self):
     """
@@ -56,7 +57,7 @@ class MMBase(object):
 
   def Validate(self):
     """
-    The caller interface to the validation code .
+    The caller interface tthe validation code .
 
     @return bool :
     @author

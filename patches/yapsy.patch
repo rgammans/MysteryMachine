@@ -1,14 +1,6 @@
-# HG changeset patch
-# User Roger Gammans <rgammans@computer-surgery.co.uk>
-# Date 1235599336 0
-# Branch yapsy
-# Node ID 3348054d8fceb6b77fab3cadb09bfbaa02b6377b
-# Parent  b70ea7217e783067d0e6a4d7eba31e29e750b85a
-[mq]: filterman.patch
-
-diff -r b70ea7217e78 -r 3348054d8fce yapsydir/trunk/test/plugins/configplugin.yapsy-filter-plugin
+diff -r b70ea7217e78 yapsydir/trunk/test/plugins/configplugin.yapsy-filter-plugin
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/yapsydir/trunk/test/plugins/configplugin.yapsy-filter-plugin	Wed Feb 25 22:02:16 2009 +0000
++++ b/yapsydir/trunk/test/plugins/configplugin.yapsy-filter-plugin	Tue Apr 21 20:56:54 2009 +0100
 @@ -0,0 +1,9 @@
 +[Core]
 +Name = Config Plugin
@@ -19,9 +11,9 @@ diff -r b70ea7217e78 -r 3348054d8fce yapsydir/trunk/test/plugins/configplugin.ya
 +Version = 0.1
 +Website = http://mathbench.sourceforge.net
 +Description = A simple plugin with configuration handling
-diff -r b70ea7217e78 -r 3348054d8fce yapsydir/trunk/test/plugins/simpleplugin.yapsy-filter-plugin
+diff -r b70ea7217e78 yapsydir/trunk/test/plugins/simpleplugin.yapsy-filter-plugin
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/yapsydir/trunk/test/plugins/simpleplugin.yapsy-filter-plugin	Wed Feb 25 22:02:16 2009 +0000
++++ b/yapsydir/trunk/test/plugins/simpleplugin.yapsy-filter-plugin	Tue Apr 21 20:56:54 2009 +0100
 @@ -0,0 +1,9 @@
 +[Core]
 +Name = Simple Plugin
@@ -32,9 +24,9 @@ diff -r b70ea7217e78 -r 3348054d8fce yapsydir/trunk/test/plugins/simpleplugin.ya
 +Version = 0.1
 +Website = http://mathbench.sourceforge.net
 +Description = A simple plugin usefull for basic testing
-diff -r b70ea7217e78 -r 3348054d8fce yapsydir/trunk/test/test_All.py
+diff -r b70ea7217e78 yapsydir/trunk/test/test_All.py
 --- a/yapsydir/trunk/test/test_All.py	Wed Apr 09 12:05:36 2008 +0100
-+++ b/yapsydir/trunk/test/test_All.py	Wed Feb 25 22:02:16 2009 +0000
++++ b/yapsydir/trunk/test/test_All.py	Tue Apr 21 20:56:54 2009 +0100
 @@ -18,6 +18,7 @@
  import test_ConfigPlugin
  import test_VersionedPlugin
@@ -50,10 +42,10 @@ diff -r b70ea7217e78 -r 3348054d8fce yapsydir/trunk/test/test_All.py
 +		test_FilterPlugin.suite,
  		])
  
-diff -r b70ea7217e78 -r 3348054d8fce yapsydir/trunk/test/test_FilterPlugin.py
+diff -r b70ea7217e78 yapsydir/trunk/test/test_FilterPlugin.py
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/yapsydir/trunk/test/test_FilterPlugin.py	Wed Feb 25 22:02:16 2009 +0000
-@@ -0,0 +1,89 @@
++++ b/yapsydir/trunk/test/test_FilterPlugin.py	Tue Apr 21 20:56:54 2009 +0100
+@@ -0,0 +1,95 @@
 +from test_settings import *
 +import unittest
 +import os 
@@ -69,7 +61,7 @@ diff -r b70ea7217e78 -r 3348054d8fce yapsydir/trunk/test/test_FilterPlugin.py
 +	"""
 +	_bannednames = re.compile("^C")
 +
-+	def isPluginOk(self,infofile,filepath,info):
++	def isPluginOk(self,info):
 +		return not self._bannednames.match(info.name)
 +
 +
@@ -140,13 +132,19 @@ diff -r b70ea7217e78 -r 3348054d8fce yapsydir/trunk/test/test_FilterPlugin.py
 +            TEST_MESSAGE("plugin info: %s" % plugin_info)
 +            self.assertEqual(plugin_info.name,"Config Plugin")
 +
++    def testRejectedStable(self):
++        reject1 = list(self.filteredPluginManager.getRejectedPluginInfo())
++        self.filteredPluginManager.collectPlugins()
++        reject2 = list(self.filteredPluginManager.getRejectedPluginInfo())
++        self.assertEqual(len(reject1),len(reject2))
++
 +suite = unittest.TestSuite([
 +        unittest.TestLoader().loadTestsFromTestCase(FilteredTestsCase),
 +        ])
-diff -r b70ea7217e78 -r 3348054d8fce yapsydir/trunk/yapsy/FilteredPluginManager.py
+diff -r b70ea7217e78 yapsydir/trunk/yapsy/FilteredPluginManager.py
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/yapsydir/trunk/yapsy/FilteredPluginManager.py	Wed Feb 25 22:02:16 2009 +0000
-@@ -0,0 +1,70 @@
++++ b/yapsydir/trunk/yapsy/FilteredPluginManager.py	Tue Apr 21 20:56:54 2009 +0100
+@@ -0,0 +1,72 @@
 +#!/usr/bin/python
 +
 +"""
@@ -191,21 +189,23 @@ diff -r b70ea7217e78 -r 3348054d8fce yapsydir/trunk/yapsy/FilteredPluginManager.
 +		the unwanted extensions from the main extension list.
 +		"""
 +		candidates = self._component._candidates 
-+		self._component._candidates= [ ]
++		self._component._candidates = [ ]
++		self.rejectedPlugins        = [ ]
 +		for candidate_infofile, candidate_filepath, plugin_info in candidates:
-+			if self.isPluginOk(plugin_info):
++			if self.isPluginOk( plugin_info):
 +				self._component._candidates.append(  [ candidate_infofile, candidate_filepath, plugin_info ])
 +			else:
 +				self.rejectedPlugins.append( [ candidate_infofile, candidate_filepath, plugin_info ] )
 +
-+        def isPluginOk(self,infofile,filepath,info):
++
++	def isPluginOk(self,info):
 +		"""
 +		Sentinel function to detect if a plugin should be filtered.
 +
 +		Subclasses should override this function and return false for
 +		any plugin which they do not want to be loadabele.
 +		"""
-+		return true
++		return True
 +
 +	def locatePlugins(self):
 +		"""

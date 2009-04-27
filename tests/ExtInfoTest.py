@@ -74,7 +74,7 @@ class ExtInfoTest(unittest.TestCase):
 			self.assert_(True)
 
 		
-        def testBasic(self):
+	def testBasic(self):
 		self.loading_check()
 
 	def testKnownHash(self):
