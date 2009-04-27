@@ -27,7 +27,7 @@ import unittest
 
 class ConfigDictTest(unittest.TestCase):
     def setUp(self):
-        self.cfg= pyConfigDict()
+        self.cfg= pyConfigDict(False)
         self.cfg.read("test.cfg")
         pass
     
@@ -58,7 +58,14 @@ class ConfigDictTest(unittest.TestCase):
         self.assertEqual(type(self.cfg["testlist"]),pyConfigList)
         self.assertEqual(int(self.cfg["testlist"][0]),1)
         self.assertEqual(type(self.cfg["testlist"][1]),pyConfigDict)
-
+    
+    def testiter(self):
+        for i in self.cfg:
+            self.assertFalse(self.cfg is i)
+        for i in self.cfg["testsection"]:
+            self.assertFalse(self.cfg["testsection"] is i)
+        for i in self.cfg["testlist"]:
+            self.assertFalse(self.cfg["testlist"] is i)       
 
 def getTestNames():
 	return [ 'ConfigDictTest.ConfigDictTest' ] 
