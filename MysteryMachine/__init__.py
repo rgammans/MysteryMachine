@@ -81,15 +81,11 @@ def get_app_option_object(name):
     value must be a callable at the main level scope, and
     take no arguments.
     """
-    print name
     val=get_app_option(name)
-    print val
     if type(val) in types.StringTypes:
         #Call 'val' with no args.
         if val in globals():
-            print "calling %s" %val 
             val=(globals()[val])()
-    print val
     return val
 
 def GetExtLib():
@@ -171,7 +167,6 @@ def parse_options(args):
     if not (state is None or state == "--"):
         out_opts[state]=None
 
-    print "--------", out_opts,out_args ,"-----"
     return out_opts, out_args
  
 
