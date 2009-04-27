@@ -53,6 +53,9 @@ class TrustedPluginManager (FilteredPluginManager):
 		
 		"""
 		# Create the base decorator class
+		if type(directories_list) in types.StringTypes:
+			directories_list = [ directories_list ] 
+
 		FilteredPluginManager.__init__(self,decorated_manager,
 										categories_filter,
 										directories_list,
@@ -72,7 +75,12 @@ class TrustedPluginManager (FilteredPluginManager):
     """
     for data in self.trustlist:
       if plugin_info.name in data:
-        return data[plugin_info.name]==plugin_info.getSecureID()
+        secureid=data[plugin_info.name]
+        if type(secureid) != ExtensionSecureID:
+            #Create secure Id from alternative representation
+            secureid=ExtensionSecureID(plugin_info.path,secureid)
+        return plugin_info.getSecureID() == data[plugin_info.name]
+    return False;
 
   def trustPlugin(self, plugin):
     """
@@ -82,7 +90,7 @@ class TrustedPluginManager (FilteredPluginManager):
     @return  :
     @author
     """
-    self.trustlist[0][plugin.name]=plugin.secureID
+    self.trustlist[0][plugin.name]=str(plugin.secureID)
     self.collectPlugins()    
 
   def untrustPlugin(self, plugin):
@@ -100,13 +108,9 @@ class TrustedPluginManager (FilteredPluginManager):
     if plugin.is_activated:
        plugin.deactivate()
      
-    #Update internal lists.
-    self.collectPlugins()
-     
     for data in self.trustlist:
        if data.contains(plugin.name):
          del data[plugin.name]
 
-
-
-
+    #Update internal lists.
+    self.collectPlugins()
