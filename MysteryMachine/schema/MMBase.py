@@ -34,7 +34,7 @@ class MMBase(object):
   :author:
   """
 
-  def __init__(self):
+  def __init__(self,*args,**kwargs):
     """
      Creates the object and /commifinds any require mixins
 
@@ -79,6 +79,17 @@ class MMBase(object):
     @author
     """
     pass
+  
+  def get_root(self):
+    """
+    Returns the root (eg. MMSystem) node for the system which this object is
+    a member of.
+    """
+    root = self.parent
+    # Walk up the parent links
+    while hasattr(root,"parent") and root.parent != None:
+        root = root.parent
+    return root
 
   def __iter__(self):
     return []

@@ -20,9 +20,9 @@
 """
 Tests for the MysteryMachine.Schema AttributeValue module
 """
-
+import sys
 from MysteryMachine.schema.MMAttributeValue import MMAttributeValue
-from MysteryMachine.schema.MMAttribute import MMAttribute , MMAttributePart
+from MysteryMachine.schema.MMAttribute import * 
 import unittest
 
 class DummyPart:
@@ -48,7 +48,8 @@ class attribValTest(unittest.TestCase):
     def testCreate(self):
        p1=MMAttributePart("title","test\n----\n\n")
        p2=MMAttributePart("body","A Message")
-       attr=MMAttribute("document","simple",[p1,p2],None)
+       attr=MMAttribute("document",CreateAttributeValue("simple",[p1,p2]),None)
+       sys.stderr.write(str(attr.get_raw_rst))
        self.assertEqual(attr.get_raw_rst(),"test\n----\n\n\nA Message")
 
     # TODO

@@ -23,7 +23,8 @@
 #
 
 from MMBase import *
-
+import functools
+import sys
 
 class MMAttributePart (object):
     """
@@ -38,7 +39,7 @@ class MMAttributePart (object):
         self.value=value
         self.partname=pname
     def __repr__(self):
-        return "MMAttributePart(\""+self.value+"\")"
+        return "MMAttributePart(\""+repr(self.value)+"\")"
     def get_name(self):
         return self.partname
     def get_value(self):
@@ -46,7 +47,10 @@ class MMAttributePart (object):
     def set_value(self,val):
         self.value=val
 
-   
+  
+
+AttrTypes = dict()
+ 
 class MMAttribute (MMBase):
 
   """
@@ -75,21 +79,16 @@ class MMAttribute (MMBase):
 
   """
     
-  AttrTypes = dict() 
-  @classmethod
-  def register_value_type(cls,name,acls):
-    cls.AttrTypes[name]=acls
-
-  def __init__(self,name,type,parts,parent):
+  def __init__(self,name,value,parent):
     self.name=name
-    self.valueobj=self.AttrTypes[type](parts)
+    self.valueobj=value
     self.parent=parent
 
   def __str__(self):
     """
 
     @return string :
-    @author
+  
     """
     return self.get_raw_rst() 
 
@@ -99,7 +98,7 @@ class MMAttribute (MMBase):
     @return string :
     @author
     """
-    return self.parent.__repr__()+":"+self.name
+    return repr(self.parent)+":"+self.name
 
   #Special case to override the definiton in Base.
   def _validate(self):
@@ -108,16 +107,30 @@ class MMAttribute (MMBase):
     @return bool :
     @author
     """
-    self.valueobj._validate()
+    self.valueobj._validate(self)
  
   def get_value(self):
     return self.valueobj
 
   def set_value(self,val):
-    self.valueobj=val
+    self.valueobj.assign(val)
 
   #This is intend for method lookup
   def __getattr__(self,name):
       if name in self.valueobj.exports:
-        return getattr(self.valueobj,name)
+        print "\nlooking for %s " % name,
+        print " in %s" % repr(self)
+        return functools.partial(getattr(self.valueobj,name),self)
+
+
+
+def CreateAttributeValue(type,parts):
+    global AttrTypes
+    return AttrTypes[type](parts)
+
+
+def register_value_type(name,acls):
+    global AttrTypes    
+    AttrTypes[name]=acls
+
 

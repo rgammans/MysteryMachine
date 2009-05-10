@@ -21,41 +21,68 @@
 Tests for the MysteryMachine.VersionNr class
 """
 
+from MysteryMachine import * 
 from MysteryMachine.parsetools.grammar import Grammar
+ 
 import unittest
 
-class ObjectProxy:
-    def __init__(self,**kwargs):
-        for key in kwargs:
-           self.__dict__[key] = kwargs[key] 
 
+##Dummy fucntions to which use python DuckTyping to remove deps on 
+# higehr level modules/class
+
+class MMObject:
+    def __init__(self,*args,**kwargs):
+        self.id=""
+        if len(args) > 0:
+            self.id=args[0]
+        self.items = {}
+        for key in kwargs:
+           self.items[key] = kwargs[key] 
+    def get_root(self):
+        return SystemProxy()
+    def __repr__(self):
+        return self.id
+    def __getitem__(self,name):
+        return self.items[name]
+
+ObjectProxy = MMObject
+class SystemProxy: 
+    def get_object(self,cat,id):
+        return MMObject(cat + ":" +id)
+    
 
 def helper(parser,input):
     return reduce(lambda x,y:x+y,parser.parseString(input))
 
 class GraamarTest(unittest.TestCase):
     def setUp(self):
-         self.parserA=Grammar(ObjectProxy(name="TestName",title="A Title"))
-         self.parserB=Grammar(ObjectProxy(name="WrongName",title="A Title"))
+        StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
+        self.parserA=Grammar( ObjectProxy( name="TestName",  title="A Title") )
+        self.parserB=Grammar( ObjectProxy( name="WrongName", title="A Title") )
 
     
     def testWhitespace(self):
-        testString="This is a parser\n Test string\n to test whitespace  preservation"
+        #testString="This is a parser\n Test string\n to test whitespace  preservation"
         #We don't seem to preserve tabs.
-        self.assertEqual(testString,helper(self.parserA,testString))
+        #self.assertEqual(testString,helper(self.parserA,testString))
+        """
+        This test is no longer pertinent now we rely on Docutils roles
+        """
+        pass
 
     def testExpansions(self):
-        self.assertEqual("TestName",helper(self.parserA,"${:name}"))
-        self.assertEqual("this is a TestName",helper(self.parserA,"this is a ${:name}"))
-        self.assertEqual("this is a WrongName",helper(self.parserB,"this is a ${:name}"))
+        self.assertEqual("TestName",helper(self.parserA,":name"))
+        self.assertEqual("WrongName",helper(self.parserB,":name"))
         
 
     # TODO
-    # Test MMObject fetching
+    def testObjectFetch(self):
+        self.assertEqual(helper(self.parserA,"Object:1").__class__ ,    MMObject)
+        self.assertEqual(repr(helper(self.parserA,"Object:1")) , "Object:1" )
+
     # Test handling of parse errors.
 def getTestNames():
 	return [ 'grammarTest.GrammarTest' ] 
 
 if __name__ == '__main__':
     unittest.main()
-

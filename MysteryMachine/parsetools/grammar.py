@@ -3,12 +3,9 @@
 ###Grammar stuff
 from pyparsing import  Regex,Optional,ZeroOrMore, QuotedString , Literal, Word, alphas , nums , printables  , CharsNotIn
 from functools import partial
-#from MysteryMachine.Schema.MMObject  import *
 
 import sys
 
-class MMObject:
-    pass
 
 def Grammar(obj):
     home=obj
@@ -25,6 +22,7 @@ def Grammar(obj):
     fieldName  =   identifier.copy()
     ObjectId   =   Word(nums)
     NonExpr    =   CharsNotIn("$")
+
     ExprLimit  =   Regex("[^ \n\t]*[ \n\t]")
     Value      =   QuotedString('"') 
 
@@ -54,29 +52,31 @@ def Grammar(obj):
     ## Functions for parsing.
 
     def getField(s,loc,toks):
-    	sys.stderr.write("bar\n")
+#    	print "bar(%s)\n" % toks
     	field=toks[2]
     	obj=toks[0]
-    	return getattr(obj,field)
+    	return obj[field]
+
 
     def doBool(s,loc,toks):
-    	sys.stderr.write("baz\n")
+#    	print "baz\n"
         sense=(toks[1]=="!=")
     	return sense ^ ( str(toks[0]) == toks[2])
 
 
     def doQuery(s,loc,toks):
-    	sys.stderr.write("foo\n")
+#    	print "foo\n"
         if toks[0]:
     		return toks[2]
     	else:
     		return toks[4]
 
     def initFromParse(s,loc,toks):
-    	sys.stderr.write("Creating form :%s (current=%s)\n"%(toks,home))
+    	print "Creating form :%s (current=%s)\n"%(toks,repr(home))
         isSelf=len(toks)==0
-       	if isSelf: return home 
-        else: return MMObject(toks[0],toks[2])
+       	if isSelf:         return home 
+        elif home is None: return None
+        else:              return home.get_root().get_object(toks[0],toks[2])
 
     #def gotError(s,loc,toks):
     #	sys.stderr.write("BARR")
@@ -91,4 +91,5 @@ def Grammar(obj):
     #Error.setParseAction(gotError)
 
     ObjectUID.setParseAction(initFromParse)
-    return text
+    
+    return ExprText
