@@ -56,7 +56,7 @@ if len(sys.argv) > 1:
         PYTHONS += [ 'python%s' % arg ]
 
 for python in (PYTHONS):
-	print "Testing under %s:\n" % python
+	sys.stderr.write( "Testing under %s:\n" % python )
 	#TODO: should this inner loop go inside tests/__init__.py ?
 	for module in os.listdir('tests/'):
 		#Turn filenmae into module name
@@ -64,5 +64,5 @@ for python in (PYTHONS):
 		# SKip invalid module names
 		if not replaced: continue
 		#run tests.
-		print "Running %s (%s)" % (module,python)
+		sys.stderr.write("Running %s (%s)" % (module,python) )
 		os.system("%s %s/%s" % ( python,  TESTSDIR, module))
