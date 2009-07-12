@@ -26,7 +26,12 @@ from docutils.core import  publish_doctree, default_description
 from docutils.parsers.rst import roles
 from grammar import Grammar
 
-    
+from MysteryMachine import *
+
+import re
+from exceptions import *    
+
+
 class MMParser (object):
 
   """
@@ -48,73 +53,108 @@ class MMParser (object):
         self.grammar  = Grammar(obj)
 #        self.publisher= MMPublisher(obj)
 
-  def evaluate(expr):
+  def evaluate(self,expr):
         print "\n--evaling--\n%s\n----\n" % expr
-        value=self.grammar.ExprText.parseString(expr) 
+        value=self.grammar.parseString(expr) 
+        print "Parsed as->%s" % repr(value)
         value=reduce(lambda x,y:x+y,value)
+        print "\n--evalled to --\n%s\n----\n" % value.__repr__() 
         return value
 
-  def ProcessRawRst(rst_string,src="unknown",src_stack=[]):
+  def ProcessRawRst(self,rst_string,src="unknown",src_stack=[]):
     #Define the options and content for the role
     # this defines the system context and expansion stack
     # used to detect cycles.
     #
     # This is a bit ugly and slow - but it is a re-entrant way of
     #  passing context etc, to our interpreted role.
-    role_def = ".. role: mm(mm)\n :SystemCntxt:%s\n\n" % src
+    # First - prepent system details to src..,
+    src = repr(self.myobject.parent)+":"+src
+    role_def = ".. role:: mm(mm)\n :SystemCntxt: %s\n\n" % src
     role_def+= "\n".join(map(lambda x: " "+x,src_stack))
     role_def+= "\n\n"
-    print "\n--Parsing--\n%s\n---\n" % (role_def+rst)
-    result =   publish_doctree(role_def+rst,source_path=src,
-                               settings_overrides=du_defaults
+    print "role->" , role_handler
+    print "raw+IN->%s<-" % rst_string
+    print "\n--Parsing--\n%s\n---\n" % (role_def+rst_string)
+    result =   publish_doctree(role_def+rst_string,source_path=src,
+                               settings_overrides=MMParser.du_defaults
                                )
-    source =   result.source
+    source =   result[0].source
+    print "pnodelist-->%s<-" % result
+    print "source => %s" % source
     #Strip  document header and leading paragraph.
-    result =   result.children[1:]
-    result =  result[1:]
-    if len(result) ==1:
-        if str(result[0].__class__)  == "docutils.nodes.paragraph":
-             sys.stderr.write("eating para\n")        
-             result = result[0].children
+    result =   result.children
+    print "nodelist-->%s<-" % result
+    #if len(result) ==1:
+    #    if str(result[0].__class__)  == "docutils.nodes.paragraph":
+    #         result = result[0].children
     #Update source attrib in node.
     for docnode in result:
         if not source in docnode:
            docnode.source=source
+    print "nodelist-->%s<-" % str(result)
+    #print "String[0]->%s<" % str(result[0])
     return result
    
-
+  def GetString(self,rst_string,src="unknown",src_stack=[]):
+    #FIXME: THis is incredibly niave - we really need to use a rst 
+    #       writer here.
+    nodes = self.ProcessRawRst(rst_string,src,src_stack)
+    result = ""
+    for n in nodes:
+      result += str(n)
+    print "String->'%s',len %s"  % (result ,len(nodes))
+    if len(nodes) == 1:
+      #Supress outer xml container.
+      result =re.sub("<(\w+)>([^>]*)</\\1>","\\2",result)
+    print "string->%s<-" %result
+    return result
+ 
 def role_handler(role, rawtext, text, lineno, inliner,
            options={}, content=[] ):
     msg   = []
     nodes = []
 
-    mainobj = options['SystemCntxt']
+    print "role handler (%s)" % text
+    print "role-options:%s"%str(options)
+    print "role-content:%s"%str(content)
+
+    mainobj = None
+    if 'systemcntxt' in options:
+        mainobj = options['systemcntxt']
     if mainobj == None:
-        msg += "Parser cannot find context for role"
+        msg += [inliner.reporter.error("Parser cannot find context for role") ]
     else:
         #Check for cycles in expansion
         if not text in content:
-             try:
-                rst    = mainobj.parser.evalute(text)
-                nodes += mainobj.parser.ProcessRawRst(rst,src=text,src_stack=content)
-             except (e):
-                msg.append(e.msg())
+             #try:
+                rst    = mainobj.parser.evaluate(text)
+                nodes += mainobj.parser.ProcessRawRst(str(rst),src = repr(rst) ,
+                                                      src_stack=content + [ text ] )
+             #except Exception , e:
+             #   print "Error:%s" % str(e)
+             #   msg.append(str(e))
         else:
-            msg.append("Cycle detected in macro expansion via:-%s\n" % content.join("\n"))
+            msg.append(inliner.reporter.error("Cycle detected in macro expansion via:-%s\n" % content.join("\n")))
+    print  nodes,msg
     return nodes ,msg
 
 
 #Convert Full object name into actual object.
 def ObjectOptionHandler(argument):
     items = argument.split(":")
+    print "--SysCntxt:role<-%s" % argument
     sys=GetLoadedSystemByName(items[0])
+    print repr(sys)
     if sys != None:
-        sys = sys.get_object(items[1]+":"+items[2])     
+        print "--Fetching item (%s,%s)" % (items[1] , items[2])
+        sys = sys.get_object(items[1],items[2])     
     return sys
 
-role_handler.options = { 'SystemCntxt' : ObjectOptionHandler,
+role_handler.options = { 'systemcntxt' : ObjectOptionHandler,
                         }
 
 role_handler.content = True
 roles.register_canonical_role('mm',role_handler)
+roles.register_local_role('mm',role_handler)
 

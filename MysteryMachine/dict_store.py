@@ -9,8 +9,8 @@ class dict_store(object):
 
     invalidobj = re.compile("^\.")
 
-    def canoncalise(self,name):
-        return ":".split(name)
+    def concanicalise(self,name):
+        return name.split(":")
 
     def __init__(self,owner):
         self.owner = owner
@@ -55,21 +55,26 @@ class dict_store(object):
         del self.catdict[cat]
 
     def EnumAttributes(self,object):
-        path = self.cannonise(object)
+        path = self.concanicalise(object)
         for a in self.catdict[cat][newid].keys():
             yield a
 
+    def HasAttribute(self,attr):
+        path = self.concanicalise(attr)
+        return path[2] in self.catdict[path[0]][path[1]]        
+
+
     def SetAttribute(self,attr,val):
-        path = self.cannonise(attr)
+        path = self.concanicalise(attr)
         self.catdict[path[0]][path[1]][path[2]]=val        
 
     def DelAttribute(self,attr):
-        path = self.cannonise(attr)
+        path = self.concanicalise(attr)
         del self.catdict[path[0]][path[1]][path[2]]
   
 
     def GetAttribute(self,attr):
-        path = self.cannonise(attr)
+        path = self.concanicalise(attr)
         return self.catdict[path[0]][path[1]][path[2]]
 
 class dict_store_obj:
@@ -90,5 +95,5 @@ class dict_store_obj:
         for a in self.store.EnumAttributes(self.obj):
             yield a
 
-    def AttributeExists(self,attr):
-        return self.store.AttributeExists(self.obj + ":" +attr)
+    def HasAttribute(self,attr):
+        return self.store.HasAttribute(self.obj + ":" +attr)

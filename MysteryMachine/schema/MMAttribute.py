@@ -23,6 +23,9 @@
 #
 
 from MMBase import *
+from MMAttributeValue import CreateAttributeValue 
+
+import operator
 import functools
 import sys
 
@@ -47,9 +50,7 @@ class MMAttributePart (object):
     def set_value(self,val):
         self.value=val
 
-  
-
-AttrTypes = dict()
+ 
  
 class MMAttribute (MMBase):
 
@@ -81,7 +82,7 @@ class MMAttribute (MMBase):
     
   def __init__(self,name,value,parent):
     self.name=name
-    self.valueobj=value
+    self.valueobj=CreateAttributeValue(value)
     self.parent=parent
 
   def __str__(self):
@@ -113,7 +114,10 @@ class MMAttribute (MMBase):
     return self.valueobj
 
   def set_value(self,val):
-    self.valueobj.assign(val)
+    try:
+        self.valueobj.assign(val)
+    except:
+        self.valueobj = CreateAttributeValue(val)
 
   #This is intend for method lookup
   def __getattr__(self,name):
@@ -121,16 +125,3 @@ class MMAttribute (MMBase):
         print "\nlooking for %s " % name,
         print " in %s" % repr(self)
         return functools.partial(getattr(self.valueobj,name),self)
-
-
-
-def CreateAttributeValue(type,parts):
-    global AttrTypes
-    return AttrTypes[type](parts)
-
-
-def register_value_type(name,acls):
-    global AttrTypes    
-    AttrTypes[name]=acls
-
-

@@ -31,7 +31,7 @@ class DummyPart:
     def get_value(self):
         return self.x
 
-class attribValTest(unittest.TestCase):
+class attribTest(unittest.TestCase):
     def setUp(self):
         self.partstested=False
         pass
@@ -45,18 +45,17 @@ class attribValTest(unittest.TestCase):
        self.assertEqual(p1.get_value(),"another test")
        self.partstested=True
 
+    
     def testCreate(self):
-       p1=MMAttributePart("title","test\n----\n\n")
-       p2=MMAttributePart("body","A Message")
-       attr=MMAttribute("document",CreateAttributeValue("simple",[p1,p2]),None)
-       sys.stderr.write(str(attr.get_raw_rst))
+       attr=MMAttribute("document","test\n----\n\n\nA Message",None)
+       #sys.stderr.write(str(attr.get_raw_rst))
        self.assertEqual(attr.get_raw_rst(),"test\n----\n\n\nA Message")
 
     # TODO
     # Test MMObject fetching
     # Test handling of parse errors.
 def getTestNames():
-	return [ 'attribValueTest.attribValTest' ] 
+	return [ 'attribTest.attribTest' ] 
 
 if __name__ == '__main__':
     unittest.main()

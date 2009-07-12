@@ -22,7 +22,7 @@ Tests for the MysteryMachine.Schema AttributeValue module
 """
 
 from MysteryMachine.schema.MMAttributeValue import * 
-from MysteryMachine.schema.MMObject import MMObject
+from MysteryMachine.schema.MMObject import * 
 import unittest
 from MysteryMachine import * 
 
@@ -38,7 +38,7 @@ class ObjectProxy(MMObject):
         else:
             l[0] =args[0]
             l[1] =args[1]
-        super(ObjectProxy,self).__init__(l[0] + ":" + l[1] , None )
+        super(ObjectProxy,self).__init__(l[0] + ":" + l[1] , None ,None )
         for key in kwargs:
            self.__dict__[key] = kwargs[key] 
     def __str__(self):
@@ -47,7 +47,8 @@ class ObjectProxy(MMObject):
         return SystemProxy()
     def __eq__(self,other):
         #Fake - equals as required for this test.
-        return self.id == other.id
+        return self.id
+
 
 class SystemProxy: 
     def get_object(self,cat,id):
@@ -69,6 +70,9 @@ class attribValTest(unittest.TestCase):
        val=MMAttributeValue([DummyPart("test"),DummyPart("this")])
        self.assertEqual(val.get_raw_rst(),"test\nthis")
        self.assertEqual(len(val.get_parts()),2)
+
+
+
 
     def testObjRef(self):
         self.makeRef()

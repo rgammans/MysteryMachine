@@ -25,18 +25,59 @@
 import sys
 
 from MMBase import *
-from MMAttribute import *
-from MMObject import MMObject
 from MysteryMachine.parsetools.grammar import Grammar
 
 import logging
 import exceptions
+import sys
+import types
+import operator
+
+AttrTypes = dict()
+TypeLookup = dict()
+
+#FIXME make a __new__ method.
+def CreateAttributeValue(val):
+    """
+    """
+    global AttrTypes
+       
+    
+    if not isinstance(val,MMAttributeValue):
+        #Decide on type to use and create object.
+        vtype = FindBestValueType(type(val))
+        val = vtype([val])
+    else:
+        val= copy(val)
+
+    return val
+
+
+def register_value_type(name,acls,nativelist):
+    """
+    """
+    global AttrTypes    
+    AttrTypes[name]=acls
+    sys.stderr.write("natvie typs->"+str( nativelist )+"\n")
+    for typenm in nativelist.keys():
+        priority=nativelist[typenm]
+        if typenm not in TypeLookup:
+            TypeLookup[typenm] = list()
+        TypeLookup[typenm].append( (acls, priority) )
+
+
+def FindBestValueType(atype):
+    """
+    """
+    #Handle base class and more sets in the key. 
+    return (sorted(TypeLookup[atype],key=operator.itemgetter(1)))[0][0]
+
 
 class _AttrMeta(type):
    def __init__( self, name , bases, ns):
         super( _AttrMeta , self).__init__(name,bases,ns)
         if name != "MMAttributeValue":
-            register_value_type(self.typename,self)
+            register_value_type(self.typename,self,self.contain_prefs)
     
 #FIXME Remove and replace reference to appropriate exception class
 class Error():
@@ -81,7 +122,7 @@ class MMAttributeValue (MMBase ):
     print str(self.__class__)
     print self.parts
     result = "\n".join(map(lambda x:x.get_value(),self.parts))
-#    print "raw-->%s<--" % result
+    print "raw-->%s<--" % result
     return result
 
   def get_raw_rst(self, obj = None):
@@ -122,13 +163,43 @@ class MMAttributeValue (MMBase ):
         Pre: self and other are of the same type. 
         Post:str(self) == str(other) 
         """
-        if self.__class__ is other.__class__:
-            self.parts =  other.parts        
+        if isinstance(other,MMAttributeValue):
+            if self.__class__ is other.__class__:
+                self.parts =  other.parts        
+            else:
+                raise TypeError()
         else:
-            raise TypeError()
+            #TODO Clever code here to handle appropriate value
+            # setting.
+            pass
     
     def __copy__(self):
         return self.__class__(self.parts)
+
+
+
+
+class MMAttributePart (object):
+    """
+    Simple implementation of attribute parts. Uses incore storage
+    only.
+
+    This is sufficent to create and handle parts and attributes which
+    haven't been 'seved' or set on an object. But it must commonly
+    used for overidding in different storage models
+    """
+    def __init__(self,pname,value):
+        self.value=value
+        self.partname=pname
+    def __repr__(self):
+        return "MMAttributePart(\""+repr(self.value)+"\")"
+    def get_name(self):
+        return self.partname
+    def get_value(self):
+        return self.value
+    def set_value(self,val):
+        self.value=val
+
 
 class MMAttributeValue_BasicText(MMAttributeValue):
     """
@@ -137,48 +208,14 @@ class MMAttributeValue_BasicText(MMAttributeValue):
     This type is appropriate for String values less than approximately
     one line in size.
     """
-    typename = "simple"
+    typename      = "simple"
+    #Should be basestring really - but that needs baseclass support.
+    contain_prefs = { str: 100 }
 
 
-class MMAttributeValue_MMObjectRef(MMAttributeValue):
-    """
-    """
-    typename = "objectref"
-
-    def __init__(self,parts):
-        super(MMAttributeValue_MMObjectRef, self).__init__(parts)
-        if len(self.parts) != 1 : raise Error()
-        if isinstance(self.parts[0].get_value(),MMObject):
-            #Get string represenation of the object.
-            self.parts[0] = MMAttributePart(self.parts[0].get_name(),self.parts[0].get_value().__repr__())
-        else:
-            #TODO handle this case - str is ok anyway
-            pass
-        if not self._validate(): raise Error()    
-        #All ok.
-        self.exports += [ "get_object" ]
-
-    def _validate(self, attr = None):
-        objref = None
-        #try:
-        objref = self.get_object( attr )
-        #except exceptions.Exception , e:
-        #    logging.warn(e.msg())
-        #    objref = None
-        return not objref is None
-
-    def get_object(self, attr = None ):
-        """
-        This method may raise and exception if the
-        own_obj is not valid or the value will not validate.
-        """
-        ##TODO Consider caching the return result.
-  #      print "refobj->%s<--" % attr
-        pstr = self.get_raw(attr)
-        print "pstr  ->%s<--" % pstr
-        objref = Grammar(attr).parseString(pstr)[0]
-  #      print "ret = %s, class = %s" % (objref , objref.__class__ )
-        return objref
-
-    def get_raw_rst(self,obj = None):
-        return "mm:`"+ self.get_raw(obj) + "`"
+    def __init__(self,*args,**kwargs):
+        MMAttributeValue.__init__(self,*args,**kwargs)
+        part=self.parts[0]
+        if not isinstance(part,MMAttributePart):
+            part = MMAttributePart("",part)
+        self.parts = [ part ] 

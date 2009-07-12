@@ -25,70 +25,67 @@ from MysteryMachine import *
 from MysteryMachine.schema.MMObject import MMObject
 from MysteryMachine.schema.MMAttribute import * 
 
+from MysteryMachine.dict_store import *
+
 import MysteryMachine.schema.MMAttributeValue
 import unittest
 
 
 
-class ObjTest(MMObject):
-    def __init__(self,id,parent,**kwargs):
-  
-        super(ObjTest,self).__init__(id,parent)
-        self.items = {}
-        for key in kwargs:
-           self.items[key] = kwargs[key] 
- #       self.parent = SystemProxy()
+class SystemProxy(dict_store):
+    def __init__(self,name):
+        dict_store.__init__(self,self)
+        self.objmap = dict()
+        LoadSystem(name,self)
+        self.name = name
+
+    def get_object(self,cat,id):
+        path = cat +":"+id
+        if not self.HasCategory(cat):
+            self.NewCategory(cat,None)
+        if not path in self.objmap:
+            self.objmap[path]=self.NewObject(cat,None)
+        return self.GetObject(cat+":"+self.objmap[path])
 
     def __repr__(self):
-        return self.id
-    def __delitem__(self,name):
-        del self.items[name]
-    def __setitem__(self,name,val):
-        self.items[name]=val
-    def __getitem__(self,name):
-        if name not in self.items:
-            return super(ObjTest,self).__getitem__(name)
-        else:
-            return self.items[name]
-
-class SystemProxy:
-    cache = dict()
-    def get_object(self,cat,id):
-        id = cat +":" +id
-        if id not in self.__class__.cache:
-            self.__class__.cache[id] = ObjTest(id,self)
-        return self.__class__.cache[id]
+        return self.name
 
 class ObjectTests(unittest.TestCase):
     def setUp(self):
         StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
-        self.dummyparent             = SystemProxy().get_object( "Template","1", )
+        self.system=SystemProxy("ObjectTests")
+        self.dummyparent             = self.system.get_object( "Template","1", )
         self.dummyparent[".defname"] = "name"
         
-        self.parent                  = SystemProxy().get_object( "Template","2", )
-        self.parent[".defname"]      ="mm`:name`"
+        self.parent                  = self.system.get_object( "Template","2", )
+        self.parent[".defname"]      =":mm:`:name`"
         
-        self.object                  = SystemProxy().get_object("Dummy","1") 
+        self.object                  = self.system.get_object("Dummy","1") 
         self.object.set_parent(self.parent)       
 
 
     def testgetparent(self):
+        print "----starting getparent test------"
         self.assertTrue(self.parent is self.object.get_parent())
+        print "----completed getparent test------"
  
     def testdefname(self):
-        """
-        Disabled tests until MMParser's tests are complete
+#        """
+#        Disabled tests until MMParser's tests are complete
+        print "----starting defname test------"
         self.assertEquals(str(self.dummyparent),"name")
         self.object["name"]="test"
+        print "--- next assert----"
         self.assertEquals(str(self.object),"test")
-        """
-        pass
+        print "----completed defname test------"
+#        """
+#        pass
 
     def testParentRef(self):
         p=self.object.get_parent()
-        p["test"] = CreateAttributeValue("simple" , [ MMAttributePart( "", "test") ] , )
+        p["test"] = "test"
         self.assertEquals(self.object["test"],p["test"])
-        self.object["test"] = CreateAttributeValue("simple" , [ MMAttributePart( "" , "other") ] )
+        self.object["test"] = "other"
         self.assertNotEquals(self.object["test"],p["test"])
 
 def getTestNames():

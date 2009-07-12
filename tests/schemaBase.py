@@ -55,9 +55,6 @@ class BaseTest(unittest.TestCase):
         self.assertTrue(bar in f.__class__.__bases__)
         self.assertTrue(bar in map(lambda x:type(x) , f._helpers))
 
-    # TODO
-    # Test MMObject fetching
-    # Test handling of parse errors.
 def getTestNames():
 	return [ 'schemaBase.BaseTest' ] 
 
