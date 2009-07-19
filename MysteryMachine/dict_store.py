@@ -46,7 +46,7 @@ class dict_store(object):
 
 
     def GetObject(self,obj):
-        return MMObject(obj,self.owner,self.GetObjStore(obj))
+        return self.GetObjStore(obj).GetObject()
     
     def GetObjStore(self,obj):
         return dict_store_obj(self,obj)
@@ -61,10 +61,12 @@ class dict_store(object):
 
     def HasAttribute(self,attr):
         path = self.concanicalise(attr)
-        return path[2] in self.catdict[path[0]][path[1]]        
-
+        val = path[2] in self.catdict[path[0]][path[1]]        
+        #print  "%s is %s" % (path ,val)
+        return val
 
     def SetAttribute(self,attr,val):
+        #print "setting %s" % attr
         path = self.concanicalise(attr)
         self.catdict[path[0]][path[1]][path[2]]=val        
 
@@ -81,6 +83,15 @@ class dict_store_obj:
     def __init__(self,store,obj):
         self.store=store
         self.obj=obj
+
+    def GetObject(self):
+        #print "Request for obj %s" % self.obj
+        if not self.HasAttribute(":.self"):
+            obj = MMObject(self.obj,self.store.owner,self)
+            self.SetAttribute(":.self",obj)
+        else:
+            obj = self.GetAttribute(":.self")
+        return obj
 
     def GetAttribute(self,attr):
         return self.store.GetAttribute(self.obj + ":" +attr)

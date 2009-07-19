@@ -66,7 +66,7 @@ class storeTests(unittest.TestCase):
         o21=self.store.NewObject("Two",None)
 
 
-        o1=self.store.GetObject("One"+o12)
+        o1=self.store.GetObject("One:"+o12)
         
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
