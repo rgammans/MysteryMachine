@@ -22,7 +22,7 @@ Tests for the MysteryMachine dictstore  module
 """
 
 from MysteryMachine import * 
-from MysteryMachine.dict_store import *
+from MysteryMachine.store.dict_store import *
 
 import unittest
 

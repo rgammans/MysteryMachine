@@ -22,7 +22,7 @@ Tests for the MysteryMachine.Schema MMObject  module
 """
 
 from MysteryMachine import * 
-from MysteryMachine.dict_store import *
+from MysteryMachine.store.dict_store import *
 
 import MysteryMachine.schema.MMAttributeValue
 import unittest

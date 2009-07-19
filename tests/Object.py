@@ -25,7 +25,7 @@ from MysteryMachine import *
 from MysteryMachine.schema.MMObject import MMObject
 from MysteryMachine.schema.MMAttribute import * 
 
-from MysteryMachine.dict_store import *
+from MysteryMachine.store.dict_store import *
 
 import MysteryMachine.schema.MMAttributeValue
 import unittest
