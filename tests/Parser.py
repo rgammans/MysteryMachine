@@ -32,7 +32,8 @@ class SystemProxy(dict_store):
     def __init__(self,name):
         dict_store.__init__(self,self)
         self.objmap = dict()
-
+        LoadSystem(name,self)
+        self.name = name
 
     def get_object(self,cat,id,**kwargs):
         path = cat +":"+id
@@ -44,6 +45,9 @@ class SystemProxy(dict_store):
         for k,v in kwargs.items():
             obj[k]=v
         return obj
+
+    def __repr__(self):
+        return self.name
 
 class ParsersTests(unittest.TestCase):
     def setUp(self):
@@ -59,7 +63,7 @@ class ParsersTests(unittest.TestCase):
  
     def testParser(self):
         print "attr -> %s" % self.c["carries"]
-        self.assertEquals(str(self.c["carries"]),"The one ring")
+        self.assertEquals(self.c["carries"].GetFullExpansion(),"The one ring")
 
 def getTestNames():
     	return [ 'Parser.ParserTests' ] 

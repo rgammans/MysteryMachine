@@ -101,6 +101,14 @@ class MMAttribute (MMBase):
     """
     return repr(self.parent)+":"+self.name
 
+  def GetFullExpansion(self):
+    """
+    This function returns a Fully expanded string represenation of the Attribute.
+
+    @return string :
+    """
+    return self.parent.parser.GetString(self.get_raw_rst(),repr(self))
+
   #Special case to override the definiton in Base.
   def _validate(self):
     """

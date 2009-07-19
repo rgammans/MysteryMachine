@@ -61,19 +61,21 @@ class MMParser (object):
         print "\n--evalled to --\n%s\n----\n" % value.__repr__() 
         return value
 
-  def ProcessRawRst(self,rst_string,src="unknown",src_stack=[]):
+  def ProcessRawRst(self,rst_string,src=None,src_stack=[]):
     #Define the options and content for the role
     # this defines the system context and expansion stack
     # used to detect cycles.
     #
     # This is a bit ugly and slow - but it is a re-entrant way of
     #  passing context etc, to our interpreted role.
-    # First - prepent system details to src..,
+    # First - prepent system details to src..
+    if src is None:
+        src =repr(self.myobject)+":unknown"
     src = repr(self.myobject.parent)+":"+src
     role_def = ".. role:: mm(mm)\n :SystemCntxt: %s\n\n" % src
     role_def+= "\n".join(map(lambda x: " "+x,src_stack))
     role_def+= "\n\n"
-    print "role->" , role_handler
+    print "processed srd->" , src
     print "raw+IN->%s<-" % rst_string
     print "\n--Parsing--\n%s\n---\n" % (role_def+rst_string)
     result =   publish_doctree(role_def+rst_string,source_path=src,

@@ -43,7 +43,10 @@ class SystemProxy(dict_store):
         path = cat +":"+id
         if not self.HasCategory(cat):
             self.NewCategory(cat,None)
-        if not path in self.objmap:
+        print "looking for %s in..." % path
+        print self.objmap.keys()
+        if path not in self.objmap:
+            print "\tnot found"
             self.objmap[path]=self.NewObject(cat,None)
         return self.GetObject(cat+":"+self.objmap[path])
 
