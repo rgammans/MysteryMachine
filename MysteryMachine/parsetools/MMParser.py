@@ -82,12 +82,12 @@ class MMParser (object):
     source =   result[0].source
     print "pnodelist-->%s<-" % result
     print "source => %s" % source
-    #Strip  document header and leading paragraph.
+    #Strip  document header and main containing paragraph.
     result =   result.children
     print "nodelist-->%s<-" % result
-    #if len(result) ==1:
-    #    if str(result[0].__class__)  == "docutils.nodes.paragraph":
-    #         result = result[0].children
+    if len(result) ==1:
+        if str(result[0].__class__)  == "docutils.nodes.paragraph":
+             result = result[0].children
     #Update source attrib in node.
     for docnode in result:
         if not source in docnode:
