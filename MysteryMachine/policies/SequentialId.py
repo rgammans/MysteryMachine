@@ -27,5 +27,5 @@
 def NewId(l):
    Id = 0
    for i in l:
-        if int(i) > Id: Id=i
+        if int(i) > Id: Id=int(i)
    return str(int(Id)+1);
