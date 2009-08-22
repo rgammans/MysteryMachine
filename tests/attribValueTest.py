@@ -38,7 +38,7 @@ class ObjectProxy(MMObject):
         else:
             l[0] =args[0]
             l[1] =args[1]
-        super(ObjectProxy,self).__init__(l[0] + ":" + l[1] , None ,None )
+        super(ObjectProxy,self).__init__(l[0] + ":" + l[1] , SystemProxy() ,None )
         for key in kwargs:
            self.__dict__[key] = kwargs[key] 
     def __str__(self):
@@ -53,6 +53,8 @@ class ObjectProxy(MMObject):
 class SystemProxy: 
     def get_object(self,cat,id):
         return ObjectProxy(cat , id)
+    def getSelf(self):
+        return self
     
 class DummyPart:
     def __init__(self,x):

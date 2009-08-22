@@ -22,6 +22,7 @@ Tests for the MysteryMachine.Schema MMObject  module
 """
 
 from MysteryMachine import * 
+from MysteryMachine.schema.MMSystem import * 
 from MysteryMachine.schema.MMObject import MMObject
 from MysteryMachine.schema.MMAttribute import * 
 
@@ -32,40 +33,24 @@ import unittest
 
 
 
-class SystemProxy(dict_store):
-    def __init__(self,name):
-        dict_store.__init__(self,self)
-        self.objmap = dict()
-        LoadSystem(name,self)
-        self.name = name
-
-    def get_object(self,cat,id):
-        path = cat +":"+id
-        if not self.HasCategory(cat):
-            self.NewCategory(cat,None)
-        print "looking for %s in..." % path
-        print self.objmap.keys()
-        if path not in self.objmap:
-            print "\tnot found"
-            self.objmap[path]=self.NewObject(cat,None)
-        return self.GetObject(cat+":"+self.objmap[path])
-
-    def __repr__(self):
-        return self.name
-
 class ObjectTests(unittest.TestCase):
     def setUp(self):
         StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
-        self.system=SystemProxy("ObjectTests")
-        self.dummyparent             = self.system.get_object( "Template","1", )
+        self.system=MMSystem.Create("dict:ObjectTests")
+        self.system.NewCategory( "Template" )
+        self.dummyparent             = self.system.NewObject( "Template",None )
         self.dummyparent[".defname"] = "name"
         
-        self.parent                  = self.system.get_object( "Template","2", )
+        self.parent                  = self.system.NewObject( "Template",None )
         self.parent[".defname"]      =":mm:`:name`"
         
-        self.object                  = self.system.get_object("Dummy","1") 
+        self.system.NewCategory( "Dummy" )
+        self.object                  = self.system.NewObject("Dummy",None) 
         self.object.set_parent(self.parent)       
 
+        print "dummy => " ,repr(self.dummyparent)
+        print "parent => " ,repr(self.parent)
+        print "object => " , repr(self.object)
 
     def testgetparent(self):
         print "----starting getparent test------"

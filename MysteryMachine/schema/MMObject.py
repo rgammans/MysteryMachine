@@ -64,9 +64,10 @@ class MMObject (MMBase):
     MMBase.__init__(self)
 #    print "Creating %s" % id
     self.id = id
-    self.parent = parent
+    #Ensure strong ref to parent.
+    self.parent = parent.getSelf()
     self.store = store
-    self.parser = MMParser(self) 
+    self.parser = MMParser(self)
 
 
   def __getitem__(self, attrname):

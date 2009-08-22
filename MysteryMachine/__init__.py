@@ -20,8 +20,6 @@ from MysteryMachine.ExtensionLib import ExtensionLib
 from MysteryMachine.ConfigDict import pyConfigDict
 
 #Global vars
-#- A dictitionary of loaded MMSystems...
-DocsLoaded = {}
 #Singleton objects.
 Ui = None
 ExtLib = None
@@ -186,17 +184,6 @@ def StartApp(args):
     if "testmode" in cmdline_options:
         cfg_engine.testmode()    
     ExtLib=ExtensionLib(cfg_engine)
-
-##Support functions to allow a single MysteryMahcine instance to
-# be used to edit multiple systems.
-def LoadSystem(name,sys):
-    DocsLoaded[name]=sys
-
-def UnloadSystem(name):
-    del DocsLoaded[name]
-
-def GetLoadedSystemByName(name):
-    return DocsLoaded[name]
 
 if __name__ == '__main__':
    StartApp(sys.argv[1:])

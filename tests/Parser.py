@@ -23,41 +23,24 @@ Tests for the MysteryMachine.Schema MMObject  module
 
 from MysteryMachine import * 
 from MysteryMachine.store.dict_store import *
-
-import MysteryMachine.schema.MMAttributeValue
+from MysteryMachine.schema.MMSystem import MMSystem
 import unittest
-
-
-class SystemProxy(dict_store):
-    def __init__(self,name):
-        dict_store.__init__(self,self)
-        self.objmap = dict()
-        LoadSystem(name,self)
-        self.name = name
-
-    def get_object(self,cat,id,**kwargs):
-        path = cat +":"+id
-        if not self.HasCategory(cat):
-            self.NewCategory(cat,None)
-        if not path in self.objmap:
-            self.objmap[path]=self.NewObject(cat,None)
-        obj =  self.GetObject(cat+":"+self.objmap[path])
-        for k,v in kwargs.items():
-            obj[k]=v
-        return obj
-
-    def __repr__(self):
-        return self.name
 
 class ParsersTests(unittest.TestCase):
     def setUp(self):
         StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
-        self.sys=SystemProxy("test")
-        self.p=self.sys.get_object("template","1")
+        self.sys=MMSystem.Create("dict:test")
+        self.sys.NewCategory("template")
+        self.p=self.sys.NewObject("template",None)
         self.p[".defname"] = ":mm:`:name`"
-        self.i=self.sys.get_object("Item","1", name="The one ring")
+        self.sys.NewCategory("Item")
+        self.i=self.sys.NewObject("Item",None)
+        self.i["name"]="The one ring"
         self.i.set_parent(self.p)
-        self.c=self.sys.get_object("Character","1", name="Frodo", carries=self.i)
+        self.sys.NewCategory("Character")
+        self.c=self.sys.NewObject("Character",None)
+        self.c["name"]="Frodo"
+        self.c["carries"]=self.i
         self.c.set_parent(self.p)
         
  

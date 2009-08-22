@@ -52,7 +52,7 @@ def Grammar(obj):
     ## Functions for parsing.
 
     def getField(s,loc,toks):
-#    	print "bar(%s)\n" % toks
+    	print "bar(%s)\n" % toks
     	field=toks[2]
     	obj=toks[0]
     	return obj[field]

@@ -26,7 +26,7 @@ from docutils.core import  publish_doctree, default_description
 from docutils.parsers.rst import roles
 from grammar import Grammar
 
-from MysteryMachine import *
+from MysteryMachine.schema.MMSystem import GetLoadedSystemByName
 
 import re
 from exceptions import *    
@@ -72,7 +72,7 @@ class MMParser (object):
     if src is None:
         src =repr(self.myobject)+":unknown"
     src = repr(self.myobject.parent)+":"+src
-    role_def = ".. role:: mm(mm)\n :SystemCntxt: %s\n\n" % src
+    role_def = ".. role:: mm(mm)\n :systemcntxt: %s\n\n" % src
     role_def+= "\n".join(map(lambda x: " "+x,src_stack))
     role_def+= "\n\n"
     print "processed srd->" , src

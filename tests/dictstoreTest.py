@@ -32,6 +32,12 @@ def listHelper(seq):
         result.append(i)
     return result
 
+class DummySystemClass:
+    def getSelf(self):
+        return self
+
+DummySystem=DummySystemClass()
+
 class storeTests(unittest.TestCase):
     """
     These test are intended to be generic store tests so that this test suite
@@ -39,7 +45,8 @@ class storeTests(unittest.TestCase):
     """
     def setUp(self):
         StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
-        self.store=dict_store(self)
+        self.store=dict_store("dict:test")
+        self.store.set_owner(DummySystem)
 
     def testCategories(self):
         cats=list(self.store.EnumCategories())

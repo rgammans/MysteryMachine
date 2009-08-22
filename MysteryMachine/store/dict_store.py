@@ -2,19 +2,33 @@
 import re
 from MysteryMachine.policies.SequentialId import NewId
 from MysteryMachine.schema.MMObject import MMObject
+from MysteryMachine.store import *
 
-class dict_store(object):
+_dict_stores = dict()
+
+class dict_store(Base):
     """
+    A non-persistent Store which is design to be simple but complaint
+    with the Mysterymachine interface - mainly intended for use in the
+    test harnessees.
     """
 
     invalidobj = re.compile("^\.")
 
-    def concanicalise(self,name):
+    def canonicalise(self,name):
         return name.split(":")
 
-    def __init__(self,owner):
-        self.owner = owner
-        self.catdict = { }
+    @staticmethod
+    def GetCanonicalUri(uri):
+        return uri
+
+    def __init__(self,uri,create = False):
+        Base.__init__(self,uri,create)
+        path = GetPath(uri)
+        if path not in _dict_stores:
+            _dict_stores[path] = { }
+
+        self.catdict = _dict_stores[path]
 
     def EnumCategories(self):
         for k in self.catdict.keys():
@@ -55,29 +69,31 @@ class dict_store(object):
         del self.catdict[cat]
 
     def EnumAttributes(self,object):
-        path = self.concanicalise(object)
+        path = self.canonicalise(object)
         for a in self.catdict[cat][newid].keys():
             yield a
 
     def HasAttribute(self,attr):
-        path = self.concanicalise(attr)
+        path = self.canonicalise(attr)
         val = path[2] in self.catdict[path[0]][path[1]]        
         #print  "%s is %s" % (path ,val)
         return val
 
     def SetAttribute(self,attr,val):
         #print "setting %s" % attr
-        path = self.concanicalise(attr)
+        path = self.canonicalise(attr)
         self.catdict[path[0]][path[1]][path[2]]=val        
 
     def DelAttribute(self,attr):
-        path = self.concanicalise(attr)
+        path = self.canonicalise(attr)
         del self.catdict[path[0]][path[1]][path[2]]
   
 
     def GetAttribute(self,attr):
-        path = self.concanicalise(attr)
+        path = self.canonicalise(attr)
+        print "PATH = %s " % path
         return self.catdict[path[0]][path[1]][path[2]]
+
 
 class dict_store_obj:
     def __init__(self,store,obj):
@@ -87,7 +103,8 @@ class dict_store_obj:
     def GetObject(self):
         #print "Request for obj %s" % self.obj
         if not self.HasAttribute(":.self"):
-            obj = MMObject(self.obj,self.store.owner,self)
+            print "\tSetting system as %s " % self.store.get_owner()
+            obj = MMObject(self.obj,self.store.get_owner(),self)
             self.SetAttribute(":.self",obj)
         else:
             obj = self.GetAttribute(":.self")
@@ -108,3 +125,6 @@ class dict_store_obj:
 
     def HasAttribute(self,attr):
         return self.store.HasAttribute(self.obj + ":" +attr)
+
+
+RegisterStore("dict",dict_store)
