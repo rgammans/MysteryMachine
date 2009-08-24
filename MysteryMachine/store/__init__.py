@@ -54,7 +54,7 @@ def GetCanonicalUri(uri):
     """
     scheme = GetScheme(uri)
     storeclass = _store_registry[scheme]
-    return scheme + ":" + storeclass.GetCanonicalUri(uri)
+    return scheme + ":" + storeclass.GetCanonicalUri(GetPath(uri))
 
 def RegisterStore(storename,storeclass):
     """

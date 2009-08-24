@@ -76,10 +76,11 @@ class sysTests(unittest.TestCase):
         o21=self.sys.NewObject("Two",None)
     
     def testLoaded(self):
-        #FIXME Test the Load/Unload system structure and the 
         # __init__ del calls them ok.
         # Test open / create semanitcs.
-        self.assertTrue(False)
+        self.assertEquals(UnEscapeSystemUri(EscapeSystemUri("dict:test")),"dict:test")
+        self.assertEquals(EscapeSystemUri("dict:test"),str(self.sys))
+        self.assertTrue(GetLoadedSystemByName(str(self.sys)) is self.sys)
       
       
 def getTestNames():

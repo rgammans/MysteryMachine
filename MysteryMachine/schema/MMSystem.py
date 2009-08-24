@@ -32,6 +32,7 @@ from MysteryMachine.store import *
 import re
 import time
 import weakref
+import binascii
 
 ##Support functions to allow a single MysteryMachine instance to
 # be used to edit multiple systems.
@@ -44,17 +45,16 @@ def GetLoadedSystemByName(name):
     return DocsLoaded[name]
 
 def EscapeSystemUri(uri):
-    uri = re.sub("%" , "%xx" , uri)
-    uri = re.sub(":" , "%xx" , uri)  
+    uri = re.sub("%" , "%25" , uri)
+    uri = re.sub(":" , "%3a" , uri)  
     return uri
 
 def UnEscapeSystemUri(uri):
     print "***WARNING Func UnEscapeSystemUri Not complete***"
     def findChar(match):
-        #FIXME Add code to retrun the hex char following the %.
-        self.uri = uri
-        pass
-    return re.sub("%[0-9a-fA-F]{2}",findchar)
+        #TODO Unicode support...
+        return  binascii.unhexlify(match.group(1))
+    return re.sub("%([0-9a-fA-F]{2})",findChar,uri)
 
 class MMSystem (MMBase):
 
