@@ -12,6 +12,8 @@ class dict_store(Base):
     with the Mysterymachine interface - mainly intended for use in the
     test harnessees.
     """
+    
+    uriScheme = "dict"
 
     invalidobj = re.compile("^\.")
 
@@ -126,5 +128,3 @@ class dict_store_obj:
     def HasAttribute(self,attr):
         return self.store.HasAttribute(self.obj + ":" +attr)
 
-
-RegisterStore("dict",dict_store)

@@ -77,17 +77,28 @@ def GetPath(uri):
     return path 
 
 
+class _storeMeta(type):
+    def __init__(self, name, bases, ns):
+        super(_storeMeta, self).__init__(name,bases,ns)
+        if name != "Base":
+            RegisterStore(self.uriScheme,self)
 
 class Base(object):
     """
     New base class for Mystery Machine store to inherit from
     """
+    __metaclass__ = _storeMeta
+
     def __init__(self,uri,*args,**kwargs):
         self.uri   = GetCanonicalUri(uri)
         self.owner = None
 
     def getUri(self):
         return self.uri
+    
+    @staticmethod
+    def GetCanonicalUri(uri):
+        return uri
 
     def get_owner(self):
         return self.owner
