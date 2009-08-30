@@ -25,12 +25,7 @@ from MysteryMachine import *
 from MysteryMachine.store.dict_store import *
 
 import unittest
-
-def listHelper(seq):
-    result = []
-    for i in seq:
-        result.append(i)
-    return result
+from base.store import storeTests
 
 class DummySystemClass:
     def getSelf(self):
@@ -38,59 +33,19 @@ class DummySystemClass:
 
 DummySystem=DummySystemClass()
 
-class storeTests(unittest.TestCase):
+class dictstoreTests(storeTests,unittest.TestCase):
     """
     These test are intended to be generic store tests so that this test suite
     can be updated to help form a basic test suite for MysteryMachine store modules
     """
-    def setUp(self):
+    def mySetUp(self):
         StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
         self.store=dict_store("dict:test")
         self.store.set_owner(DummySystem)
-
-    def testCategories(self):
-        cats=list(self.store.EnumCategories())
-        self.assertEqual(len(cats),0)
-        self.store.NewCategory("One",None)
-        self.store.NewCategory("Two",None)
-        cats=list(self.store.EnumCategories())
-        self.assertEqual(len(cats),2)
-        self.store.DeleteCategory("One")
-        cats=list(self.store.EnumCategories())
-        self.assertEqual(len(cats),1)
-
-    def testObjects(self):
-        #Check empty categories are..
-        self.store.NewCategory("One",None)
-        self.store.NewCategory("Two",None)
-        objs1=list(self.store.EnumObjects("One"))
-        objs2=list(self.store.EnumObjects("Two"))
-        self.assertEqual(len(objs1),0)
-        self.assertEqual(len(objs2),0)
-        
-        o11=self.store.NewObject("One",None)
-        o12=self.store.NewObject("One",None)
-        o21=self.store.NewObject("Two",None)
-
-
-        o1=self.store.GetObject("One:"+o12)
-        
-        objs1=list(self.store.EnumObjects("One"))
-        objs2=list(self.store.EnumObjects("Two"))
-        self.assertEqual(len(objs1),2)
-        self.assertEqual(len(objs2),1)
-   
-        self.store.DeleteObject("One"+":"+o12)
-        self.store.DeleteObject("Two"+":"+o21)
-
-        objs1=list(self.store.EnumObjects("One"))
-        objs2=list(self.store.EnumObjects("Two"))
-        self.assertEqual(len(objs1),1)
-        self.assertEqual(len(objs2),0)
    
     
 def getTestNames():
-    	return [ 'dictstoreTest.storeTests' ] 
+    	return [ 'dictstoreTest.dictstoreTests' ] 
 
 if __name__ == '__main__':
     unittest.main()
