@@ -1,0 +1,1 @@
+from SequentialId import NewId
