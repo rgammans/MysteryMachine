@@ -3,6 +3,7 @@ import re
 from MysteryMachine.policies.SequentialId import NewId
 from MysteryMachine.schema.MMObject import MMObject
 from MysteryMachine.store import *
+from MysteryMachine.store.Base import Base 
 
 _dict_stores = dict()
 
@@ -16,10 +17,6 @@ class dict_store(Base):
     uriScheme = "dict"
 
     invalidobj = re.compile("^\.")
-
-    def canonicalise(self,name):
-        return name.split(":")
-
     @staticmethod
     def GetCanonicalUri(uri):
         return uri
@@ -60,12 +57,9 @@ class dict_store(Base):
         dbpath = object.split(":")
         del self.catdict[dbpath[0]][dbpath[1]]
 
-
-    def GetObject(self,obj):
-        return self.GetObjStore(obj).GetObject()
-    
-    def GetObjStore(self,obj):
-        return dict_store_obj(self,obj)
+    def HasObject(self,obj):
+        path = self.canonicalise(obj)
+        return path[1] in self.catdict[path[0]]       
 
     def DeleteCategory(self,cat):
         del self.catdict[cat]
@@ -95,36 +89,3 @@ class dict_store(Base):
         path = self.canonicalise(attr)
         print "PATH = %s " % path
         return self.catdict[path[0]][path[1]][path[2]]
-
-
-class dict_store_obj:
-    def __init__(self,store,obj):
-        self.store=store
-        self.obj=obj
-
-    def GetObject(self):
-        #print "Request for obj %s" % self.obj
-        if not self.HasAttribute(":.self"):
-            print "\tSetting system as %s " % self.store.get_owner()
-            obj = MMObject(self.obj,self.store.get_owner(),self)
-            self.SetAttribute(":.self",obj)
-        else:
-            obj = self.GetAttribute(":.self")
-        return obj
-
-    def GetAttribute(self,attr):
-        return self.store.GetAttribute(self.obj + ":" +attr)
-    
-    def SetAttribute(self,attr,val):
-        return self.store.SetAttribute(self.obj + ":" +attr,val)
-   
-    def DelAttribute(self,attr):
-        return self.store.DelAttribute(self.obj + ":" +attr)
-
-    def EnumAttributes(self):
-        for a in self.store.EnumAttributes(self.obj):
-            yield a
-
-    def HasAttribute(self,attr):
-        return self.store.HasAttribute(self.obj + ":" +attr)
-

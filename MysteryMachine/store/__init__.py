@@ -77,60 +77,9 @@ def GetPath(uri):
     return path 
 
 
-class _storeMeta(type):
+class storeMeta(type):
     def __init__(self, name, bases, ns):
-        super(_storeMeta, self).__init__(name,bases,ns)
+        super(storeMeta, self).__init__(name,bases,ns)
         if name != "Base":
             RegisterStore(self.uriScheme,self)
 
-class Base(object):
-    """
-    New base class for Mystery Machine store to inherit from
-    """
-    __metaclass__ = _storeMeta
-
-    def __init__(self,uri,*args,**kwargs):
-        self.uri   = GetCanonicalUri(uri)
-        self.owner = None
-
-    def getUri(self):
-        return self.uri
-    
-    @staticmethod
-    def GetCanonicalUri(uri):
-        return uri
-
-    def get_owner(self):
-        return self.owner
-
-    def set_owner(self,v):
-        print "Setting owner to %s" % v
-        self.owner = weakref.proxy(v)
-
-    def commit(self,msg):
-        """
-        Override the to support transactions - usually in the contect
-        of version control.
-        """
-        return False
-
-    def rollback(self):
-        """
-        Override this to provide a rollback action .
-        Takes the game back tot he last commit.
-        """
-        return False
-
-    def revert(self,revid):
-        """
-        Override this to take the game back to any previous transaction.
-        """
-        return False
-
-    def getChangelog(self):
-        """
-        Override thsi to..
-        Rertuns a list of revid's which can be revert'ed to
-        """
-        return []
-        

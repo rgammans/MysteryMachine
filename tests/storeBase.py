@@ -23,6 +23,7 @@ Tests for the MysteryMachine MMStore base module
 
 from MysteryMachine import * 
 from MysteryMachine.store import *
+from MysteryMachine.store.Base import *
 
 import unittest
 

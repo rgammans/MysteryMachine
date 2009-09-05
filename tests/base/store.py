@@ -22,7 +22,7 @@ Tests for the MysteryMachine dictstore  module
 """
 
 from MysteryMachine import * 
-
+from MysteryMachine.schema.MMObject import MMObject
 
 def listHelper(seq):
     result = []
@@ -64,7 +64,10 @@ class storeTests(object):
 
 
         o1=self.store.GetObject("One:"+o12)
-        
+        self.assertTrue(isinstance(o1,MMObject))
+        self.assertTrue(o1 is self.store.GetObject("One:"+o12))
+        self.assertFalse(o1 is self.store.GetObject("One:"+o11))        
+
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
         self.assertEqual(len(objs1),2)

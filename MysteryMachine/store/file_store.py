@@ -23,6 +23,7 @@ import re
 import MysteryMachine.policies
 from MysteryMachine.schema.MMObject import MMObject
 from MysteryMachine.store import *
+from MysteryMachine.store.Base import Base
 
 import os
 
@@ -114,17 +115,17 @@ class filestore(Base):
         return Id
 
     def HasCategory(self,cat):
-        path = os.path.join(self.GetPath(),cat)
-        return os.path.isdif(path)
+        path = os.path.join(self.path,cat)
+        return os.path.isdir(path)
  
+    def HasObject(self,obj):
+        objele = self.canonicalise(obj)
+        path = os.path.join(self.path,*objele)
+        return os.path.isdir(path)
+    
     def DeleteObject(self,object):
         dir = os.path.join(self.path,self._getpath(object))
         os.rmdir(dir)
-
-    def GetObject(self,obj):
-        pass 
-    def GetObjStore(self,obj):
-        pass
 
     def DeleteCategory(self,cat):
         catpath = os.path.join(self.path , cat)
