@@ -33,14 +33,19 @@ class DummySystemClass:
 
 DummySystem=DummySystemClass()
 
+testscount = 0
+
 class dictstoreTests(storeTests,unittest.TestCase):
     """
     These test are intended to be generic store tests so that this test suite
     can be updated to help form a basic test suite for MysteryMachine store modules
     """
     def mySetUp(self):
+        global testscount
         StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
-        self.store=dict_store("dict:test")
+        #Ensure each new time this starts we use a new system
+        testscount = testscount + 1
+        self.store=dict_store("dict:test"+str(testscount))
         self.store.set_owner(DummySystem)
    
     
