@@ -21,15 +21,17 @@
 
 import re
 import MysteryMachine.policies
-from MysteryMachine.schema.MMObject import MMObject
+from MysteryMachine.schema.MMAttribute import MMAttribute
+from MysteryMachine.schema.MMAttributeValue import MakeAttributeValue, MMAttributePart
 from MysteryMachine.store import *
 from MysteryMachine.store.Base import Base
 
 import os
-
+import sys
 import thread
 
 policy = MysteryMachine.policies
+
 
 class SafeFile(file):
     """
@@ -42,19 +44,39 @@ class SafeFile(file):
 
     def __init__(self,*args):
         self.finalname = args[0]
-        args[0] = ".new."+args[0]
-        self.realname =  args[0]
-        super(SafeFile,self).__init__(*args)
+        (path , file ) = os.path.split(self.finalname)
+        self.realname  = os.path.join(path,".new."+file)
+        newargs = [ self.realname ]
+        newargs.append( *args[1:]) 
+        super(SafeFile,self).__init__(*newargs)
 
     
     def threadFn(self,otherself):
         self.flush()
-        os.fdatasync(self.fileno)
+        os.fdatasync(self.fileno())
         super(SafeFile,self).close()
         os.rename(self.realname,self.finalname)
     
-    def close(self): 
-        thread.start_new_thread(self.threadFn,self)
+    def close(self):
+        #TODO - launch this in subsidary thread for performance.
+        # but note we need to keep a ref to this class. 
+        self.threadFn(self)
+
+
+#We may want to change this to a subclass later 
+# but at the moment factory method suffices.
+#
+# A subclass would all the set_value method to write back to the
+# disc.
+def FileStoreAttributePart(filename,partname):
+    """
+    Create a MMAttributePart from a filename
+    """
+    infile = file(filename,"r")
+    data = infile.read()
+    infile.close()
+    print "FSAPi:data:%s"%data
+    return MMAttributePart(partname,data)
 
 class filestore(Base):
     """
@@ -71,8 +93,8 @@ class filestore(Base):
 
     @staticmethod
     def GetCanonicalUri(uri):
-        #FIXME# Canonical filepath...
-        return uri
+        #Canonical filepath.
+        return os.path.normcase(os.path.realpath(os.path.normpath(uri)))
 
     def __init__(self,uri,create = False):
         Base.__init__(self,uri,create)
@@ -83,6 +105,13 @@ class filestore(Base):
     def _getpath(self,expr):
         return expr.replace(":",os.sep )
 
+    
+    
+    def Add_file(self,filename):
+        """
+        Register filnemae with SCM
+        """
+        pass
     def EnumCategories(self):
         for dentry in os.listdir(self.path):
             #Skip directories which we don't manage.
@@ -125,16 +154,68 @@ class filestore(Base):
         os.rmdir(catpath)
 
     def EnumAttributes(self,object):
-        pass
-
+        objpath = self.canonicalise(object) 
+        found = []
+        for candidate in os.listdir(os.path.join(self.path,*objpath)):
+            items = candidate.split(".")
+            if items[0] not in found:
+                found += [ items[0] ]
+                yield items[0]
+    
     def HasAttribute(self,attr):
-        pass
+        attrele = self.canonicalise(attr) 
+        for candidate in os.listdir(os.path.join(self.path,*attrele[:2])):
+            items = candidate.split(".")
+            if items[0] == attrele[2]: return True
+
+        return False
 
     def SetAttribute(self,attr,val):
-        pass
+        """
+
+        @param string attribute : 
+        @return MMAttribute :
+        @author
+        """
+
+        val = val.get_value()
+        parts = val.get_parts()
+        type =  val.get_type()
+        pathparts = list(self.canonicalise(attr))
+        for part in parts:
+            partname = part.get_name()
+            filename = os.path.join(self.path,*pathparts)
+            filename = "%s.%s.%s" % (filename,type,partname)
+            file =SafeFile(filename,"w")
+            file.write(part.get_value())
+            file.close()
+            #Ensure any RCS knows about the file.
+            self.Add_file(filename)
+
 
     def DelAttribute(self,attr):
-        pass
+        workuri= os.path.join(self.path,*(attrele[:2]))
+        os.removeall(workuri,workuri+".*")
+        
 
     def GetAttribute(self,attr):
-        pass
+        attrele = self.canonicalise(attr)
+        workuri = os.path.join(self.path,*(attrele[:2]))
+        files = []
+        attrtype = None
+        for candidate in os.listdir(workuri):
+            items = candidate.split(".")
+            print "GA:Candiate-items:%s" %items
+            if items[0] == attrele[2]:
+                if attrtype == None:
+                    attrtype = items[1]
+                if attrtype != items[1]:
+                    raise exception("Inconsisent attrype in store")
+                print "GA:Loading:%s-%s)" %(candidate,items[2])
+                files += [ FileStoreAttributePart(os.path.join(workuri,candidate),items[2]) ]
+        
+        if attrtype is None: return None
+        
+        return MMAttribute(attrele[2],MakeAttributeValue(attrtype,files),
+                           self.GetObject(attrele[0]+":"+attrele[1]))
+        

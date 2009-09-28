@@ -85,7 +85,19 @@ class attribValTest(unittest.TestCase):
     def makeRef(self):
         self.objrefA = MMAttributeValue_MMObjectRef( [ MMAttributePart("",self.objA) ] )
         self.objrefB = MMAttributeValue_MMObjectRef( [ MMAttributePart("",self.objB) ] )        
-  
+ 
+
+    def testCreate(self):
+        """
+        Test CreateAttributeValue entry point
+        """
+        pass
+
+    def testMake(self):
+        """
+        Test Make AttributeValue entry point
+        """        
+        pass 
     # TODO
     # Test handling of parse errors.      
 def getTestNames():

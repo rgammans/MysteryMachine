@@ -32,6 +32,7 @@ import exceptions
 import sys
 import types
 import operator
+import copy
 
 AttrTypes = dict()
 TypeLookup = dict()
@@ -48,11 +49,18 @@ def CreateAttributeValue(val):
         vtype = FindBestValueType(type(val))
         val = vtype([val])
     else:
-        val= copy(val)
+        print "CAV2:type:%s\n" % val.__class__.typename
+        print "CAV2:parts:%s\n" % val.parts
+        val= copy.copy(val)
 
     return val
 
 
+def MakeAttributeValue(type,parts):
+   cls = AttrTypes[type]
+   return cls(parts)
+                              
+ 
 def register_value_type(name,acls,nativelist):
     """
     """

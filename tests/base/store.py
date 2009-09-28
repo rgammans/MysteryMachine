@@ -83,3 +83,45 @@ class storeTests(object):
         objs2=list(self.store.EnumObjects("Two"))
         self.assertEqual(len(objs1),1)
         self.assertEqual(len(objs2),0)
+
+    #TODO Seperate out the bits which use the internal if.
+    def testAttribute(self):
+        #Create some cats and objs.
+        self.store.NewCategory("One")
+        self.store.NewCategory("Two")
+        o11=self.store.NewObject("One")
+        o12=self.store.NewObject("One")
+        o21=self.store.NewObject("Two")
+
+        #Set an attribute.
+        o12obj = self.store.GetObject("One:"+o12)
+        attr = MMAttribute("name","fred",o12obj)
+        self.store.SetAttribute("One"+":"+o12+":name",attr)
+
+        #Count attributes.
+        objs1=list(self.store.EnumAttributes("One:"+o12))
+        objs2=list(self.store.EnumAttributes("Two:"+o21))
+        print objs1
+        self.assertEqual(len(objs1),1)
+        self.assertEqual(len(objs2),0)
+        
+        #Test presence
+        self.assertTrue(self.store.HasAttribute("One:"+o12+":name"))
+        self.assertFalse(self.store.HasAttribute("One:"+o11+":name"))
+        self.assertFalse(self.store.HasAttribute("One:"+o12+":notname"))
+
+        #Retrieve attribute.
+        self.assertEquals(str(self.store.GetAttribute("One:"+o12+":name")),"fred")
+        # Test same instance. 
+        #TODO -  reconstruct attribute purely from the backing store.
+         
+    def testProxyObj(self):
+        """
+        Test the Object proxy used in MMObjects.
+        
+        this prolly requires an overridable method to get the obj to
+        start with  
+        """
+        pass 
+
+
