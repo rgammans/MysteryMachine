@@ -122,10 +122,14 @@ class MMAttribute (MMBase):
     return self.valueobj
 
   def set_value(self,val):
+    #Quit early in case of No-Op - triggered by _writeback.
+    if val is self.valueobj: return
+
     try:
         self.valueobj.assign(val)
     except:
         self.valueobj = CreateAttributeValue(val)
+    self._writeback()
 
   #This is intend for method lookup
   def __getattr__(self,name):
@@ -133,3 +137,7 @@ class MMAttribute (MMBase):
         print "\nlooking for %s " % name,
         print " in %s" % repr(self)
         return functools.partial(getattr(self.valueobj,name),self)
+      else: raise KeyError()
+
+  def _writeback(self):
+     self.parent[self.name] = self.value
