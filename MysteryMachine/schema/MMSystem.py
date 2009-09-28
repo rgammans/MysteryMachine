@@ -209,8 +209,10 @@ class MMSystem (MMBase):
     @return MMOBject: Created object. 
     @author
     """
-    id = self.store.NewObject(category,parent)
-    return self.get_object(category,id)
+    id = self.store.NewObject(category,None)
+    obj = self.get_object(category,id)
+    obj.set_parent(parent)
+    return obj
 
   def Save(self, commitmsg = None , filename = None):
     """

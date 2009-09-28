@@ -95,6 +95,11 @@ class MMObject (MMBase):
     @author
     """
 
+    #Don't store None values.
+    if attrvalue is None:
+        del self[attrname] 
+        return
+
     #Deal only with any value part of an existing attribute.
     # TODO - decide if this is really what want to do - or would
     # this create a reference.
@@ -104,9 +109,10 @@ class MMObject (MMBase):
     #Fetch exists attribute if any to preserve value type.
     if attrname in self:
         val=self[attrname]
-        if val.get_owner() is not self:
-            val=val.copy(self,attrname)
-        val.set_value(attrvalue)
+        if val is not None:
+            if val.get_owner() is not self:
+                val=val.copy(self,attrname)
+            val.set_value(attrvalue)
     else:
         #No existing attr create a new one
         val = MMAttribute(attrname,attrvalue,self)
@@ -121,14 +127,18 @@ class MMObject (MMBase):
     @return  :
     @author
     """
-    self.store.DelAttribute(attrname,val)    
+    if self.store.HasAttribute(attrname):
+        #FIXME - Mark as destoryed in case references exist.
+        self.store.DelAttribute(attrname)    
   
   def __iter__(self):
         for a in self.store.EnumAttributes():
-            yield a
+            if a[0] != '.': yield a
 
   def __contains__(self,name):
-        pass
+       a = self.store.HasAttribute(name) 
+       print "** %s does %s exist** " % (name , ("" if a else "not"))
+       return a
 
   def _validate(self):
     """
@@ -146,7 +156,11 @@ class MMObject (MMBase):
     @author
     """
     #Bypass inheritance lookup.
-    return self.store.GetAttribute(".parent").get_object()
+    parent = self.store.GetAttribute(".parent")
+    print "Parent = %s" % parent
+    if parent != None:
+        parent = parent.get_object()
+    return parent
 
   def set_parent(self,parent):
     #We can safely use the basic code to set the parent as it
