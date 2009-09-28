@@ -37,20 +37,18 @@ class dict_store(Base):
         for o in self.catdict[cat].keys():
             if re.match(self.invalidobj,o) is None: yield o
 
-    def NewCategory(self,cat,p):
+    def NewCategory(self,cat):
         if cat in self.catdict: return
         self.catdict[cat] = {}
-        self.catdict[cat][".parent"]=p
   
 
     def HasCategory(self,cat):
         return cat in self.catdict
   
-    def NewObject(self,cat,p):
+    def NewObject(self,cat):
         objs = list(self.EnumObjects(cat))
         newid = NewId(objs)
         self.catdict[cat][newid] = { }
-        self.catdict[cat][newid][".parent"] = p
         return newid
 
     def DeleteObject(self,object):
@@ -66,11 +64,12 @@ class dict_store(Base):
 
     def EnumAttributes(self,object):
         path = self.canonicalise(object)
-        for a in self.catdict[cat][newid].keys():
+        for a in self.catdict[path[0]][path[1]].keys():
             yield a
 
     def HasAttribute(self,attr):
         path = self.canonicalise(attr)
+        print "CHECKPATH = %s " % path
         val = path[2] in self.catdict[path[0]][path[1]]        
         #print  "%s is %s" % (path ,val)
         return val

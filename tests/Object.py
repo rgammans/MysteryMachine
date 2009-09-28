@@ -38,14 +38,14 @@ class ObjectTests(unittest.TestCase):
         StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
         self.system=MMSystem.Create("dict:ObjectTests")
         self.system.NewCategory( "Template" )
-        self.dummyparent             = self.system.NewObject( "Template",None )
+        self.dummyparent             = self.system.NewObject( "Template" )
         self.dummyparent[".defname"] = "name"
         
-        self.parent                  = self.system.NewObject( "Template",None )
+        self.parent                  = self.system.NewObject( "Template" )
         self.parent[".defname"]      =":mm:`:name`"
         
         self.system.NewCategory( "Dummy" )
-        self.object                  = self.system.NewObject("Dummy",None) 
+        self.object                  = self.system.NewObject("Dummy") 
         self.object.set_parent(self.parent)       
 
         print "dummy => " ,repr(self.dummyparent)

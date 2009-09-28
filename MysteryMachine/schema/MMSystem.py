@@ -199,7 +199,7 @@ class MMSystem (MMBase):
     @return bool :
     @author
     """
-    self.store.NewCategory(CategoryName,defaultobjref)
+    self.store.NewCategory(CategoryName)
 
   def NewObject(self, category, parent = None , formathelper = None):
     """
@@ -209,7 +209,7 @@ class MMSystem (MMBase):
     @return MMOBject: Created object. 
     @author
     """
-    id = self.store.NewObject(category,None)
+    id = self.store.NewObject(category)
     obj = self.get_object(category,id)
     obj.set_parent(parent)
     return obj

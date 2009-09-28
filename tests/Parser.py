@@ -31,14 +31,14 @@ class ParsersTests(unittest.TestCase):
         StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
         self.sys=MMSystem.Create("dict:test")
         self.sys.NewCategory("template")
-        self.p=self.sys.NewObject("template",None)
+        self.p=self.sys.NewObject("template")
         self.p[".defname"] = ":mm:`:name`"
         self.sys.NewCategory("Item")
-        self.i=self.sys.NewObject("Item",None)
+        self.i=self.sys.NewObject("Item")
         self.i["name"]="The one ring"
         self.i.set_parent(self.p)
         self.sys.NewCategory("Character")
-        self.c=self.sys.NewObject("Character",None)
+        self.c=self.sys.NewObject("Character")
         self.c["name"]="Frodo"
         self.c["carries"]=self.i
         self.c.set_parent(self.p)

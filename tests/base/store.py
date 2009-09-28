@@ -23,6 +23,9 @@ Tests for the MysteryMachine dictstore  module
 
 from MysteryMachine import * 
 from MysteryMachine.schema.MMObject import MMObject
+from MysteryMachine.schema.MMAttribute import MMAttribute
+
+import sys
 
 def listHelper(seq):
     result = []
@@ -41,8 +44,8 @@ class storeTests(object):
     def testCategories(self):
         cats=list(self.store.EnumCategories())
         self.assertEqual(len(cats),0)
-        self.store.NewCategory("One",None)
-        self.store.NewCategory("Two",None)
+        self.store.NewCategory("One")
+        self.store.NewCategory("Two")
         cats=list(self.store.EnumCategories())
         self.assertEqual(len(cats),2)
         self.store.DeleteCategory("One")
@@ -51,16 +54,16 @@ class storeTests(object):
 
     def testObjects(self):
         #Check empty categories are..
-        self.store.NewCategory("One",None)
-        self.store.NewCategory("Two",None)
+        self.store.NewCategory("One")
+        self.store.NewCategory("Two")
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
         self.assertEqual(len(objs1),0)
         self.assertEqual(len(objs2),0)
         
-        o11=self.store.NewObject("One",None)
-        o12=self.store.NewObject("One",None)
-        o21=self.store.NewObject("Two",None)
+        o11=self.store.NewObject("One")
+        o12=self.store.NewObject("One")
+        o21=self.store.NewObject("Two")
 
 
         o1=self.store.GetObject("One:"+o12)

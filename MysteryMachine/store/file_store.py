@@ -95,23 +95,16 @@ class filestore(Base):
         for dentry in os.listdir(os.path.join(self.path,category)):
             yield dentry
   
-    def NewCategory(self,category,defparent = None):
+    def NewCategory(self,category):
         catpath = os.path.join(self.path , category)
         os.mkdir(catpath)
-        if defparent != None:
-            parentfile = SafeFile(os.path.join(catpath,".parent","w"))
-            parentfile.write(defparent)
-            parentfile.close()
 
-    def NewObject(self,category,parent):
+
+    def NewObject(self,category):
         objs = list(self.EnumObjects(category))
         Id = policy.NewId(objs)
         catpath = os.path.join(self.path , category , Id)
         os.mkdir(catpath)
-        if parent != None:
-            parentfile = SafeFile(os.path.join(catpath,".parent","w"))
-            parentfile.write(parent)
-            parentfile.close()
         return Id
 
     def HasCategory(self,cat):

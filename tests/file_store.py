@@ -45,7 +45,9 @@ class filestoreTests(storeTests,unittest.TestCase):
     
     def tearDown(self):
         shutil.rmtree(self.mpath)
-    
+#        os.rmdir(self.mpath)
+
+
 def getTestNames():
     	return [ 'file_store.filestoreTests' ] 
 
