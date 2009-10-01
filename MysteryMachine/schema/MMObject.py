@@ -25,8 +25,9 @@
 from MMBase import *
 from MysteryMachine.parsetools.MMParser import MMParser , Grammar
 from MysteryMachine.schema.MMAttribute import * 
-from MysteryMachine.schema.MMAttributeValue import MMAttributeValue 
-#from Cache import *
+from MysteryMachine.schema.MMAttributeValue import  * 
+
+import weakref
 
 class MMObject (MMBase):
 
@@ -68,8 +69,17 @@ class MMObject (MMBase):
     self.parent = parent.getSelf()
     self.store = store
     self.parser = MMParser(self)
+    self.cache = weakref.WeakValueDictionary()    
 
-
+  def _get_mm_attribute(self,attrn):
+     try:
+         a = self.cache[attrn]
+     except KeyError: 
+         t, p  = self.store.GetAttribute(attrn)
+         a = MMAttribute(attrn,MakeAttributeValue(t,p),self)
+         self.cache[attrn]= a
+     return a
+    
   def __getitem__(self, attrname):
     """
     Basic get item handling. Returns 'attribute' of attrname.
@@ -79,11 +89,15 @@ class MMObject (MMBase):
     @return MMAttribute :
     @author
     """
-    #TODO detect 'private attributes' which require special handling
-    if self.store.HasAttribute(attrname):    
-        return self.store.GetAttribute(attrname)
+    #TODO Detect deleted attributes?
+    if self.store.HasAttribute(attrname):
+        return self._get_mm_attribute(attrname) 
     else:
-        return self.get_parent()[attrname]
+        parent = self.get_parent()
+        if parent != None: return parent[attrname]
+
+    #Haven't found looked for attribute.
+    #raise KeyError()
 
   def __setitem__(self, attrname, attrvalue):
     """
@@ -116,8 +130,12 @@ class MMObject (MMBase):
     else:
         #No existing attr create a new one
         val = MMAttribute(attrname,attrvalue,self)
+    
+    #Get AttributeValue type object - so it is ready for the storage engine.
+    attrvalue = val.get_value()
     #Write back to store engine
-    self.store.SetAttribute(attrname,val)    
+    self.cache[attrname] = val
+    self.store.SetAttribute(attrname,attrvalue.get_type(),attrvalue.get_parts())    
 
   def __delitem__(self, attrname):
     """
@@ -127,8 +145,16 @@ class MMObject (MMBase):
     @return  :
     @author
     """
+    #
+    #FIXME - Mark as destoryed in case references exist.
+    # - we can do this by pulling the ref out of the cache.
+    
+    #Remove from cache - ignore not finding it.
+    try:
+        del self.cache[attrname]
+    except KeyError: pass
+    #Remove from backing store. 
     if self.store.HasAttribute(attrname):
-        #FIXME - Mark as destoryed in case references exist.
         self.store.DelAttribute(attrname)    
   
   def __iter__(self):
@@ -156,8 +182,9 @@ class MMObject (MMBase):
     @author
     """
     #Bypass inheritance lookup.
-    parent = self.store.GetAttribute(".parent")
-    print "Parent = %s" % parent
+    parent = self._get_mm_attribute(".parent") 
+    print "parent type is %s " %type(parent)
+    print "Parent = %r" % parent
     if parent != None:
         parent = parent.get_object()
     return parent

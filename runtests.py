@@ -66,3 +66,6 @@ for python in (PYTHONS):
 		#run tests.
 		sys.stderr.write("Running %s (%s)" % (module,python) )
 		os.system("%s %s/%s" % ( python,  TESTSDIR, module))
+
+sys.stderr.write("\n")
+sys.stdout.write("\n")

@@ -1,2 +1,0 @@
-def getTestNames():
-	return ['foo'];

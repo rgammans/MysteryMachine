@@ -207,6 +207,8 @@ class MMAttributePart (object):
         return self.value
     def set_value(self,val):
         self.value=val
+    def __eq__(self,other):
+        return self.value == other.value and self.partname == other.partname
 
 
 class MMAttributeValue_BasicText(MMAttributeValue):

@@ -22,8 +22,7 @@ Tests for the MysteryMachine dictstore  module
 """
 
 from MysteryMachine import * 
-from MysteryMachine.schema.MMObject import MMObject
-from MysteryMachine.schema.MMAttribute import MMAttribute
+from MysteryMachine.schema.MMAttributeValue import MMAttributePart
 
 import sys
 
@@ -65,12 +64,6 @@ class storeTests(object):
         o12=self.store.NewObject("One")
         o21=self.store.NewObject("Two")
 
-
-        o1=self.store.GetObject("One:"+o12)
-        self.assertTrue(isinstance(o1,MMObject))
-        self.assertTrue(o1 is self.store.GetObject("One:"+o12))
-        self.assertFalse(o1 is self.store.GetObject("One:"+o11))        
-
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
         self.assertEqual(len(objs1),2)
@@ -94,14 +87,12 @@ class storeTests(object):
         o21=self.store.NewObject("Two")
 
         #Set an attribute.
-        o12obj = self.store.GetObject("One:"+o12)
-        attr = MMAttribute("name","fred",o12obj)
-        self.store.SetAttribute("One"+":"+o12+":name",attr)
+        attrtuple = ( "simple",[MMAttributePart("","fred") ] )
+        self.store.SetAttribute("One"+":"+o12+":name",*attrtuple)
 
         #Count attributes.
         objs1=list(self.store.EnumAttributes("One:"+o12))
         objs2=list(self.store.EnumAttributes("Two:"+o21))
-        print objs1
         self.assertEqual(len(objs1),1)
         self.assertEqual(len(objs2),0)
         
@@ -111,11 +102,18 @@ class storeTests(object):
         self.assertFalse(self.store.HasAttribute("One:"+o12+":notname"))
 
         #Retrieve attribute.
-        self.assertEquals(str(self.store.GetAttribute("One:"+o12+":name")),"fred")
-        # Test same instance. 
-        #TODO -  reconstruct attribute purely from the backing store.
-         
-    def testProxyObj(self):
+        self.assertEquals(self.store.GetAttribute("One:"+o12+":name"),attrtuple)
+        
+        #Delete it.
+        self.store.DelAttribute("One:"+o12+":name")
+ 
+        #Count attributes.
+        objs1=list(self.store.EnumAttributes("One:"+o12))
+        objs2=list(self.store.EnumAttributes("Two:"+o21))
+        self.assertEqual(len(objs1),0)
+        self.assertEqual(len(objs2),0)
+                
+    def testProxyObjAttr(self):
         """
         Test the Object proxy used in MMObjects.
         

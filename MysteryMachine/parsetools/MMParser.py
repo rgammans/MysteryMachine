@@ -26,7 +26,7 @@ from docutils.core import  publish_doctree, default_description
 from docutils.parsers.rst import roles
 from grammar import Grammar
 
-from MysteryMachine.schema.MMSystem import GetLoadedSystemByName
+from MysteryMachine.schema import GetLoadedSystemByName
 
 import re
 from exceptions import *    

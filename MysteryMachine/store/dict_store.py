@@ -1,7 +1,6 @@
 
 import re
 from MysteryMachine.policies.SequentialId import NewId
-from MysteryMachine.schema.MMObject import MMObject
 from MysteryMachine.store import *
 from MysteryMachine.store.Base import Base 
 
@@ -74,10 +73,10 @@ class dict_store(Base):
         #print  "%s is %s" % (path ,val)
         return val
 
-    def SetAttribute(self,attr,val):
+    def SetAttribute(self,attr,type,parts):
         #print "setting %s" % attr
         path = self.canonicalise(attr)
-        self.catdict[path[0]][path[1]][path[2]]=val        
+        self.catdict[path[0]][path[1]][path[2]]=(type,parts)
 
     def DelAttribute(self,attr):
         path = self.canonicalise(attr)
@@ -86,5 +85,5 @@ class dict_store(Base):
 
     def GetAttribute(self,attr):
         path = self.canonicalise(attr)
-        print "PATH = %s " % path
+        print "GETPATH = %s " % path
         return self.catdict[path[0]][path[1]][path[2]]

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#   			schema/__init__.py - Copyright Roger Gammans
+#   			Globals.py - Copyright Roger Gammans
 # 
 #
 #    This program is free software; you can redistribute it and/or modify
@@ -22,4 +22,30 @@
 #
 #
 
-from Globals import GetLoadedSystemByName
+import weakref
+import re
+import binascii
+
+##Support functions to allow a single MysteryMachine instance to
+# be used to edit multiple systems.
+#
+# We use a Weak ref here so that the System can be discarded once it
+# is finished with.
+DocsLoaded = weakref.WeakValueDictionary()
+
+def GetLoadedSystemByName(name):
+    return DocsLoaded[name]
+
+def EscapeSystemUri(uri):
+    uri = re.sub("%" , "%25" , uri)
+    uri = re.sub(":" , "%3a" , uri)  
+    return uri
+
+def UnEscapeSystemUri(uri):
+    print "***WARNING Func UnEscapeSystemUri Not complete***"
+    def findChar(match):
+        #TODO Unicode support...
+        return  binascii.unhexlify(match.group(1))
+    return re.sub("%([0-9a-fA-F]{2})",findChar,uri)
+
+

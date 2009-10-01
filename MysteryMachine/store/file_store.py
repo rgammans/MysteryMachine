@@ -29,6 +29,7 @@ from MysteryMachine.store.Base import Base
 import os
 import sys
 import thread
+import glob
 
 policy = MysteryMachine.policies
 
@@ -105,13 +106,6 @@ class filestore(Base):
     def _getpath(self,expr):
         return expr.replace(":",os.sep )
 
-    
-    
-    def Add_file(self,filename):
-        """
-        Register filnemae with SCM
-        """
-        pass
     def EnumCategories(self):
         for dentry in os.listdir(self.path):
             #Skip directories which we don't manage.
@@ -170,7 +164,7 @@ class filestore(Base):
 
         return False
 
-    def SetAttribute(self,attr,val):
+    def SetAttribute(self,attr,type,parts):
         """
 
         @param string attribute : 
@@ -178,9 +172,6 @@ class filestore(Base):
         @author
         """
 
-        val = val.get_value()
-        parts = val.get_parts()
-        type =  val.get_type()
         pathparts = list(self.canonicalise(attr))
         for part in parts:
             partname = part.get_name()
@@ -194,8 +185,13 @@ class filestore(Base):
 
 
     def DelAttribute(self,attr):
-        workuri= os.path.join(self.path,*(attrele[:2]))
-        os.removeall(workuri,workuri+".*")
+        attrele = self.canonicalise(attr)
+        workuri= os.path.join(self.path,*(attrele[:3]))
+        files = [  ]
+        files += glob.glob(workuri + ".*" )
+        files += glob.glob(".new." + workuri + ".*" )
+        for f in files:
+                os.remove(f)
         
 
     def GetAttribute(self,attr):
@@ -216,6 +212,4 @@ class filestore(Base):
         
         if attrtype is None: return None
         
-        return MMAttribute(attrele[2],MakeAttributeValue(attrtype,files),
-                           self.GetObject(attrele[0]+":"+attrele[1]))
-        
+        return (attrtype,files)

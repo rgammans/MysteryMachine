@@ -23,38 +23,21 @@
 #
 
 import MysteryMachine
+from Globals import DocsLoaded
 
+from MysteryMachine.schema.MMObject import *
 from MysteryMachine.schema.MMBase import *
 from MysteryMachine.store import *
 #from MMSystemDiff import *
 #from Controller import *
+
+from Globals import * 
 
 import re
 import time
 import weakref
 import binascii
 
-##Support functions to allow a single MysteryMachine instance to
-# be used to edit multiple systems.
-#
-# We use a Weak ref here so that the System can be discarded once it
-# is finished with.
-DocsLoaded = weakref.WeakValueDictionary()
-
-def GetLoadedSystemByName(name):
-    return DocsLoaded[name]
-
-def EscapeSystemUri(uri):
-    uri = re.sub("%" , "%25" , uri)
-    uri = re.sub(":" , "%3a" , uri)  
-    return uri
-
-def UnEscapeSystemUri(uri):
-    print "***WARNING Func UnEscapeSystemUri Not complete***"
-    def findChar(match):
-        #TODO Unicode support...
-        return  binascii.unhexlify(match.group(1))
-    return re.sub("%([0-9a-fA-F]{2})",findChar,uri)
 
 class MMSystem (MMBase):
 
@@ -98,6 +81,7 @@ class MMSystem (MMBase):
     DocsLoaded[self.name] = self
     store.set_owner(self)
     print "my name is %s" % self.name
+    self.cache = weakref.WeakValueDictionary()
 
   def __repr__(self):
     return self.name
@@ -149,8 +133,14 @@ class MMSystem (MMBase):
     @return MMObject :
     @author
     """
-    obj = self.store.GetObject(cat + ":" + id)
-    return obj
+    fullid = cat + ":" + id
+    try:
+        o = self.cache[fullid]
+    except KeyError:
+        o = MMObject(fullid,self,self.store.GetObjStore(fullid))
+        self.cache[fullid] = o
+    #TODO:Unlock Cache.
+    return o
 
   def Commit(self, msg):
     """

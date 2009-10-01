@@ -38,7 +38,6 @@ class Base(object):
     def __init__(self,uri,*args,**kwargs):
         self.uri   = GetCanonicalUri(uri)
         self.owner = None
-        self.cache = weakref.WeakValueDictionary()
 
     def getUri(self):
         return self.uri
@@ -84,35 +83,29 @@ class Base(object):
     def HasObject(self,obj):
         return False
 
-    def GetObject(self,obj):
-        if not self.HasObject(obj): raise KeyError()
-        return self.GetObjStore(obj).GetObject()
-    
     def GetObjStore(self,obj):
         return obj_storeproxy(self,obj)
 
 
+    def Add_file(self,filename):
+        """
+        Adds a file to the SCMs repo 
+
+        This function is intended to be called by store modules, so
+        to allow them to commincate to the SCM provider.
+        """
 
 class obj_storeproxy:
     def __init__(self,store,obj):
         self.store=store
         self.obj=obj
 
-    def GetObject(self):
-        #Use an exception rather than a test here as it avoids
-        # a race hazard
-        try:
-            o = self.store.cache[self.obj]
-        except KeyError:
-            o = MMObject(self.obj,self.store.get_owner(),self)
-            self.store.cache[self.obj] = o
-        return o
-
     def GetAttribute(self,attr):
         return self.store.GetAttribute(self.obj + ":" +attr)
-    
-    def SetAttribute(self,attr,val):
-        return self.store.SetAttribute(self.obj + ":" +attr,val)
+        
+
+    def SetAttribute(self,attr,type,parts):
+        return self.store.SetAttribute(self.obj + ":" +attr,type,parts)
    
     def DelAttribute(self,attr):
         return self.store.DelAttribute(self.obj + ":" +attr)

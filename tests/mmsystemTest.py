@@ -58,8 +58,11 @@ class sysTests(unittest.TestCase):
         o12=self.sys.NewObject("One",None)
         o21=self.sys.NewObject("Two",None)
   
+        #Check instance behaviour
+        self.assertTrue(isinstance(o11,MMObject))
         self.assertTrue(self.sys.get_object("One",repr(o12).split(":")[1]) is o12)
-        
+        self.assertFalse(self.sys.get_object("One",repr(o12).split(":")[1]) is o11)
+      
         objs1=list(self.sys.EnumObjects("One"))
         objs2=list(self.sys.EnumObjects("Two"))
         self.assertEqual(len(objs1),2)
