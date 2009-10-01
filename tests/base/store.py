@@ -120,6 +120,40 @@ class storeTests(object):
         this prolly requires an overridable method to get the obj to
         start with  
         """
-        pass 
+        #Create some cats and objs.
+        self.store.NewCategory("One")
+        self.store.NewCategory("Two")
+        o11=self.store.NewObject("One")
+        o12=self.store.NewObject("One")
+        o21=self.store.NewObject("Two")
+    
+        o12store = self.store.GetObjStore("One:"+o12)
+        o21store = self.store.GetObjStore("Two:"+o21)
 
+        #Set an attribute.
+        attrtuple = ( "simple",[MMAttributePart("","fred") ] )
+        o12store.SetAttribute("name",*attrtuple)
 
+        #Count attributes.
+        objs1=list(o12store.EnumAttributes())
+        objs2=list(o21store.EnumAttributes())
+        self.assertEqual(len(objs1),1)
+        self.assertEqual(len(objs2),0)
+        
+        #Test presence
+        self.assertTrue(o12store.HasAttribute("name"))
+        self.assertFalse(o21store.HasAttribute("name"))
+        self.assertFalse(o12store.HasAttribute("notname"))
+
+        #Retrieve attribute.
+        self.assertEquals(o12store.GetAttribute("name"),attrtuple)
+        
+        #Delete it.
+        o12store.DelAttribute("name")
+ 
+        #Count attributes.
+        objs1=list(o12store.EnumAttributes())
+        objs2=list(o21store.EnumAttributes())
+        self.assertEqual(len(objs1),0)
+        self.assertEqual(len(objs2),0)
+     
