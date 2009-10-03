@@ -28,28 +28,6 @@ from MMAttributeValue import CreateAttributeValue
 import operator
 import functools
 import sys
-
-class MMAttributePart (object):
-    """
-    Simple implementation of attribute parts. Uses incore storage
-    only.
-
-    This is sufficent to create and handle parts and attributes which
-    haven't been 'seved' or set on an object. But it must commonly
-    used for overidding in different storage models
-    """
-    def __init__(self,pname,value):
-        self.value=value
-        self.partname=pname
-    def __repr__(self):
-        return "MMAttributePart(\""+repr(self.value)+"\")"
-    def get_name(self):
-        return self.partname
-    def get_value(self):
-        return self.value
-    def set_value(self,val):
-        self.value=val
-
  
  
 class MMAttribute (MMBase):

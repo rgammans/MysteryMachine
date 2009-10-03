@@ -22,7 +22,7 @@
 import re
 import MysteryMachine.policies
 from MysteryMachine.schema.MMAttribute import MMAttribute
-from MysteryMachine.schema.MMAttributeValue import MakeAttributeValue, MMAttributePart
+from MysteryMachine.schema.MMAttributeValue import MakeAttributeValue 
 from MysteryMachine.store import *
 from MysteryMachine.store.Base import Base
 
@@ -77,7 +77,7 @@ def FileStoreAttributePart(filename,partname):
     data = infile.read()
     infile.close()
     print "FSAPi:data:%s"%data
-    return MMAttributePart(partname,data)
+    return {partname: data }
 
 class filestore(Base):
     """
@@ -173,12 +173,11 @@ class filestore(Base):
         """
 
         pathparts = list(self.canonicalise(attr))
-        for part in parts:
-            partname = part.get_name()
+        for partname,value in parts.items():
             filename = os.path.join(self.path,*pathparts)
             filename = "%s.%s.%s" % (filename,type,partname)
             file =SafeFile(filename,"w")
-            file.write(part.get_value())
+            file.write(value)
             file.close()
             #Ensure any RCS knows about the file.
             self.Add_file(filename)
@@ -197,7 +196,7 @@ class filestore(Base):
     def GetAttribute(self,attr):
         attrele = self.canonicalise(attr)
         workuri = os.path.join(self.path,*(attrele[:2]))
-        files = []
+        files = {}
         attrtype = None
         for candidate in os.listdir(workuri):
             items = candidate.split(".")
@@ -208,7 +207,7 @@ class filestore(Base):
                 if attrtype != items[1]:
                     raise exception("Inconsisent attrype in store")
                 print "GA:Loading:%s-%s)" %(candidate,items[2])
-                files += [ FileStoreAttributePart(os.path.join(workuri,candidate),items[2]) ]
+                files.update(FileStoreAttributePart(os.path.join(workuri,candidate),items[2]))
         
         if attrtype is None: return None
         

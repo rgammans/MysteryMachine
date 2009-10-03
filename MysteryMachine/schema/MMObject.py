@@ -213,20 +213,13 @@ class MMAttributeValue_MMObjectRef(MMAttributeValue):
     typename = "objectref"
     contain_prefs = { MMObject: 100 }
 
-    def __init__(self,parts):
-        super(MMAttributeValue_MMObjectRef, self).__init__(parts)
-        if len(self.parts) != 1 : raise Error()
-        part = parts[0]
-        #Decompose part and then recombine 
-        if isinstance(part,MMAttributePart):
-            part = part.get_value()
-        if isinstance(part,MMObject):
+    def __init__(self,*args,**kwargs):
+        super(MMAttributeValue_MMObjectRef, self).__init__(*args,**kwargs)
+        if isinstance(self.value,MMObject):
             #Get string represenation of the object.
             #TODO Store object here so it cached.
-            self.parts[0] = MMAttributePart("",repr(part))
-        else:
-            #TODO handle this case - str is ok anyway
-            self.parts[0] = MMAttributePart("",part)
+            self.parts['obj'] = repr(self.value)
+        
         if not self._validate(): raise Error()    
         #All ok.
         self.exports += [ "get_object" ]
@@ -248,7 +241,7 @@ class MMAttributeValue_MMObjectRef(MMAttributeValue):
         ##TODO Consider caching the return result.
   #      print "refobj->%s<--" % attr
         pstr = self.get_raw(attr)
-        print "pstr  ->%s<--" % pstr
+        print "MMA-O:go:pstr  ->%s<--" % pstr
         objref = Grammar(attr).parseString(pstr)[0]
   #      print "ret = %s, class = %s" % (objref , objref.__class__ )
         return objref

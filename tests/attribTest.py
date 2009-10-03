@@ -32,19 +32,6 @@ class DummyPart:
         return self.x
 
 class attribTest(unittest.TestCase):
-    def setUp(self):
-        self.partstested=False
-        pass
-    
-    def testParts(self):
-     if not self.partstested:
-       p1=MMAttributePart("part1","test")
-       self.assertEqual(p1.get_name(),"part1")
-       self.assertEqual(p1.get_value(),"test")
-       p1.set_value("another test")
-       self.assertEqual(p1.get_value(),"another test")
-       self.partstested=True
-
     
     def testCreate(self):
        attr=MMAttribute("document","test\n----\n\n\nA Message",None)

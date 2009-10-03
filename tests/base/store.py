@@ -22,7 +22,6 @@ Tests for the MysteryMachine dictstore  module
 """
 
 from MysteryMachine import * 
-from MysteryMachine.schema.MMAttributeValue import MMAttributePart
 
 import sys
 
@@ -87,7 +86,7 @@ class storeTests(object):
         o21=self.store.NewObject("Two")
 
         #Set an attribute.
-        attrtuple = ( "simple",[MMAttributePart("","fred") ] )
+        attrtuple = ( "simple",{ "":"fred" }  )
         self.store.SetAttribute("One"+":"+o12+":name",*attrtuple)
 
         #Count attributes.
@@ -131,7 +130,7 @@ class storeTests(object):
         o21store = self.store.GetObjStore("Two:"+o21)
 
         #Set an attribute.
-        attrtuple = ( "simple",[MMAttributePart("","fred") ] )
+        attrtuple = ( "simple",{ "":"fred" })
         o12store.SetAttribute("name",*attrtuple)
 
         #Count attributes.

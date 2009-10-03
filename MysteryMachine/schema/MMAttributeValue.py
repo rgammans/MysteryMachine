@@ -47,19 +47,19 @@ def CreateAttributeValue(val):
     if not isinstance(val,MMAttributeValue):
         #Decide on type to use and create object.
         vtype = FindBestValueType(type(val))
-        val = vtype([val])
+        val = vtype(value =val)
     else:
-        print "CAV2:type:%s\n" % val.__class__.typename
-        print "CAV2:parts:%s\n" % val.parts
+        print "CAV2:type:%s" % val.__class__.typename
+        print "CAV2:parts:%s" % val.parts
         val= copy.copy(val)
-        print "CAV2:newparts:%s\n" % val.parts
+        print "CAV2:newparts:%s" % val.parts
 
     return val
 
 
 def MakeAttributeValue(type,parts):
    cls = AttrTypes[type]
-   return cls(parts)
+   return cls(parts = parts)
                               
  
 def register_value_type(name,acls,nativelist):
@@ -109,8 +109,14 @@ class MMAttributeValue (MMBase ):
     
   __metaclass__ = _AttrMeta
 
-  def __init__(self,parts):
-    self.parts=parts
+  def __init__(self,*args, **kwargs):
+    self.parts = {} 
+    self.value = None
+    if 'parts' in kwargs:
+        self.parts=kwargs['parts']
+    if 'value' in kwargs:
+        self.value=kwargs['value']
+
     self.exports=[ "get_raw", "get_raw_rst" ]
 
   def __repr__(self):
@@ -130,7 +136,8 @@ class MMAttributeValue (MMBase ):
     """
     print str(self.__class__)
     print self.parts
-    result = "\n".join(map(lambda x:x.get_value(),self.parts))
+    #FIXME: Ensure consistent ordering
+    result = "\n".join(self.parts.values())
     print "raw-->%s<--" % result
     return result
 
@@ -184,35 +191,11 @@ class MMAttributeValue (MMBase ):
     
   def __copy__(self):
      print "AV_c:Entered"
-     return self.__class__(self.parts)
+     return self.__class__(parts = self.parts)
 
 
   def __eq__(self,other):
      return self.get_type() == other.get_type() and self.get_parts() == other.get_parts()
-
-class MMAttributePart (object):
-    """
-    Simple implementation of attribute parts. Uses incore storage
-    only.
-
-    This is sufficent to create and handle parts and attributes which
-    haven't been 'seved' or set on an object. But it must commonly
-    used for overidding in different storage models
-    """
-    def __init__(self,pname,value):
-        self.value=value
-        self.partname=pname
-    def __repr__(self):
-        return "MMAttributePart(\""+repr(self.value)+"\")"
-    def get_name(self):
-        return self.partname
-    def get_value(self):
-        return self.value
-    def set_value(self,val):
-        self.value=val
-    def __eq__(self,other):
-        return self.value == other.value and self.partname == other.partname
-
 
 class MMAttributeValue_BasicText(MMAttributeValue):
     """
@@ -228,7 +211,6 @@ class MMAttributeValue_BasicText(MMAttributeValue):
 
     def __init__(self,*args,**kwargs):
         MMAttributeValue.__init__(self,*args,**kwargs)
-        part=self.parts[0]
-        if not isinstance(part,MMAttributePart):
-            part = MMAttributePart("",part)
-        self.parts = [ part ] 
+        #Get passed in value.
+        if self.value is not None:
+            self.parts[""] = str(self.value)
