@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-#   			grammarTest.py - Copyright Roger Gammans
+#!/usr/bin/env python5#   			grammarTest.py - Copyright Roger Gammans
 # 
 #
 #    This program is free software; you can redistribute it and/or modify
@@ -25,7 +24,7 @@ from MysteryMachine.schema.MMAttributeValue import *
 from MysteryMachine.schema.MMObject import * 
 import unittest
 from MysteryMachine import * 
-
+from functools import partial
 
 class ObjectProxy(MMObject):
     def __init__(self,*args,**kwargs):
@@ -56,11 +55,9 @@ class SystemProxy:
     def getSelf(self):
         return self
     
-class DummyPart:
+class DummyPart(MMAttributePart):
     def __init__(self,x):
-        self.x=x
-    def get_value(self):
-        return self.x
+        MMAttributePart.__init__(self,"",x)
 
 class attribValTest(unittest.TestCase):
     def setUp(self):
@@ -91,15 +88,47 @@ class attribValTest(unittest.TestCase):
         """
         Test CreateAttributeValue entry point
         """
-        pass
+        notsillycalled =  [0]
+        dummy  = [0]
+        dummy2  = [0]
+        def sillym(sillycalled,parts):
+            sillycalled[0]=1
+            return parts
+
+        class NotSilly(str):
+            pass
+
+        #Test type lookup etc.
+        register_value_type("nsilly",partial(sillym,notsillycalled) , { NotSilly:200, str:50  })
+        register_value_type("silly",partial(sillym,dummy) , { NotSilly:100  })
+        register_value_type("silly2",partial(sillym,dummy2) , { NotSilly:150  })
+        self.assertEquals(CreateAttributeValue(NotSilly("xyzzy")),[NotSilly("xyzzy")])
+        self.assertNotEquals(dummy[0],1)
+        self.assertNotEquals(dummy2[0],1)
+        self.assertEquals(notsillycalled[0],1)
+ 
+        #Value copy operation
+        val=MMAttributeValue_BasicText([DummyPart("test")])
+        val2 = CreateAttributeValue(val)
+        self.assertEquals(val, val2)
+        self.assertFalse(val is val2)
+
 
     def testMake(self):
         """
         Test Make AttributeValue entry point
         """        
-        pass 
-    # TODO
-    # Test handling of parse errors.      
+        
+        sillycalled =  [0]
+        def sillym(sillycalled,parts):
+            sillycalled[0]=1
+            return parts
+        register_value_type("silly",partial(sillym,sillycalled) , { })
+        self.assertEquals(MakeAttributeValue("silly","xyzzy"),"xyzzy")
+        self.assertEquals(sillycalled[0],1)
+
+
+ 
 def getTestNames():
 	return [ 'attribValueTest.attribValTest' ] 
 

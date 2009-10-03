@@ -52,6 +52,7 @@ def CreateAttributeValue(val):
         print "CAV2:type:%s\n" % val.__class__.typename
         print "CAV2:parts:%s\n" % val.parts
         val= copy.copy(val)
+        print "CAV2:newparts:%s\n" % val.parts
 
     return val
 
@@ -78,7 +79,7 @@ def FindBestValueType(atype):
     """
     """
     #Handle base class and more sets in the key. 
-    return (sorted(TypeLookup[atype],key=operator.itemgetter(1)))[0][0]
+    return (sorted(TypeLookup[atype],key=operator.itemgetter(1),reverse= True ))[0][0]
 
 
 class _AttrMeta(type):
@@ -146,7 +147,7 @@ class MMAttributeValue (MMBase ):
     """
 
     @return bool :
-    @author
+    @authorMysteryMachine/schema/MMAttribute.py:
     """
     ok = True
     #Test we can parse succesfully, and no more.
@@ -159,33 +160,35 @@ class MMAttributeValue (MMBase ):
         ok = False
     return ok
 
-    def assign(self,other):
-        """
-        Handle self=other calls.
+  def assign(self,other):
+     """
+     Handle self=other calls.
 
-        The aim of this is to allow custom cleverness as the
-        value are updated. The aim is to be able to find the
-        appropriate way of store the change. 
-        This is important in the more advanced value types.
-        
-        Pre: self and other are of the same type. 
-        Post:str(self) == str(other) 
-        """
-        if isinstance(other,MMAttributeValue):
-            if self.__class__ is other.__class__:
-                self.parts =  other.parts        
-            else:
-                raise TypeError()
-        else:
-            #TODO Clever code here to handle appropriate value
-            # setting.
-            pass
+     The aim of this is to allow custom cleverness as the
+     value are updated. The aim is to be able to find the
+     appropriate way of store the change. 
+     This is important in the more advanced value types.
+     
+     Pre: self and other are of the same type. 
+     Post:str(self) == str(other) 
+     """
+     if isinstance(other,MMAttributeValue):
+         if self.__class__ is other.__class__:
+             self.parts =  other.parts        
+         else:
+             raise TypeError()
+     else:
+         #TODO Clever code here to handle appropriate value
+         # setting. Raise error while unimplemented. 
+         raise TypeError()
     
-    def __copy__(self):
-        return self.__class__(self.parts)
+  def __copy__(self):
+     print "AV_c:Entered"
+     return self.__class__(self.parts)
 
 
-
+  def __eq__(self,other):
+     return self.get_type() == other.get_type() and self.get_parts() == other.get_parts()
 
 class MMAttributePart (object):
     """
