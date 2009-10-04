@@ -43,6 +43,7 @@ def GetMercurialUi():
     """
 
 import mercurial
+import mercurial.ui
 import sys
 import types
 import re

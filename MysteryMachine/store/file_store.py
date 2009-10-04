@@ -43,7 +43,7 @@ class SafeFile(file):
      
     """
 
-    def __init__(self,*args):
+    def __init__(self,*args,**kwargs):
         self.finalname = args[0]
         (path , file ) = os.path.split(self.finalname)
         self.realname  = os.path.join(path,".new."+file)
