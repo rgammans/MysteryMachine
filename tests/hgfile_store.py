@@ -34,7 +34,7 @@ import sys
 
 class BasicStore(object):
     def __init__(self,*args,**kwargs):
-        super(BasicStore,self).__init__(self,*args,**kwargs)
+        super(BasicStore,self).__init__()
         self.path = args[1]
         if 'create' in kwargs and kwargs['create']:
             os.mkdir(self.path)
