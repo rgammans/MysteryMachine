@@ -30,18 +30,6 @@ This base modules encapuslates the globals for the mystery machine
 system.
 """
 
-def GetExtLib():
-    """
-    Returns the extension lib instance to use.
-    """
-    return ExtLib
-
-def GetMercurialUi():
-    """
-    Gets a mercurial ui instance to use when calling mercurial api
-    functions.
-    """
-
 import mercurial
 import mercurial.ui
 import sys
