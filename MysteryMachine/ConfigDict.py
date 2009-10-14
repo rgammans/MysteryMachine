@@ -128,6 +128,9 @@ class pyConfigList(object):
             yield self.dict[item]
 
 def argshift(args,default):
+    """
+    return (args[0] , args[1:])  or (default , [] ) if args empty.
+    """
     value=default
     remaining=[]
     if len(args)>0:
