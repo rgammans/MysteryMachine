@@ -22,6 +22,8 @@ Tests for the MysteryMachine.Schema AttributeValue module
 """
 
 from MysteryMachine.ConfigYaml import *
+#Use our own hash class to test for modification.
+from MysteryMachine.ExtensionSecureID import *
 import unittest
 
 import types
@@ -43,6 +45,7 @@ import types
 
 class ConfigDictTest(unittest.TestCase):
     def setUp(self):
+        self.id = ExtensionSecureID.fromPathName("tests/test.yaml")
         self.cfg= ConfigYaml(False)
         self.cfg.read("tests/test.yaml")
         pass
@@ -82,6 +85,16 @@ class ConfigDictTest(unittest.TestCase):
             self.assertFalse(self.cfg["testsection"] is i)
         for i in self.cfg["testlist"]:
             self.assertFalse(self.cfg["testlist"] is i)       
+
+    def testTestMode(self):
+        #Set testmode
+        self.cfg.testmode()
+        #Make change
+        self.cfg["new"]="Really!"
+        #Release the handle
+        self.cfg = None
+        newid = ExtensionSecureID.fromPathName("tests/test.yaml")
+        self.assertEquals(newid,self.id)
 
 def getTestNames():
 	return [ 'ConfigDictTest.ConfigDictTest' ] 

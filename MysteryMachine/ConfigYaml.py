@@ -96,7 +96,6 @@ class ConfigYaml(object):
              self.write()
 
     def testmode(self):
-        self.write()
         self.persistent=False
         self.readonly=False
 
@@ -109,5 +108,3 @@ class ConfigYaml(object):
         #Should probably use SafeFile from the store here.
         f = file(self.filename,"w")
         yaml.dump(self.cfg,f)
-
-  
