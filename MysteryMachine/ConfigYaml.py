@@ -91,10 +91,6 @@ class ConfigYaml(object):
         for i in self.cfg:
             yield i
  
-    def __del__(self):
-        if self.persistent:
-             self.write()
-
     def testmode(self):
         self.persistent=False
         self.readonly=False

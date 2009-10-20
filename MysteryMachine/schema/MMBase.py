@@ -21,7 +21,10 @@
 # The original location of this file is /home/roger/sources/MysteryMachine/generated/MMBase.py
 #
 
-from  MysteryMachine import GetExtLib 
+
+from __future__ import with_statement
+
+from  MysteryMachine import StartApp
  
 class MMBase(object):
 
@@ -42,10 +45,11 @@ class MMBase(object):
     @author
     """
     print "In MMBase.__init__ %s" % self.__class__
-    for helper in GetExtLib().get_helpers_for(self.__class__):
-        if not hasattr(self,"_helpers"): self._helpers=[]
-        #Instatiante a helper instance.
-        self._helpers += [ helper(self) ] 
+    with StartApp() as g:
+        for helper in g.GetExtLib().get_helpers_for(self.__class__):
+            if not hasattr(self,"_helpers"): self._helpers=[]
+            #Instatiante a helper instance.
+            self._helpers += [ helper(self) ] 
 
   def getRequiredVersions(self):
     """

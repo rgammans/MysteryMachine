@@ -21,8 +21,6 @@
 
 import re
 import MysteryMachine.policies
-from MysteryMachine.schema.MMAttribute import MMAttribute
-from MysteryMachine.schema.MMAttributeValue import MakeAttributeValue 
 from MysteryMachine.store import *
 from MysteryMachine.store.Base import Base
 
@@ -42,7 +40,8 @@ class SafeFile(file):
     http://thunk.org/tytso/blog/2009/03/12/delayed-allocation-and-the-zero-length-file-problem/#comment-1986http://thunk.org/tytso/blog/2009/03/12/delayed-allocation-and-the-zero-length-file-problem/#comment-1986
      
     """
-
+    ##TODO - Allow to use as context manager which aborts the write and cleans
+    #        up is the client code throws.
     def __init__(self,*args,**kwargs):
         self.finalname = args[0]
         (path , file ) = os.path.split(self.finalname)

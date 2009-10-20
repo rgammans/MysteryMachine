@@ -18,6 +18,7 @@
 #
 # 
 
+from __future__ import with_statement
 
 import mercurial
 import mercurial.cmdutil as cmdutil
@@ -39,8 +40,14 @@ class HgStoreMixin(object):
         super(HgStoreMixin,self).__init__(self,*args,**kwargs)
         #We get the Ui from our Root so that our Ui's can provide their own
         # implementation.
-        self.ui = MysteryMachine.GetMercurialUi()
-        self.repo = hg.repository(self.ui,self.get_path(),create = (kwargs.get('create') or 0))
+        #
+        # The with statement doesn't make the best sense here as we keep the 
+        # resources past the end of the block /BUT/ our special use of 
+        # in startapp should take care of it - although we run the Risk of the
+        # Ui being closed...
+        with MysteryMachine.StartApp() as MMGlobals:
+            self.ui = MMGlobals.GetMercurialUi()
+            self.repo = hg.repository(self.ui,self.get_path(),create = (kwargs.get('create') or 0))
         
 
     def Add_file(self,filename):

@@ -26,6 +26,9 @@
 Tests for the MysteryMachine.ExtensionLib class
 """
 
+from __future__ import with_statement
+
+
 from MysteryMachine import *
 import unittest
 import os
@@ -35,12 +38,10 @@ def foo(object):
     return object()
 
 class ExtensionLibTest(unittest.TestCase):
-    def setUp(self):
-        print "Doing setup\n-----\n"
-        StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
-        self.extlib=GetExtLib()        
 
     def gettrustedlist(self):
+      with StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"])  as g:
+        self.extlib = g.GetExtLib()
         plugins = []
         for p in self.extlib.get_extension_list():
             if self.extlib.IsTrusted(p):
@@ -48,6 +49,8 @@ class ExtensionLibTest(unittest.TestCase):
         return plugins
           
     def testTrusted(self):
+      with StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"])  as g:
+        self.extlib = g.GetExtLib()
         # check the number of plugins
         plugins = self.gettrustedlist()
 
@@ -55,6 +58,8 @@ class ExtensionLibTest(unittest.TestCase):
         self.assertEqual(plugins[0].name,"FirstPlugin")
 
     def testRejected(self):
+      with StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"])  as g:
+        self.extlib = g.GetExtLib()
         #Check plugins accestp/reject are the ones we expect.
         rejects = []
         for r in self.extlib.get_extension_list():
@@ -66,6 +71,8 @@ class ExtensionLibTest(unittest.TestCase):
 
 
     def testAddTrust(self):
+      with StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"])  as g:
+        self.extlib = g.GetExtLib()
         #Add second to trust list
         print "starting addtrust======"
         to_trust = []
@@ -78,6 +85,8 @@ class ExtensionLibTest(unittest.TestCase):
         self.assertEqual(len(plugins),2)
 
     def testHelpers(self):
+      with StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"])  as g:
+        self.extlib = g.GetExtLib()
         self.extlib.register_helper("bar",foo);
         self.assertEqual(len(self.extlib.get_helpers_for("bar")),1)
         self.extlib.unregister_helper("bar",foo);

@@ -30,25 +30,22 @@ This base modules encapuslates the globals for the mystery machine
 system.
 """
 
+from __future__ import with_statement
+
 import mercurial
 import mercurial.ui
 import sys
 import types
 import re
-
+import threading
+from contextlib import contextmanager
 
 
 from MysteryMachine.ExtensionLib import ExtensionLib
 from MysteryMachine.ConfigDict import pyConfigDict
 
 #Global vars
-#Singleton objects.
-Ui = None
-ExtLib = None
-
 #Configuration details...
-cmdline_options=dict()
-cfg_engine=None
 defaults=dict()
 
 def set_mysterymachine_default(name,value):
@@ -65,66 +62,139 @@ def set_mysterymachine_default(name,value):
 
     Don't set these unless you really have to as if two modules set the
     same setting it may not be reliable as to witch one sticks.
+
+    These defaults should be called before a LibraryContext instance
+    is created throught startapp. So these are the has to be a module global.
     """
+    global defaults
+
     defaults[name]=value
 
 def get_mysterymachine_default(name,defvalue=None):
+    global defaults
+
     value=defvalue
     if name in defaults:
         value=defaults[name]
     return value
 
-
-def get_app_option(name):
+ 
+class SingletonWithExternalLocking(type):
     """
-    Find application level option 'name'.
-
-    The function first checks the configuration engine if
-    it has been initialised, and then checks the command line options.
-
-    Finally it checks the system defaults.
-    """   
-    val=None 
-    
-    if cmdline_options and name in cmdline_options:
-        return cmdline_options[name]
-
-    if cfg_engine != None:
-        return cfg_engine.get_option("Global",name)    
-
-    return get_mysterymachine_default(name,None)
-
-def get_app_option_object(name):
+    An internal singleton metaclass 
     """
-    This is the same as get_app_option, but instanties a 
-    object of the value;s class iff the valehas type str.
+    def __init__(self, name, bases, dict):
+        super(SingletonWithExternalLocking, self).__init__(name, bases, dict)
+        self.instance = None
+        self.mutex = threading.Lock()
+ 
+    def __call__(self, *args, **kw):
+        if self.instance is None:
+            self.instance = super(SingletonWithExternalLocking, self).__call__(*args, **kw)
+ 
+        return self.instance
 
-    This function DOES NOT import any more modules so the
-    value must be a callable at the main level scope, and
-    take no arguments.
-    """
-    val=get_app_option(name)
-    if type(val) in types.StringTypes:
-        #Call 'val' with no args.
-        if val in globals():
-            val=(globals()[val])()
-    return val
+    def IsInstantiated(self):
+        return self.instance is not None
+ 
+    @contextmanager
+    def Lock(self):
+        """
+        A context manager design to protect the singleton from construction 
+        races. I doubt these are common - but its good practice to lock if possible.
 
-def GetExtLib():
-    """
-    Returns the extension lib instance to use.
-    """
-    return ExtLib
+        Bear in mind the use of the  IsInstantiated() / __init__() pair in StartApp
+        has a natural race as well which could cause some nasties.
+        """
+        self.mutex.acquire()
+        try:
+            yield True
+        finally:
+            self.mutex.release()
 
-def GetMercurialUi():
-    """
-    Gets a mercurial ui instance to use when calling mercurial api
-    functions.
-    """
-    if Ui == None:
-        return mercurial.ui.ui()
-    else:
-        return Ui.mercurial_ui()
+class LibraryContext(object):
+ 
+    __metaclass__ = SingletonWithExternalLocking
+ 
+    def __init__(self,args):
+        ###DO all initialisation.
+
+        self.cmdline_options,self.args=parse_options(args)
+
+        ##Initiliase Config engine.
+        self.cfg_engine = self.get_app_option_object("cfgengine")
+        self.cfg_engine.read(self.get_app_option_object("cfgfile"))
+        if "testmode" in self.cmdline_options:
+            self.cfg_engine.testmode()    
+        
+        #Initialise Extlib
+        self.ExtLib=ExtensionLib(self.cfg_engine)
+        #TODO Check config for Ui data.
+        self.Ui = None    
+
+    def close(self):
+         ## Do our Application finalisation here.
+        self.cfg_engine.write()
+        self.__class__.instance = None
+
+    def Run(self):
+        """
+        If an extension with mainloop has been registered and select call it.
+        """
+        if self.Ui is not None:
+            self.Ui.Run()
+
+
+    def GetExtLib(self):
+        """
+        Returns the extension lib instance to use.
+        """
+        return self.ExtLib
+
+    def GetMercurialUi(self):
+        """
+        Gets a mercurial ui instance to use when calling mercurial api
+        functions.
+        """
+        if self.Ui == None:
+            return mercurial.ui.ui()
+        else:
+            return Ui.mercurial_ui()
+
+    def get_app_option(self,name):
+        """
+        Find application level option 'name'.
+
+        The function first checks the configuration engine if
+        it has been initialised, and then checks the command line options.
+
+        Finally it checks the system defaults.
+        """   
+        val=None 
+        
+        if name in self.cmdline_options:
+            return self.cmdline_options[name]
+
+        if self.cfg_engine != None and name in self.cfg_engine:
+            return self.cfg_engine[name]   
+
+        return get_mysterymachine_default(name,None)
+
+    def get_app_option_object(self,name):
+        """
+        This is the same as get_app_option, but instanties a 
+        object of the value;s class iff the valehas type str.
+
+        This function DOES NOT import any more modules so the
+        value must be a callable at the main level scope, and
+        take no arguments.
+        """
+        val=self.get_app_option(name)
+        if type(val) in types.StringTypes:
+            #Call 'val' with no args.
+            if val in globals():
+                val=(globals()[val])()
+        return val
 
 #We could use getopts here - but that needs a list of options
 #  - this doesn't.
@@ -190,22 +260,35 @@ def parse_options(args):
         out_opts[state]=None
 
     return out_opts, out_args
- 
 
-def StartApp(args):
+
+            
+class StartApp(object):
     """
     Start up the main Mystery machine application.
-    """
-    global cmdline_options
-    global ExtLib 
 
-    ##Initiliase Config engine & Extentions library.
-    cmdline_options,args=parse_options(args)
-    cfg_engine = get_app_option_object("cfgengine")
-    cfg_engine.read(get_app_option_object("cfgfile"))
-    if "testmode" in cmdline_options:
-        cfg_engine.testmode()    
-    ExtLib=ExtensionLib(cfg_engine)
+    This class is a context manager for the main LibraryContext. We allow
+    StartApp(..) to create nested contexts. However for simplicity these contexts
+    must be strictly nested. The first one created always destroys the context.
+
+    This should be easy to achieve by wrapping your main routine with a with StartApp..
+    """
+    def __init__(self,args = [ ]):
+        with LibraryContext.Lock() as  lck:
+            self.primary = not LibraryContext.IsInstantiated()
+            if self.primary and len(args) ==0: 
+                #We could allow the app to continue on with some defaults - but it's more likely
+                # to mean that application writer hasn't initiallised the MM library.
+                raise RuntimeError("Arguments required - MM should probably have been initialised before the program got this far.")
+            self.maincntxt = LibraryContext(args)
+  
+    def __enter__(self):
+        return  self.maincntxt
+    
+    def __exit__(self,exctype,excvalue,tb):
+        if self.primary:
+            self.maincntxt.close()
 
 if __name__ == '__main__':
-   StartApp(sys.argv[1:])
+   with StartApp(sys.argv[1:]) as MyMM:
+        MyMM.Run()

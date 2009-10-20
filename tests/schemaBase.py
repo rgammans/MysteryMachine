@@ -18,8 +18,10 @@
 #
 # 
 """
-Tests for the MysteryMachine.VersionNr class
+Tests for the MysteryMachine.schema MMBase class
 """
+
+from __future__ import with_statement
 
 from MysteryMachine.schema.MMBase import *
 from MysteryMachine import *
@@ -39,21 +41,25 @@ class bar(object):
         self.owner = owner 
 
 class BaseTest(unittest.TestCase):
-    def setUp(self):
-        StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg"]) 
-        if not bar in foo.__bases__: 
-            foo.__bases__ +=  ( bar, )
-        GetExtLib().register_helper(foo,bar)
-
     def testInit(self):
-        MMBase()
-        #This tests __init__ completes.
-        self.assertTrue(True)
+        with StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg"]) as g:
+            if not bar in foo.__bases__: 
+                foo.__bases__ +=  ( bar, )
+            g.GetExtLib().register_helper(foo,bar)
+           
+            MMBase()
+            #This tests __init__ completes.
+            self.assertTrue(True)
 
     def testExtensions(self):
-        f=foo()
-        self.assertTrue(bar in f.__class__.__bases__)
-        self.assertTrue(bar in map(lambda x:type(x) , f._helpers))
+         with StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg"]) as g:
+            if not bar in foo.__bases__: 
+                foo.__bases__ +=  ( bar, )
+            g.GetExtLib().register_helper(foo,bar)
+           
+            f=foo()
+            self.assertTrue(bar in f.__class__.__bases__)
+            self.assertTrue(bar in map(lambda x:type(x) , f._helpers))
 
 def getTestNames():
 	return [ 'schemaBase.BaseTest' ] 

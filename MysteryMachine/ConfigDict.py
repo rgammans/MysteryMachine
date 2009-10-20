@@ -152,9 +152,6 @@ class pyConfigDict(object):
         else:
            self._sections = {}
         
-    def  __del__(self):
-        self.write()
-
     def testmode(self):
         self.write()
         self.persistent=False
