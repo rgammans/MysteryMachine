@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#   			VersionNr.py - Copyright Roger Gammans
+#               VersionNr.py - Copyright Roger Gammans
 # 
 #
 #    This program is free software; you can redistribute it and/or modify
@@ -32,62 +32,75 @@ import unittest
 import os
 
 class TrustExtManTest(unittest.TestCase):
-	def setUp(self):
-		#1. Get First.py, make hash and add to 
-		#   config object.
-		extpath=os.path.join( os.path.dirname(os.path.abspath(__file__)),"Plugins")
-		trustedp=ExtensionSecureID.fromPathName(os.path.join(extpath,"First.py"))
-		self.config = { "FirstPlugin" : trustedp }		
-	
-		#2. Create Trustmanager class and collect plugins.
-		self.myPluginManager = TrustedPluginManager(
-			      directories_list=[ extpath ], 
-                              plugin_info_ext="mm-plugin",  
-			      trustList=[ self.config ] )
+    def setUp(self):
+        #1. Get First.py, make hash and add to 
+        #   config object.
+        extpath=os.path.join( os.path.dirname(os.path.abspath(__file__)),"Plugins")
+        trustedp=ExtensionSecureID.fromPathName(os.path.join(extpath,"First.py"))
+        self.config = { "FirstPlugin" : trustedp }        
+    
+        #2. Create Trustmanager class and collect plugins.
+        self.myPluginManager = TrustedPluginManager(
+                directories_list=[ extpath ], 
+                plugin_info_ext="mm-plugin",  
+                trustList=[ self.config ] )
 
-		self.myPluginManager.collectPlugins()
-		# Will be used later
-		self.plugin_info = None
+        self.myPluginManager.collectPlugins()
+        # Will be used later
+        self.plugin_info = None
 
-	def testTrusted(self):
-		# Check number of rejected + accepted plugis/
-		pass
-	        # check nb of categories
-       		self.assertEqual(len(self.myPluginManager.getCategories()),1)
-        	sole_category = self.myPluginManager.getCategories()[0]
-        	# check the number of plugins
-        	self.assertEqual(len(self.myPluginManager.getPluginsOfCategory(sole_category)),1)
-        	plugins = self.myPluginManager.getPluginsOfCategory(sole_category)
-        	for plugin_info in plugins:
-			self.plugin_info = plugin_info	
-			self.assert_(self.plugin_info)
-			self.assertEqual(self.plugin_info.name,"FirstPlugin")
-			self.assertEqual(sole_category,self.plugin_info.category)
+    def testTrusted(self):
+        # Check number of rejected + accepted plugis/
 
-	def testRejected(self):
-		#Check plugins accestp/reject are the ones we expect.
-		rejects = []
-        	for r in self.myPluginManager.getRejectedPluginInfo():
-			rejects.append(r)
-		#Check correct number of rejects
-		self.assertEqual(len(rejects) , 1)
-	        self.assertEqual(rejects[0].name,"SecondPlugin")
+        # check nb of categories
+        self.assertEqual(len(self.myPluginManager.getCategories()),1)
+        sole_category = self.myPluginManager.getCategories()[0]
+        # check the number of plugins
+        self.assertEqual(len(self.myPluginManager.getPluginsOfCategory(sole_category)),1)
+        plugins = self.myPluginManager.getPluginsOfCategory(sole_category)
+        for plugin_info in plugins:
+            self.plugin_info = plugin_info
+            self.assert_(self.plugin_info)
+            self.assertEqual(self.plugin_info.name,"FirstPlugin")
+            self.assertEqual(sole_category,self.plugin_info.category)
+
+    def testRejected(self):
+        #Check plugins accestp/reject are the ones we expect.
+        rejects = []
+        for r in self.myPluginManager.getRejectedPluginInfo():
+            rejects.append(r)
+        #Check correct number of rejects
+        self.assertEqual(len(rejects) , 1)
+        self.assertEqual(rejects[0].name,"SecondPlugin")
 
 
-	def testAddTrust(self):
-		#Add second to trust list.
-		orig=len(self.config)
-	        for reject in self.myPluginManager.getRejectedPluginInfo():
-			self.myPluginManager.trustPlugin(reject)
+    def testAddTrust(self):
+        #Add second to trust list.
+        orig=len(self.config)
+        for reject in self.myPluginManager.getRejectedPluginInfo():
+            self.myPluginManager.trustPlugin(reject)
 
-		self.assertEqual(len(self.config),2)
+        self.assertEqual(len(self.config),2)
 
-	def testUntrust(self):
-		# REemove all from trustlist.
-		pass
+    def testUntrust(self):
+        # check nb of categories
+        self.assertEqual(len(self.myPluginManager.getCategories()),1)
+        sole_category = self.myPluginManager.getCategories()[0]
+        # check the number of plugins
+        self.assertEqual(len(self.myPluginManager.getPluginsOfCategory(sole_category)),1)
+        plugins = self.myPluginManager.getPluginsOfCategory(sole_category)
+        rejects = list( self.myPluginManager.getRejectedPluginInfo())
+        self.assertEqual(len(rejects),1)
+        self.assertEqual(len(plugins),1)
+        self.myPluginManager.untrustPlugin(plugins[0])
+        plugins = self.myPluginManager.getPluginsOfCategory(sole_category)
+        rejects = list( self.myPluginManager.getRejectedPluginInfo())
+        self.assertEqual(len(rejects),2)
+        self.assertEqual(len(plugins),0)
+ 
 
 def getTestNames():
-	return [ 'TrustExtManTest.TrustExtManTest' ] 
+    return [ 'TrustExtManTest.TrustExtManTest' ] 
 
 if __name__ == '__main__':
     unittest.main()

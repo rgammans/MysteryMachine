@@ -1,6 +1,6 @@
 diff -r b70ea7217e78 yapsydir/trunk/test/plugins/configplugin.yapsy-filter-plugin
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/yapsydir/trunk/test/plugins/configplugin.yapsy-filter-plugin	Tue Apr 21 20:56:54 2009 +0100
++++ b/yapsydir/trunk/test/plugins/configplugin.yapsy-filter-plugin	Wed Oct 21 23:51:02 2009 +0100
 @@ -0,0 +1,9 @@
 +[Core]
 +Name = Config Plugin
@@ -13,7 +13,7 @@ diff -r b70ea7217e78 yapsydir/trunk/test/plugins/configplugin.yapsy-filter-plugi
 +Description = A simple plugin with configuration handling
 diff -r b70ea7217e78 yapsydir/trunk/test/plugins/simpleplugin.yapsy-filter-plugin
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/yapsydir/trunk/test/plugins/simpleplugin.yapsy-filter-plugin	Tue Apr 21 20:56:54 2009 +0100
++++ b/yapsydir/trunk/test/plugins/simpleplugin.yapsy-filter-plugin	Wed Oct 21 23:51:02 2009 +0100
 @@ -0,0 +1,9 @@
 +[Core]
 +Name = Simple Plugin
@@ -26,7 +26,7 @@ diff -r b70ea7217e78 yapsydir/trunk/test/plugins/simpleplugin.yapsy-filter-plugi
 +Description = A simple plugin usefull for basic testing
 diff -r b70ea7217e78 yapsydir/trunk/test/test_All.py
 --- a/yapsydir/trunk/test/test_All.py	Wed Apr 09 12:05:36 2008 +0100
-+++ b/yapsydir/trunk/test/test_All.py	Tue Apr 21 20:56:54 2009 +0100
++++ b/yapsydir/trunk/test/test_All.py	Wed Oct 21 23:51:02 2009 +0100
 @@ -18,6 +18,7 @@
  import test_ConfigPlugin
  import test_VersionedPlugin
@@ -44,7 +44,7 @@ diff -r b70ea7217e78 yapsydir/trunk/test/test_All.py
  
 diff -r b70ea7217e78 yapsydir/trunk/test/test_FilterPlugin.py
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/yapsydir/trunk/test/test_FilterPlugin.py	Tue Apr 21 20:56:54 2009 +0100
++++ b/yapsydir/trunk/test/test_FilterPlugin.py	Wed Oct 21 23:51:02 2009 +0100
 @@ -0,0 +1,95 @@
 +from test_settings import *
 +import unittest
@@ -143,8 +143,8 @@ diff -r b70ea7217e78 yapsydir/trunk/test/test_FilterPlugin.py
 +        ])
 diff -r b70ea7217e78 yapsydir/trunk/yapsy/FilteredPluginManager.py
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/yapsydir/trunk/yapsy/FilteredPluginManager.py	Tue Apr 21 20:56:54 2009 +0100
-@@ -0,0 +1,72 @@
++++ b/yapsydir/trunk/yapsy/FilteredPluginManager.py	Wed Oct 21 23:51:02 2009 +0100
+@@ -0,0 +1,75 @@
 +#!/usr/bin/python
 +
 +"""
@@ -211,6 +211,9 @@ diff -r b70ea7217e78 yapsydir/trunk/yapsy/FilteredPluginManager.py
 +		"""
 +		locate and filter plugins.
 +		"""
++		#Reset Catalogue
++		self.setCategoriesFilter(self._component.categories_interfaces)
++		#Reread and filter.
 +		self._component.locatePlugins()
 +		self.filterPlugins()
 +

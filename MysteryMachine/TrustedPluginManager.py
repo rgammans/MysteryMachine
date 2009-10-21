@@ -109,7 +109,7 @@ class TrustedPluginManager (FilteredPluginManager):
        plugin.deactivate()
      
     for data in self.trustlist:
-       if data.contains(plugin.name):
+       if plugin.name in data:
          del data[plugin.name]
 
     #Update internal lists.
