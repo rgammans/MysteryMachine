@@ -40,9 +40,14 @@ import re
 import threading
 from contextlib import contextmanager
 
+import tempfile
+import zipfile
+import os
 
 from MysteryMachine.ExtensionLib import ExtensionLib
 from MysteryMachine.ConfigDict import pyConfigDict
+from MysteryMachine.ConfigYaml import ConfigYaml
+from MysteryMachine.Exceptions import *
 
 #Global vars
 #Configuration details...
@@ -79,123 +84,6 @@ def get_mysterymachine_default(name,defvalue=None):
     return value
 
  
-class SingletonWithExternalLocking(type):
-    """
-    An internal singleton metaclass 
-    """
-    def __init__(self, name, bases, dict):
-        super(SingletonWithExternalLocking, self).__init__(name, bases, dict)
-        self.instance = None
-        self.mutex = threading.Lock()
- 
-    def __call__(self, *args, **kw):
-        if self.instance is None:
-            self.instance = super(SingletonWithExternalLocking, self).__call__(*args, **kw)
- 
-        return self.instance
-
-    def IsInstantiated(self):
-        return self.instance is not None
- 
-    @contextmanager
-    def Lock(self):
-        """
-        A context manager design to protect the singleton from construction 
-        races. I doubt these are common - but its good practice to lock if possible.
-
-        Bear in mind the use of the  IsInstantiated() / __init__() pair in StartApp
-        has a natural race as well which could cause some nasties.
-        """
-        self.mutex.acquire()
-        try:
-            yield True
-        finally:
-            self.mutex.release()
-
-class LibraryContext(object):
- 
-    __metaclass__ = SingletonWithExternalLocking
- 
-    def __init__(self,args):
-        ###DO all initialisation.
-
-        self.cmdline_options,self.args=parse_options(args)
-
-        ##Initiliase Config engine.
-        self.cfg_engine = self.get_app_option_object("cfgengine")
-        self.cfg_engine.read(self.get_app_option_object("cfgfile"))
-        if "testmode" in self.cmdline_options:
-            self.cfg_engine.testmode()    
-        
-        #Initialise Extlib
-        self.ExtLib=ExtensionLib(self.cfg_engine)
-        #TODO Check config for Ui data.
-        self.Ui = None    
-
-    def close(self):
-         ## Do our Application finalisation here.
-        self.cfg_engine.write()
-        self.__class__.instance = None
-
-    def Run(self):
-        """
-        If an extension with mainloop has been registered and select call it.
-        """
-        if self.Ui is not None:
-            self.Ui.Run()
-
-
-    def GetExtLib(self):
-        """
-        Returns the extension lib instance to use.
-        """
-        return self.ExtLib
-
-    def GetMercurialUi(self):
-        """
-        Gets a mercurial ui instance to use when calling mercurial api
-        functions.
-        """
-        if self.Ui == None:
-            return mercurial.ui.ui()
-        else:
-            return Ui.mercurial_ui()
-
-    def get_app_option(self,name):
-        """
-        Find application level option 'name'.
-
-        The function first checks the configuration engine if
-        it has been initialised, and then checks the command line options.
-
-        Finally it checks the system defaults.
-        """   
-        val=None 
-        
-        if name in self.cmdline_options:
-            return self.cmdline_options[name]
-
-        if self.cfg_engine != None and name in self.cfg_engine:
-            return self.cfg_engine[name]   
-
-        return get_mysterymachine_default(name,None)
-
-    def get_app_option_object(self,name):
-        """
-        This is the same as get_app_option, but instanties a 
-        object of the value;s class iff the valehas type str.
-
-        This function DOES NOT import any more modules so the
-        value must be a callable at the main level scope, and
-        take no arguments.
-        """
-        val=self.get_app_option(name)
-        if type(val) in types.StringTypes:
-            #Call 'val' with no args.
-            if val in globals():
-                val=(globals()[val])()
-        return val
-
 #We could use getopts here - but that needs a list of options
 #  - this doesn't.
 def parse_options(args):
@@ -262,6 +150,228 @@ def parse_options(args):
     return out_opts, out_args
 
 
+class _SingletonWithExternalLocking(type):
+    """
+    An internal singleton metaclass 
+    """
+    def __init__(self, name, bases, dict):
+        super(_SingletonWithExternalLocking, self).__init__(name, bases, dict)
+        self.instance = None
+        self.mutex = threading.Lock()
+ 
+    def __call__(self, *args, **kw):
+        if self.instance is None:
+            self.instance = super(_SingletonWithExternalLocking, self).__call__(*args, **kw)
+ 
+        return self.instance
+
+    def IsInstantiated(self):
+        return self.instance is not None
+ 
+    @contextmanager
+    def Lock(self):
+        """
+        A context manager design to protect the singleton from construction 
+        races. I doubt these are common - but its good practice to lock if possible.
+
+        Bear in mind the use of the  IsInstantiated() / __init__() pair in StartApp
+        has a natural race as well which could cause some nasties without locking.
+        """
+        self.mutex.acquire()
+        try:
+            yield True
+        finally:
+            self.mutex.release()
+
+class _LibraryContext(object):
+ 
+    __metaclass__ = _SingletonWithExternalLocking
+ 
+    def __init__(self,args):
+        ###DO all initialisation.
+
+        self.cmdline_options,self.args=parse_options(args)
+
+        ##Initiliase Config engine.
+        self.cfg_engine = self.get_app_option_object("cfgengine")
+        self.cfg_engine.read(self.get_app_option_object("cfgfile"))
+        if "testmode" in self.cmdline_options:
+            self.cfg_engine.testmode()    
+        
+        #Initialise Extlib
+        self.ExtLib=ExtensionLib(self.cfg_engine)
+        #TODO Check config for Ui data.
+        self.Ui = None    
+
+    def close(self):
+         ## Do our Application finalisation here.
+        self.cfg_engine.write()
+
+        # TODO Write close action to logfile. 
+        #     (Important so we can trace any bug provoked by an early close).
+ 
+        #Delete our context to force a reinit
+        self.__class__.instance = None
+
+        #Zero our our members in case of a stored reference to us.
+        self.cfg_engine = None
+        self.ExtLib = None
+        
+
+    def Run(self):
+        """
+        If an extension with mainloop has been registered and select call it.
+        """
+        if self.Ui is not None:
+            self.Ui.Run()
+
+
+    def GetExtLib(self):
+        """
+        Returns the extension lib instance to use.
+        """
+        return self.ExtLib
+
+    def GetMercurialUi(self):
+        """
+        Gets a mercurial ui instance to use when calling mercurial api
+        functions.
+        """
+        if self.Ui == None:
+            return mercurial.ui.ui()
+        else:
+            return Ui.mercurial_ui()
+
+    def get_app_option(self,name):
+        """
+        Find application level option 'name'.
+
+        The function first checks the configuration engine if
+        it has been initialised, and then checks the command line options.
+
+        Finally it checks the system defaults.
+        """   
+        val=None 
+        
+        if name in self.cmdline_options:
+            return self.cmdline_options[name]
+
+        if self.cfg_engine != None and name in self.cfg_engine:
+            return self.cfg_engine[name]   
+
+        return get_mysterymachine_default(name,None)
+
+    def get_app_option_object(self,name):
+        """
+        This is the same as get_app_option, but instanties a 
+        object of the value's class iff the value has type str.
+
+        This function DOES NOT import any more modules so the
+        value must be a callable at the main level scope, and
+        take no arguments.
+        """
+        val=self.get_app_option(name)
+        if type(val) in types.StringTypes:
+            #Call 'val' with no args.
+            if val in globals():
+                val=(globals()[val])()
+        return val
+
+    def GetStoreBases(self,classspec):
+        rv = []
+        for line in classspec:
+            line = re.sub("^\s+","",line)
+            line = re.sub("\s+$","",line)
+            sys.stderr.write(line + "\n" )
+            #TODO: Error reporting - this file is untrusted remember
+            lib,classname,req_version = re.split('\s+',line)
+            ext = self.GetExtLib().getExtension(lib,version  = req_version)
+            print "MMI-GSB: ext = %s"%ext
+            print "MMI-GSB: extobj = %s"%ext.plugin_object
+            if ext is None:
+                raise ExtensionError("Can't find %s" % lib)
+            elif 'storeclass' not in ext.plugin_object.getInterfaces(): raise ExtensionError("storeclass interfaces not advertised")
+            rv +=  [ ext.plugin_object.getStoreMixin(classname,version) ]
+        return rv
+
+    def OpenPackFile(self,filename):
+        """
+        Returns a MMSystem object representing the contents of a packfile.
+
+        This function unpacks the pack file into temporary store (found
+        using mkdtemp(). It then reads the meta-data to contruct an appropriate
+        store class, instantiate it. This store class is use to initialise
+        a new MMSystem object.
+        """
+        #Unpack pack file..
+        workdir = tempfile.mkdtemp("mm-working")
+        pack = zipfile.ZipFile(filename,"r")
+        try:
+            pack.extractall(workdir)
+        except AttributeError:
+            #extractall not in the python2.5 library.
+            path = ""
+            for inf in pack.infolist():
+                #Construct destination path.
+                if inf.filename[0] == '/':
+                    path = os.path.join(workdir, inf.filename[1:])
+                else:
+                    path = os.path.join(workdir, inf.filename)
+                path = os.path.normpath(path)
+                
+                # Create all upper directories if necessary.
+                upperdirs = os.path.dirname(path)
+                if upperdirs and not os.path.exists(upperdirs):
+                    os.makedirs(upperdirs)
+
+                if inf.filename[-1] == '/':
+                    #Found dir entry in zip
+                    os.mkdir(path)
+                else:
+                    #Do save actual file
+                    outf = file(path,"w")
+                    outf.write(pack.read(inf.filename))
+                    outf.close()
+
+        pack.close()
+        #Read store requirements
+        store = file(os.path.join(workdir,".store"))
+        storestr = store.readlines()
+        store.close()
+        #Load exts etc,
+        bases = self.GetStoreBases(storestr)
+        #Build store class.
+        storetype = type(filename,bases, { 'scheme': aname} )
+        mmstore = GetStore(aname+":"+workdir)
+        log = list(mmstore.getChangLog())
+        #Unpack last rev into working dir and open MMsyste,
+        mmstore.revert(log[len(log)-1])
+        return MMSystem(mmstore)   
+
+    def SavePackFile(self,system,filename,**kwargs):
+        """
+        Save an opened MMSystem into a packed file - commiting first
+        with the message argument as the commit msg if supplied.
+        """
+        system.commit(kwargs.get('message'))
+        system.clean()
+        pack = ZipFile(filename,"w")
+        #FIXME Use locker object here.
+        system.lock()
+        for file in os.walk(system.store.get_path()):
+            pack.add(file)
+        pack.close()
+        system.unlock()
+            
+    def CreateNewSystem(self,**kwargs):
+        """
+        Creates a new MMSytem.
+
+        Confugration arguments provided overirde the application
+        defaults.
+        """
+
+
             
 class StartApp(object):
     """
@@ -274,13 +384,13 @@ class StartApp(object):
     This should be easy to achieve by wrapping your main routine with a with StartApp..
     """
     def __init__(self,args = [ ]):
-        with LibraryContext.Lock() as  lck:
-            self.primary = not LibraryContext.IsInstantiated()
+        with _LibraryContext.Lock() as  lck:
+            self.primary = not _LibraryContext.IsInstantiated()
             if self.primary and len(args) ==0: 
                 #We could allow the app to continue on with some defaults - but it's more likely
                 # to mean that application writer hasn't initiallised the MM library.
                 raise RuntimeError("Arguments required - MM should probably have been initialised before the program got this far.")
-            self.maincntxt = LibraryContext(args)
+            self.maincntxt = _LibraryContext(args)
   
     def __enter__(self):
         return  self.maincntxt

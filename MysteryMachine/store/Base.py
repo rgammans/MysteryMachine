@@ -23,7 +23,6 @@
 
 
 from MysteryMachine.store import * 
-from MysteryMachine.schema.MMObject import MMObject
 
 
 class Base(object):

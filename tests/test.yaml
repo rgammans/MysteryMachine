@@ -1,15 +1,10 @@
-testsection: 
-  test: 1
-
-testlist:
-    - 1
-    - 
-       el1: 1  
-       el2: 2
-
 extensions:
-    value: 1
-    testsection: { test: 1 }
-    path:
-        - tests/Plugins
-        - Plugins/
+  path: [tests/Plugins, PlugIns/]
+  testsection: {test: 1}
+  trusted:
+  - {MMCore: sha256|60891fd21319bcfccdcd8273e162ef84b03d977545f03e1ec9cedc941ccf4404}
+  value: 1
+testlist:
+- 1
+- {el1: 1, el2: 2}
+testsection: {test: 1}

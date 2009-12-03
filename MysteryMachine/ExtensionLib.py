@@ -115,11 +115,14 @@ class ExtensionLib(object):
     else:
         self.plugin_man.untrustPlugin(ext)
 
-  def getExtension(self, name, category = "Default"):
+  def getExtension(self, name, category = "Default", version = None):
     """
     Returns extensionInfo for extension named name if and only if extension is trusted.
 
-    @param string name : 
+
+    @param string name :   Name of extension to return 
+    @param string category:Category if extension
+    @param string version: Reserved for later use. Must be None.
     @return Extension :
     """
     return self.plugin_man.getPluginByName(name, category)
