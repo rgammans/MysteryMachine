@@ -57,9 +57,14 @@ class MMParser (object):
         print "\n--evaling--\n%s\n----\n" % expr
         value=self.grammar.parseString(expr) 
         print "Parsed as->%s" % repr(value)
-        value=reduce(lambda x,y:x+y,value)
-        print "\n--evalled to --\n%s\n----\n" % value.__repr__() 
-        return value
+        print "MMP:eval - %s" % str(type(value))
+        rv = value[0]
+        for element in value[1:]:
+            print str(type(element))
+            rv = rv + element
+        print "MMP:eval - %s" % str(type(rv))
+        print "\n--evalled to --\n%s\n----\n" % rv.__repr__() 
+        return rv
 
   def ProcessRawRst(self,rst_string,src=None,src_stack=[]):
     #Define the options and content for the role
