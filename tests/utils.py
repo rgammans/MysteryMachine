@@ -22,7 +22,7 @@
 This is a combined test fro the MysteryMachine utils modules
 """
 
-from MysteryMachine.utils import *
+from MysteryMachine.utils import path,locks 
 #Use our own hash class to test for modification.
 import unittest
 
@@ -52,7 +52,7 @@ class UtilsTest(unittest.TestCase):
         test = self
         class rwtest(threading.Thread):
             def run(self):
-                  rwl = RWLock()
+                  rwl = locks.RWLock()
                   class Reader(threading.Thread):
                     def run(self):
                       print self, 'start'
@@ -125,7 +125,7 @@ class UtilsTest(unittest.TestCase):
         test = self
         class rwtest(threading.Thread):
             def run(self):
-                  rwl = RRwLock()
+                  rwl = locks.RRwLock()
                   class Reader(threading.Thread):
                     def run(self):
                       print self, 'start'
