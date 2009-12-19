@@ -27,6 +27,8 @@ from MysteryMachine.utils import *
 import unittest
 
 import os
+import threading
+import time
 
 class UtilsTest(unittest.TestCase):
     def testPath_make_rel(self):
@@ -40,8 +42,182 @@ class UtilsTest(unittest.TestCase):
         
         self.assertEqual(path.make_rel(os.path.join(*path2),os.path.join(*path1),os.path.join(*path2)),[ os.path.join(*path1) ,"." ])
 
-    
+    #
+    # These next tests for the locking code aren't the best
+    # tests. Eg, they almost certainly have poor coverage,
+    # but I can see how to improve them to test thread corner
+    # cases in a deterministic way. Patches welcome ;-).
+    #
+    def testLocks_RWLock(self):
+        test = self
+        class rwtest(threading.Thread):
+            def run(self):
+                  rwl = RWLock()
+                  class Reader(threading.Thread):
+                    def run(self):
+                      print self, 'start'
+                      rwl.acquire_read()
+                      print self, 'acquired'
+                      time.sleep(5)    
+                      print self, 'stop'
+                      rwl.release()
+                  class Writer(threading.Thread):
+                    def run(self):
+                      print self, 'start'
+                      rwl.acquire_write()
+                      print self, 'acquired'
+                      time.sleep(10)    
+                      print self, 'stop'
+                      rwl.release()
+                  class ReaderWriter(threading.Thread):
+                    def run(self):
+                      print self, 'start'
+                      rwl.acquire_read()
+                      print self, 'acquired'
+                      time.sleep(5)    
+                      rwl.promote()
+                      print self, 'promoted'
+                      time.sleep(5)    
+                      print self, 'stop'
+                      rwl.release()
+                  class WriterReader(threading.Thread):
+                    def run(self):
+                      print self, 'start'
+                      rwl.acquire_write()
+                      print self, 'acquired'
+                      time.sleep(10)    
+                      print self, 'demoted'
+                      rwl.demote()
+                      time.sleep(10)    
+                      print self, 'stop'
+                      rwl.release()
+                  r1 =Reader()
+                  r1.start()
+                  time.sleep(1)
+                  r2 = Reader()
+                  r2.start()
+                  time.sleep(1)
+                  rw = ReaderWriter()
+                  rw.start()
+                  time.sleep(1)
+                  wr = WriterReader()
+                  wr.start()
+                  time.sleep(1)
+                  r3 = Reader()
+                  r3.start()
+                  r1.join()
+                  r2.join()
+                  r3.join()
+                  rw.join()
+                  wr.join()
 
+                  test.assertEquals(rwl.rwlock,0) 
+                  test.assertEquals(rwl.writers_waiting,0) 
+    
+        workthread = rwtest()
+        workthread.start()
+        workthread.join(60.0)
+        #If the test is still running we consider the
+        # system to be deadlocked!
+        self.assertFalse(workthread.isAlive()) 
+
+    def testLocks_RRwLock(self):
+        test = self
+        class rwtest(threading.Thread):
+            def run(self):
+                  rwl = RRwLock()
+                  class Reader(threading.Thread):
+                    def run(self):
+                      print self, 'start'
+                      rwl.acquire_read()
+                      print self, 'acquired'
+                      time.sleep(5)    
+                      print self, 'stop'
+                      rwl.release()
+                  class Writer(threading.Thread):
+                    def run(self):
+                      print self, 'start'
+                      rwl.acquire_write()
+                      print self, 'acquired'
+                      time.sleep(10)    
+                      print self, 'stop'
+                      rwl.release()
+                  class ReaderWriter(threading.Thread):
+                    def run(self):
+                      print self, 'start'
+                      rwl.acquire_read()
+                      print self, 'acquired'
+                      time.sleep(5)    
+                      rwl.acquire_write()
+                      print self, 'promoted'
+                      time.sleep(5)    
+                      print self, 'stop'
+                      rwl.release()
+                      rwl.release()
+                  class WriterWriter(threading.Thread):
+                    def run(self):
+                      print self, 'start'
+                      rwl.acquire_write()
+                      print self, 'acquired'
+                      time.sleep(10)    
+                      rwl.acquire_write()
+                      print self, 'acquired 2'
+                      time.sleep(5)    
+                      print self, 'stop 2'
+                      rwl.release()
+                      time.sleep(5)    
+                      print self, 'stop'
+                      rwl.release()
+                  class ReaderReaderWriter(threading.Thread):
+                    def run(self):
+                      print self, 'start'
+                      rwl.acquire_read()
+                      print self, 'acquired'
+                      time.sleep(2)
+                      rwl.acquire_read()
+                      print self, 'acquired 2'
+                      time.sleep(5)    
+                      rwl.acquire_write()
+                      print self, 'promoted'
+                      time.sleep(5)    
+                      print self, 'stop'
+                      rwl.release()
+                      rwl.release()
+                      rwl.release()
+                  r1 = Reader()
+                  r1.start()
+                  time.sleep(1)
+                  r2 = Reader()
+                  r2.start()
+                  time.sleep(1)
+                  rw = ReaderWriter()
+                  rw.start()
+                  time.sleep(1)
+                  ww =WriterWriter()
+                  ww.start()
+                  time.sleep(1)
+                  r3= Reader()
+                  r3.start()
+                  time.sleep(20)
+                  rrw = ReaderReaderWriter()
+                  rrw.start()
+ 
+                  r1.join()
+                  r2.join()
+                  r3.join()
+                  rw.join()
+                  ww.join()
+                  rrw.join()
+                  test.assertEquals(rwl.wcount,0)
+                  test.assertEquals(rwl.rwlock,0) 
+                  test.assertEquals(rwl.writers_waiting,0) 
+    
+        workthread = rwtest()
+        workthread.start()
+        workthread.join(60.0)
+        #If the test is still running we consider the
+        # system to be deadlocked!
+        self.assertFalse(workthread.isAlive()) 
 
 def getTestNames():
 	return [ 'utils.UtilsTest' ] 
