@@ -52,7 +52,11 @@ class SystemProxy:
     
 
 def helper(parser,input):
-    return reduce(lambda x,y:x+y,parser.parseString(input))
+    inlist = parser.parseString(input)
+    rv = inlist[0]
+    for item in inlist[1:]:
+        rv += item 
+    return rv
 
 class GraamarTest(unittest.TestCase):
     def setUp(self):
