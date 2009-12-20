@@ -150,7 +150,7 @@ class MMSystem (MMBase):
     @return bool :
     @author
     """
-    self.store.commit(text=msg )
+    self.store.commit(msg )
     
   def Rollback(self):
     """
@@ -204,19 +204,6 @@ class MMSystem (MMBase):
     obj.set_parent(parent)
     return obj
 
-  def Save(self, commitmsg = None , filename = None):
-    """
-    Saves the system to backing store in an efficent format. This requires a commit.
-
-    @param bool commit : Commit before saving
-    @param string Filename : 
-    @return  :
-    @author
-    """
-    if commitmsg is None:
-        commitmsg = "User save at %s (%s)" % ( time.asctime() , time.tzname[time.daylight])
-    return self.store.save(commitmsg,filename)
-
   
   def getUtilFunctions(self):
     """
@@ -250,19 +237,6 @@ class MMSystem (MMBase):
     return MMSystem(store)
 
   
-  @staticmethod
-  def Open(uri):
-    """
-    Return a MMsystem object opened on the specicifed URI.
-    """
-    canonuri = EscapeSystemUri(GetCanonicalUri(uri))
-     
-    if canonuri not in DocsLoaded:
-        store = GetStore(uri)
-        return MMSystem(store)
-    
-    return DocsLoaded[canonuri]
-
   def DoValidate(self):
     """
 
@@ -303,3 +277,16 @@ class MMSystem (MMBase):
     ## This exists so that MMObject can dereferences the weak proxy
     #  object that the store subsystem will normally pass it.
     return self
+
+  def Lock(self):
+    """
+    Wait for the backing to to be in a stable state and prevent
+    further updates until Unlock()'d
+    """
+    self.store.lock()
+
+  def Unlock(self):
+    """
+    Release a lock granted by Lock()
+    """
+    self.store.unlock() 
