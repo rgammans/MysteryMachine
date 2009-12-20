@@ -78,3 +78,54 @@ class HgStoreMixin(object):
             # This wraping requires integration with the underlying store
             # so filenames <-> MysteryMachine names can be mapped if poss.
             yield self.repo[change]
+
+
+    def uptodate(self,*args,**kwargs):
+        """
+        Returns true is repo is uptodate.
+
+        Up to date - is the equivalent of an empty result from 'hg status'
+        """
+        changed = []
+        for list in self.repo.status():
+            changed += list
+
+        return len(changed) == 0
+
+    def clean(self,*args,**kwargs):
+        """
+        Cleans the repo.
+              --force   clean runs even if hg is not uptodate.  
+              --full    deletes everything except the .hg/ .
+                    otherwise we just delete files in the hg manifest.
+        """
+        #Force the main store to remove any tempfiles
+        mysuper = super(HgStoreMixin,self)
+        if hasattr(mysuper,"clean"):
+            mysuper.clean(*args,**kwargs)
+        if not self.uptodate():
+            self.ui.warn("%slean requested in non-up-todate repo" % (
+                         "Forced c" if kwargs.get('force') else "C"  
+                        ))
+
+            if not kwargs.get('force'): return
+            
+        #Remove all files in the manifest - these can all be 
+        # checked out again.
+        if kwargs.get('full'):
+            #Do a 'full' clean. Remove all the files except for 
+            # the repo itself. This /could/ lose data if you
+            # haven't added the files to the repo.
+            for dirpath,dirs,filenames in os.walk(self.get_path()):
+                for f in filenames:
+                    os.unlink(os.path.join(dirpath,f))
+                if '.hg' in dirs:
+                    dirs.remove('.hg')
+
+        else:
+            #Basic clean - just remove files stored in revision control.
+            ctx = self.repo[None]
+            for f in ctx:
+                print f
+                os.unlink(os.path.join(self.get_path(),f))
+

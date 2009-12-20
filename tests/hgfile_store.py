@@ -86,6 +86,9 @@ class hgstoreTests(unittest.TestCase):
         self.assertEquals(len(clog),1)
         self.assertEquals(len(files),1)
 
+        #Check uptodate 
+        self.assertTrue(self.store.uptodate())
+
         #change a file.
         self.store.WriteFile("test1","different data")
         self.store.commit("changed the data")
@@ -95,13 +98,21 @@ class hgstoreTests(unittest.TestCase):
  
         #add another file
         self.store.WriteFile("test2","More test data")
+ 
+        #Check uptodate 
+        self.assertFalse(self.store.uptodate())
+
         # commit.
         self.store.commit("another commit")
         #Check size of changelog + files contained.
         clog  ,files = getfiles_and_changelog(self.store)
         self.assertEquals(len(clog),3)
         self.assertEquals(len(files),2)
-        
+
+        #Check uptodate 
+        self.assertTrue(self.store.uptodate())
+
+       
         #rollback - redo checks.
         self.store.rollback()
         clog  ,files = getfiles_and_changelog(self.store)
@@ -114,8 +125,13 @@ class hgstoreTests(unittest.TestCase):
         self.store.revert(rev)
         self.assertEquals(self.store.ReadFile("test1"),"Test data") 
 
-        pass
-
+        self.store.lock()
+        self.store.clean()
+        for dirpath,dirs,files in os.walk(self.store.get_path()):
+             if '.hg' in dirs:
+                #Don't scan .hg directory.
+                del dirs[dirs.index('.hg')]
+             self.assertEquals(len(files),0)
     
 def getTestNames():
     	return [ 'hgfile_store.hgstoreTests' ] 
