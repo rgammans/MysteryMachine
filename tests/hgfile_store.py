@@ -25,6 +25,7 @@ from MysteryMachine import *
 from MysteryMachine.store.hgfile_store import *
 from MysteryMachine.store.Base import Base
 from MysteryMachine.store import GetPath
+from base.scm import scmTests
 
 import unittest
 
@@ -57,15 +58,7 @@ class BasicStore(Base):
         f.close()
         self.Add_file(name)
 
-
-def getfiles_and_changelog(store):
-        cl = list(store.getChangeLog())
-        files = []
-        if len(cl) > 0:
-            for f in cl[len(cl)-1]: files+= [ f] 
-        return cl, files
-
-class hgstoreTests(unittest.TestCase):
+class hgstoreTests(scmTests, unittest.TestCase):
     def setUp(self):
         StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"])
         try:
@@ -78,61 +71,7 @@ class hgstoreTests(unittest.TestCase):
         sys.stderr.write("hgbasic:path - %s\n" % testpath)
         self.store= self.testtype("hgbasic:"+testpath,create = True)
    
-    def testSCM(self):
-        self.store.WriteFile("test1","Test data")
-        self.store.commit("commit msg")
-        #Check size of changelog + files contained.
-        clog  ,files = getfiles_and_changelog(self.store)
-        self.assertEquals(len(clog),1)
-        self.assertEquals(len(files),1)
 
-        #Check uptodate 
-        self.assertTrue(self.store.uptodate())
-
-        #change a file.
-        self.store.WriteFile("test1","different data")
-        self.store.commit("changed the data")
-        clog  ,files = getfiles_and_changelog(self.store)
-        self.assertEquals(len(clog),2)
-        self.assertEquals(len(files),1)
- 
-        #add another file
-        self.store.WriteFile("test2","More test data")
- 
-        #Check uptodate 
-        self.assertFalse(self.store.uptodate())
-
-        # commit.
-        self.store.commit("another commit")
-        #Check size of changelog + files contained.
-        clog  ,files = getfiles_and_changelog(self.store)
-        self.assertEquals(len(clog),3)
-        self.assertEquals(len(files),2)
-
-        #Check uptodate 
-        self.assertTrue(self.store.uptodate())
-
-       
-        #rollback - redo checks.
-        self.store.rollback()
-        clog  ,files = getfiles_and_changelog(self.store)
-        self.assertEquals(len(clog),2)
-        self.assertEquals(len(files),1)
- 
-        # revert - check file contents.
-        changelog = list( self.store.getChangeLog() )
-        rev = changelog[0]
-        self.store.revert(rev)
-        self.assertEquals(self.store.ReadFile("test1"),"Test data") 
-
-        self.store.lock()
-        self.store.clean()
-        for dirpath,dirs,files in os.walk(self.store.get_path()):
-             if '.hg' in dirs:
-                #Don't scan .hg directory.
-                del dirs[dirs.index('.hg')]
-             self.assertEquals(len(files),0)
-    
 def getTestNames():
     	return [ 'hgfile_store.hgstoreTests' ] 
 
