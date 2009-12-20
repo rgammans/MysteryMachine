@@ -202,7 +202,8 @@ class filestore(Base):
             #Current plan is to have one directory per store inside the
             # system if multiple stores are used.
             if os.path.isdir(os.path.join(self.path , dentry )):
-                yield dentry
+                #Ignore hidden directories
+                if dentry[0] != '.': yield dentry
 
     def EnumObjects(self,category):
         for dentry in os.listdir(os.path.join(self.path,category)):
