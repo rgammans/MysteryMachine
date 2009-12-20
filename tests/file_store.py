@@ -44,7 +44,9 @@ class filestoreTests(storeTests,unittest.TestCase):
         self.store.set_owner(DummySystem)
     
     def tearDown(self):
+        self.store.lock()
         shutil.rmtree(self.mpath)
+        self.store.unlock()
 #        os.rmdir(self.mpath)
 
 
