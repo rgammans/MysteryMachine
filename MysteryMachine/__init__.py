@@ -45,9 +45,12 @@ import zipfile
 import os
 
 from MysteryMachine.ExtensionLib import ExtensionLib
+from MysteryMachine.VersionNr import VersionNr
 from MysteryMachine.ConfigDict import pyConfigDict
 from MysteryMachine.ConfigYaml import ConfigYaml
 from MysteryMachine.Exceptions import *
+from MysteryMachine.store import *
+from MysteryMachine.utils.path import make_rel
 
 #Global vars
 #Configuration details...
@@ -86,7 +89,7 @@ def get_mysterymachine_default(name,defvalue=None):
  
 #We could use getopts here - but that needs a list of options
 #  - this doesn't.
-def parse_options(args):
+def _parse_options(args):
     """
     Generic zero knowledge command line options parser.
     
@@ -190,7 +193,7 @@ class _LibraryContext(object):
     def __init__(self,args):
         ###DO all initialisation.
 
-        self.cmdline_options,self.args=parse_options(args)
+        self.cmdline_options,self.args=_parse_options(args)
 
         ##Initiliase Config engine.
         self.cfg_engine = self.get_app_option_object("cfgengine")
@@ -278,6 +281,12 @@ class _LibraryContext(object):
         return val
 
     def GetStoreBases(self,classspec):
+        """
+        This function finds a list of base classes used by a MMSystem.
+
+        It is intended for use by version 1.x and later of the Pack format.
+        *** UNTESTED CODE ***
+        """
         rv = []
         for line in classspec:
             line = re.sub("^\s+","",line)
@@ -326,7 +335,11 @@ class _LibraryContext(object):
 
                 if inf.filename[-1] == '/':
                     #Found dir entry in zip
-                    os.mkdir(path)
+                    try :
+                        os.mkdir(path)
+                    except OSError ,e:
+                        #Ignore file exists error
+                        if e.errno != 17: raise e
                 else:
                     #Do save actual file
                     outf = file(path,"w")
@@ -334,18 +347,55 @@ class _LibraryContext(object):
                     outf.close()
 
         pack.close()
-        #Read store requirements
-        store = file(os.path.join(workdir,".store"))
-        storestr = store.readlines()
-        store.close()
-        #Load exts etc,
-        bases = self.GetStoreBases(storestr)
-        #Build store class.
-        storetype = type(filename,bases, { 'scheme': aname} )
-        mmstore = GetStore(aname+":"+workdir)
-        log = list(mmstore.getChangLog())
-        #Unpack last rev into working dir and open MMsyste,
+        #Read format version requirements
+        ver = file(os.path.join(workdir,".formatver"))
+        version = ver.readlines()
+        ver.close()
+        return self.GetFormatHandler(version,workdir)
+
+    def GetFormatHandler(self,ver,workdir):
+        """
+        This function returns a loader for 
+        """
+        verno = VersionNr(ver[0])
+        if verno < VersionNr(1):
+            import MysteryMachine.store.hgfile_class
+            schema = "hgafile"
+        else: #Version 1 or later
+            ##FIXME: Test this code etc.
+            # A stub of what the code should do is below, but
+            # it turns out we've got issues with the extensions engine.
+            error("Version 1 suport not implemented")
+            #Read store requirements
+            store = file(os.path.join(workdir,".store"))
+            storestr = store.readlines()
+            store.close()
+            #Load exts etc,
+            bases = GetStoreBases(storestr)
+            #Build store class.
+            #TODO: Check to see if store type already vivified
+            storetype = type(filename,bases, { 'uriScheme': schema} )
+            mmstore = GetStore(aname+":"+workdir)
+            log = list(mmstore.getChangLog())
+            #Unpack last rev into working dir and open MMsyste,
+            mmstore.revert(log[len(log)-1])
+        return self.OpenVersion(workdir,schema)
+
+    def OpenVersion(self,workdir,scheme):
+        """
+        Handles version Zero of the pack format.
+
+        Version 0 of the pack format is a zipfile of the .hg
+        directory. It guarantees to use a hgfile_mixin and file_store.
+ 
+        """
+        mmstore = GetStore(scheme+":"+workdir)
+        log = list(mmstore.getChangeLog())
+        #Unpack last rev into working dir and open MMsystem
         mmstore.revert(log[len(log)-1])
+        #Late import since MMSystem depends on this module - we only load 
+        # it at run time once we have been fully compiled.
+        from MysteryMachine.schema.MMSystem import MMSystem
         return MMSystem(mmstore)   
 
     def SavePackFile(self,system,filename,**kwargs):
@@ -353,15 +403,26 @@ class _LibraryContext(object):
         Save an opened MMSystem into a packed file - commiting first
         with the message argument as the commit msg if supplied.
         """
-        system.commit(kwargs.get('message'))
-        system.clean()
-        pack = ZipFile(filename,"w")
+        system.Commit(kwargs.get('message'))
+        system.store.clean()
+        f  = file(filename,"w")
+        pack = zipfile.ZipFile(filename,"w")
+        #FIXME Handle versions better
+        pack.writestr(".formatver","0")
         #FIXME Use locker object here.
-        system.lock()
-        for file in os.walk(system.store.get_path()):
-            pack.add(file)
+        system.Lock()
+        rootpath = system.store.get_path()
+        for path,dirs,files in os.walk(rootpath):
+            for filename in files: 
+                absname  = os.path.join(path,filename)
+                relname, = make_rel(rootpath,absname)
+                pack.write(absname,arcname = relname)
         pack.close()
-        system.unlock()
+        system.Unlock()
+
+        #Ensure data is on safe media.
+        os.fsync(f.fileno())
+        f.close()
             
     def CreateNewSystem(self,**kwargs):
         """
