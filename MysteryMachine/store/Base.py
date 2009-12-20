@@ -40,7 +40,10 @@ class Base(object):
 
     def getUri(self):
         return self.uri
-    
+   
+    def get_path(self):
+        return GetPath(self.uri)
+ 
     @staticmethod
     def GetCanonicalUri(uri):
         return uri
@@ -93,6 +96,19 @@ class Base(object):
         This function is intended to be called by store modules, so
         to allow them to commincate to the SCM provider.
         """
+
+    def lock(self):
+        """
+        Call to wait for the store to be queiscent - called prior to Saving
+        a system to pack file.
+        """
+        pass
+    
+    def unlock(self):
+        """
+        Allow updates to continue.
+        """
+        pass
 
 class obj_storeproxy:
     def __init__(self,store,obj):
