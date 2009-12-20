@@ -37,14 +37,14 @@ class HgStoreMixin(object):
     """
 
     def __init__(self,*args,**kwargs):
-        super(HgStoreMixin,self).__init__(self,*args,**kwargs)
+        super(HgStoreMixin,self).__init__(*args,**kwargs)
         #We get the Ui from our Root so that our Ui's can provide their own
         # implementation.
         #
         # The with statement doesn't make the best sense here as we keep the 
-        # resources past the end of the block /BUT/ our special use of 
-        # in startapp should take care of it - although we run the Risk of the
-        # Ui being closed...
+        # resources past the end of the block /BUT/ our special use of singletons 
+        # in startapp should take care of it  - providing StartApp is also guarding
+        # main routine.
         with MysteryMachine.StartApp() as MMGlobals:
             self.ui = MMGlobals.GetMercurialUi()
             self.repo = hg.repository(self.ui,self.get_path(),create = (kwargs.get('create') or 0))
@@ -55,16 +55,19 @@ class HgStoreMixin(object):
           self.repo.add( [ filename  ]) 
 
     def commit(self,msg):
-        return self.repo.commit(msg, None, None , cmdutil.match(self.repo),
+        self.lock()
+        rv = self.repo.commit(msg, None, None , cmdutil.match(self.repo),
                          editor=cmdutil.commiteditor, extra= { })
+        self.unlock()
 
     def rollback(self):
+        
         return self.repo.rollback()
 
     def revert(self,revid):
-        #Forcing to string ensures the revif is in a form mercurial is happy with
+        #Forcing to string ensures the revid is in a form mercurial is happy with
         # and allows changectx objects to be passed
-        return mercurial.hg.update(self.repo,str(revid))
+        return mercurial.hg.revert(self.repo,str(revid),None)
 
     def getChangeLog(self):
         for change in self.repo:

@@ -23,6 +23,8 @@ Tests for the MysteryMachine dictstore  module
 
 from MysteryMachine import * 
 from MysteryMachine.store.hgfile_store import *
+from MysteryMachine.store.Base import Base
+from MysteryMachine.store import GetPath
 
 import unittest
 
@@ -32,10 +34,11 @@ import shutil
 
 import sys
 
-class BasicStore(object):
+class BasicStore(Base):
+    uriScheme = "basic"
     def __init__(self,*args,**kwargs):
-        super(BasicStore,self).__init__()
-        self.path = args[1]
+        super(BasicStore,self).__init__(*args,**kwargs)
+        self.path = GetPath(args[0])         
         if 'create' in kwargs and kwargs['create']:
             os.mkdir(self.path)
     
@@ -54,6 +57,7 @@ class BasicStore(object):
         f.close()
         self.Add_file(name)
 
+
 def getfiles_and_changelog(store):
         cl = list(store.getChangeLog())
         files = []
@@ -68,11 +72,11 @@ class hgstoreTests(unittest.TestCase):
             testpath = tempfile.mkdtemp("mysmachg")
         except:
             pass
-        self.testtype = type("HgTestStore", (HgStoreMixin , BasicStore ), {} )
+        self.testtype = type("HgTestStore", (HgStoreMixin , BasicStore ), {'uriScheme':"hgbasic"} )
         #Ensure delte - will create again in a moment
         os.rmdir(testpath)
-        sys.stderr.write("HGSTEst:path - %s\n" % testpath)
-        self.store= self.testtype(testpath,create = True)
+        sys.stderr.write("hgbasic:path - %s\n" % testpath)
+        self.store= self.testtype("hgbasic:"+testpath,create = True)
    
     def testSCM(self):
         self.store.WriteFile("test1","Test data")
