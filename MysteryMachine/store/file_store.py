@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#   			hgfile_store.py - Copyright Roger Gammans
+#   			file_store.py - Copyright Roger Gammans
 # 
 #
 #    This program is free software; you can redistribute it and/or modify
@@ -84,10 +84,10 @@ class filestore(Base):
     with the Mysterymachine interface.
 
     There are no SCM methods attached to this store - will we
-    create a mixin for th`e SCM actions.
+    create a mixin for the SCM actions.
     """
     
-    uriScheme = "hgstore"
+    uriScheme = "attrfile"
 
     invalidobj = re.compile("^\.")
 

@@ -40,7 +40,7 @@ class filestoreTests(storeTests,unittest.TestCase):
     def mySetUp(self):
         StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"])
         self.mpath = tempfile.mkdtemp(prefix="mysmac")
-        self.store=filestore("hgstore:"+self.mpath,create = False)
+        self.store=filestore("attrfile:"+self.mpath,create = False)
         self.store.set_owner(DummySystem)
     
     def tearDown(self):
