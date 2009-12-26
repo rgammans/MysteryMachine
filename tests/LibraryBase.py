@@ -55,7 +55,13 @@ class LibBaseTest(unittest.TestCase):
             #Open new and old pack files up and compare.
             newpack = zipfile.ZipFile("/tmp/test1.mmpack","r")
             oldpack = zipfile.ZipFile("examples/test1.mmpack","r")
-            newinflist = [ x for x  in newpack.infolist() if x.filename[-1] != os.sep ]
+
+            newinflist = []
+            for f in newpack.infolist():
+                #We can ignore this file as it is a mercurial repo file
+                # which is new in mercurial 1.4    
+                if f.filename != '.hg/tags.cache': newinflist += [ f ]
+
             oldinflist = [ x for x  in oldpack.infolist() if x.filename[-1] != os.sep ]
             self.assertEqual(len(newinflist),len(oldinflist))
             for newinf in newinflist:
