@@ -24,6 +24,8 @@
 
 from docutils.core import  publish_doctree, default_description 
 from docutils.parsers.rst import roles
+import docutils.nodes
+
 from grammar import Grammar
 
 from MysteryMachine.schema import GetLoadedSystemByName
@@ -57,14 +59,9 @@ class MMParser (object):
         print "\n--evaling--\n%s\n----\n" % expr
         value=self.grammar.parseString(expr) 
         print "Parsed as->%s" % repr(value)
-        print "MMP:eval - %s" % str(type(value))
-        rv = value[0]
-        for element in value[1:]:
-            print str(type(element))
-            rv = rv + element
-        print "MMP:eval - %s" % str(type(rv))
-        print "\n--evalled to --\n%s\n----\n" % rv.__repr__() 
-        return rv
+        value=reduce(lambda x,y:x+y,value)
+        print "\n--evalled to --\n%s\n----\n" % value.__repr__() 
+        return value
 
   def ProcessRawRst(self,rst_string,src=None,src_stack=[]):
     #Define the options and content for the role
@@ -90,16 +87,17 @@ class MMParser (object):
     print "pnodelist-->%s<-" % result
     print "source => %s" % source
     #Strip  document header and main containing paragraph.
-    result =   result.children
-    print "nodelist-->%s<-" % result
+    result =   result.children 
+    #print "nodelist-->%s<-" % result
     if len(result) ==1:
-        if str(result[0].__class__)  == "docutils.nodes.paragraph":
+        print "MMP-PRST: class is %s" % str(result[0].__class__)
+        if result[0].__class__  == docutils.nodes.paragraph:
              result = result[0].children
     #Update source attrib in node.
     for docnode in result:
         if not source in docnode:
            docnode.source=source
-    print "nodelist-->%s<-" % str(result)
+    #print "nodelist-->%s<-" % str(result)
     #print "String[0]->%s<" % str(result[0])
     return result
    
@@ -143,7 +141,7 @@ def role_handler(role, rawtext, text, lineno, inliner,
              #   msg.append(str(e))
         else:
             msg.append(inliner.reporter.error("Cycle detected in macro expansion via:-%s\n" % content.join("\n")))
-    print  nodes,msg
+    #print  nodes,msg
     return nodes ,msg
 
 
