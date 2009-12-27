@@ -218,7 +218,7 @@ class _LibraryContext(object):
         #Setup Logging
         self.logger.setLevel(self.get_app_option_object("loglevel"))
         handler = self.get_app_option_object("logtarget")
-        print "Handler is %s"%handler
+        #print "Handler is %s"%handler
         if handler:
             self.logger.addHandler(handler)
 
