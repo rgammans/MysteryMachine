@@ -34,8 +34,11 @@ import types
 import operator
 import copy
 
+
 AttrTypes = dict()
 TypeLookup = dict()
+
+modlogger = logging.getLogger("MysteryMachine.schema.MMAttributeValue")
 
 #FIXME make a __new__ method.
 def CreateAttributeValue(val):
@@ -49,10 +52,10 @@ def CreateAttributeValue(val):
         vtype = FindBestValueType(type(val))
         val = vtype(value =val)
     else:
-        print "CAV2:type:%s" % val.__class__.typename
-        print "CAV2:parts:%s" % val.parts
+        modlogger.debug( "CAV2:type:%s" % val.__class__.typename)
+        modlogger.debug( "CAV2:parts:%s" % val.parts)
         val= copy.copy(val)
-        print "CAV2:newparts:%s" % val.parts
+        modlogger.debug( "CAV2:newparts:%s" % val.parts)
 
     return val
 
@@ -67,7 +70,7 @@ def register_value_type(name,acls,nativelist):
     """
     global AttrTypes    
     AttrTypes[name]=acls
-    sys.stderr.write("natvie typs->"+str( nativelist )+"\n")
+    modlogger.debug("native types %s -> %s",str( nativelist ),acls)
     for typenm in nativelist.keys():
         priority=nativelist[typenm]
         if typenm not in TypeLookup:
@@ -118,6 +121,7 @@ class MMAttributeValue (MMBase ):
         self.value=kwargs['value']
 
     self.exports=[ "get_raw", "get_raw_rst" ]
+    self.logger = logging.getLogger("MysteryMachine.schema.MMAttributeValue")
 
   def __repr__(self):
     """
@@ -134,11 +138,11 @@ class MMAttributeValue (MMBase ):
     @return string :
     @author
     """
-    print str(self.__class__)
-    print self.parts
+    self.logger.debug( str(self.__class__))
+    self.logger.debug( self.parts)
     #FIXME: Ensure consistent ordering
     result = "\n".join(self.parts.values())
-    print "raw-->%s<--" % result
+    self.logger.debug( "raw-->%s<--" % result)
     return result
 
   def get_raw_rst(self, obj = None):
@@ -190,7 +194,7 @@ class MMAttributeValue (MMBase ):
          raise TypeError()
     
   def __copy__(self):
-     print "AV_c:Entered"
+     self.logger.debug( "AV_c:Entered")
      return self.__class__(parts = self.parts)
 
 

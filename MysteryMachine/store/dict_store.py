@@ -4,6 +4,8 @@ from MysteryMachine.policies.SequentialId import NewId
 from MysteryMachine.store import *
 from MysteryMachine.store.Base import Base 
 
+import logging
+
 _dict_stores = dict()
 
 class dict_store(Base):
@@ -22,6 +24,7 @@ class dict_store(Base):
 
     def __init__(self,uri,create = False):
         Base.__init__(self,uri,create)
+        self.logger = logging.getLogger("MysteryMachine.store.dict_store")
         path = GetPath(uri)
         if path not in _dict_stores:
             _dict_stores[path] = { }
@@ -68,13 +71,13 @@ class dict_store(Base):
 
     def HasAttribute(self,attr):
         path = self.canonicalise(attr)
-        print "CHECKPATH = %s " % path
+        self.logger.debug( "CHECKPATH = %s " % path)
         val = path[2] in self.catdict[path[0]][path[1]]        
-        #print  "%s is %s" % (path ,val)
+        #self.logger.debug(  "%s is %s" % (path ,val))
         return val
 
     def SetAttribute(self,attr,type,parts):
-        #print "setting %s" % attr
+        #self.logger.debug( "setting %s" % attr)
         path = self.canonicalise(attr)
         self.catdict[path[0]][path[1]][path[2]]=(type,parts)
 
@@ -85,5 +88,5 @@ class dict_store(Base):
 
     def GetAttribute(self,attr):
         path = self.canonicalise(attr)
-        print "GETPATH = %s " % path
+        self.logger.debug( "GETPATH = %s " % path)
         return self.catdict[path[0]][path[1]][path[2]]

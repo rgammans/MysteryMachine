@@ -39,6 +39,7 @@ import types
 import re
 import threading
 from contextlib import contextmanager
+import logging
 
 import tempfile
 import zipfile
@@ -55,6 +56,16 @@ from MysteryMachine.utils.path import make_rel
 #Global vars
 #Configuration details...
 defaults=dict()
+
+#Compatible with python 2.5,2.6 and 3.0+
+def myCallable(obj):
+    import collections
+    try:
+        #Py3.0 doesn't have callable
+        return isinstance(obj,collections.Callable)
+    except AttributeError:
+        #Py2.5 Doesn't have collections.Callable
+        return callable(obj)
 
 def set_mysterymachine_default(name,value):
     """
@@ -192,7 +203,10 @@ class _LibraryContext(object):
  
     def __init__(self,args):
         ###DO all initialisation.
-
+    
+        #Define the logger early so that it is ready for use if not configured.
+        self.logger = logging.getLogger("MysteryMachine")
+    
         self.cmdline_options,self.args=_parse_options(args)
 
         ##Initiliase Config engine.
@@ -200,7 +214,14 @@ class _LibraryContext(object):
         self.cfg_engine.read(self.get_app_option_object("cfgfile"))
         if "testmode" in self.cmdline_options:
             self.cfg_engine.testmode()    
-        
+       
+        #Setup Logging
+        self.logger.setLevel(self.get_app_option_object("loglevel"))
+        handler = self.get_app_option_object("logtarget")
+        print "Handler is %s"%handler
+        if handler:
+            self.logger.addHandler(handler)
+
         #Initialise Extlib
         self.ExtLib=ExtensionLib(self.cfg_engine)
         #TODO Check config for Ui data.
@@ -274,10 +295,25 @@ class _LibraryContext(object):
         take no arguments.
         """
         val=self.get_app_option(name)
+        self.logger.debug( "MM:cfg:fetching %s -> %s" % (name,val))
+        #print "MM:cfg:fetching %s -> %s" % (name,val)
         if type(val) in types.StringTypes:
             #Call 'val' with no args.
-            if val in globals():
-                val=(globals()[val])()
+            elements = val.split(".")
+            self.logger.debug( "MM:cfg %s" % elements[0])
+            #print "MM:cfg %s -> %s" % (name, elements)
+            tval = None
+            if elements[0] in globals():
+               tval=(globals()[elements[0]])
+               if myCallable(tval): tval=tval()
+            for ele in elements[1:]:
+                if tval == None: break
+                self.logger.debug( "\tMM:cfg %s" % ele)
+                #print "MM:cfg:prgs %s ,%s"%(tval,ele) 
+                tval = getattr(tval,ele,None)
+                if myCallable(tval): tval=tval()
+            if not tval is None:
+                val = tval   
         return val
 
     def GetStoreBases(self,classspec):
@@ -291,12 +327,12 @@ class _LibraryContext(object):
         for line in classspec:
             line = re.sub("^\s+","",line)
             line = re.sub("\s+$","",line)
-            sys.stderr.write(line + "\n" )
+            self.logger.debug("basespec line %s",line )
             #TODO: Error reporting - this file is untrusted remember
             lib,classname,req_version = re.split('\s+',line)
             ext = self.GetExtLib().getExtension(lib,version  = req_version)
-            print "MMI-GSB: ext = %s"%ext
-            print "MMI-GSB: extobj = %s"%ext.plugin_object
+            self.logger.debug( "MMI-GSB: ext = %s"%ext)
+            self.logger.debug( "MMI-GSB: extobj = %s"%ext.plugin_object)
             if ext is None:
                 raise ExtensionError("Can't find %s" % lib)
             elif 'storeclass' not in ext.plugin_object.getInterfaces(): raise ExtensionError("storeclass interfaces not advertised")

@@ -80,7 +80,6 @@ class MMSystem (MMBase):
     self.name = EscapeSystemUri(self.uri)
     DocsLoaded[self.name] = self
     store.set_owner(self)
-    print "my name is %s" % self.name
     self.cache = weakref.WeakValueDictionary()
 
   def __repr__(self):

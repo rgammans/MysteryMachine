@@ -4,8 +4,10 @@
 from pyparsing import  Regex,Optional,ZeroOrMore, QuotedString , Literal, Word, alphas , nums , printables  , CharsNotIn
 from functools import partial
 
+import logging
 import sys
 
+modlogger = logging.getLogger("MysteryMachine.parsetools.gramar")
 
 def Grammar(obj):
     home=obj
@@ -52,27 +54,27 @@ def Grammar(obj):
     ## Functions for parsing.
 
     def getField(s,loc,toks):
-    	print "bar(%s)\n" % toks
+    	modlogger.debug( "getfielg(%s)\n" % toks)
     	field=toks[2]
     	obj=toks[0]
     	return obj[field]
 
 
     def doBool(s,loc,toks):
-#    	print "baz\n"
+    	modlogger.debug( "getbol\n")
         sense=(toks[1]=="!=")
     	return sense ^ ( str(toks[0]) == toks[2])
 
 
     def doQuery(s,loc,toks):
-#    	print "foo\n"
+    	modlogger.debug( "doing query\n")
         if toks[0]:
     		return toks[2]
     	else:
     		return toks[4]
 
     def initFromParse(s,loc,toks):
-    	print "Creating form :%s (current=%s)\n"%(toks,repr(home))
+    	modlogger.debug( "Creating form :%s (current=%s)\n"%(toks,repr(home)))
         isSelf=len(toks)==0
        	if isSelf:         return home 
         elif home is None: return None

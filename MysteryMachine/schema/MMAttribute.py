@@ -112,8 +112,6 @@ class MMAttribute (MMBase):
   #This is intend for method lookup
   def __getattr__(self,name):
       if name in self.valueobj.exports:
-        print "\nlooking for %s " % name,
-        print " in %s" % repr(self)
         return functools.partial(getattr(self.valueobj,name),self)
       else: raise KeyError()
 

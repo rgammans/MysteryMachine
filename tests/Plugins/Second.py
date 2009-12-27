@@ -4,13 +4,15 @@ infra stucture.
 """
 
 from MysteryMachine.Extension  import Extension
+import logging
 
 class Second(Extension):
 	def __init__(self):
+		self.logger = logging.getLoggger("MysteryMachine.Extensions.Second")
 		Extension.__init__(self)
 
 	def activate(self):
-		print "Second activated"
+		self.logger.debug( "Second activated")
 
 	def deactivated(self):
-		print "Second Deactivated"
+		self.logger.debug( "Second Deactivated")

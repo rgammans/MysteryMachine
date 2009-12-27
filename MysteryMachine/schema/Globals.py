@@ -26,6 +26,10 @@ import weakref
 import re
 import binascii
 
+import logging
+
+modlogger = logging.getLogger("MysteryMachine.Globals")
+
 ##Support functions to allow a single MysteryMachine instance to
 # be used to edit multiple systems.
 #
@@ -42,7 +46,7 @@ def EscapeSystemUri(uri):
     return uri
 
 def UnEscapeSystemUri(uri):
-    print "***WARNING Func UnEscapeSystemUri Not complete***"
+    modlogger.warn("*** Func UnEscapeSystemUri Not complete***")
     def findChar(match):
         #TODO Unicode support...
         return  binascii.unhexlify(match.group(1))

@@ -126,6 +126,5 @@ class HgStoreMixin(object):
             #Basic clean - just remove files stored in revision control.
             ctx = self.repo[None]
             for f in ctx:
-                print f
                 os.unlink(os.path.join(self.get_path(),f))
 

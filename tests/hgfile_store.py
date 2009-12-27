@@ -68,7 +68,6 @@ class hgstoreTests(scmTests, unittest.TestCase):
         self.testtype = type("HgTestStore", (HgStoreMixin , BasicStore ), {'uriScheme':"hgbasic"} )
         #Ensure delte - will create again in a moment
         os.rmdir(testpath)
-        sys.stderr.write("hgbasic:path - %s\n" % testpath)
         self.store= self.testtype("hgbasic:"+testpath,create = True)
    
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#               VersionNr.py - Copyright Roger Gammans
+#               ExtLibTest.py - Copyright Roger Gammans
 # 
 #
 #    This program is free software; you can redistribute it and/or modify
@@ -32,13 +32,15 @@ from __future__ import with_statement
 from MysteryMachine import *
 import unittest
 import os
-
+import logging
 
 def foo(object):  
     return object()
 
 class ExtensionLibTest(unittest.TestCase):
-
+    def setUp(self):
+        self.logger = logging.getLogger("")
+        
     def gettrustedlist(self):
       with StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"])  as g:
         self.extlib = g.GetExtLib()
@@ -74,7 +76,7 @@ class ExtensionLibTest(unittest.TestCase):
       with StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"])  as g:
         self.extlib = g.GetExtLib()
         #Add second to trust list
-        print "starting addtrust======"
+        self.logger.debug("starting addtrust======")
         to_trust = []
         for reject in self.extlib.get_extension_list():
             if not self.extlib.IsTrusted(reject):

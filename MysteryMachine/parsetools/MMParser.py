@@ -33,6 +33,9 @@ from MysteryMachine.schema import GetLoadedSystemByName
 import re
 from exceptions import *    
 
+import logging
+modlogger   = logging.getLogger("MysteryMachine.parsetools.MMParser")
+
 
 class MMParser (object):
 
@@ -53,15 +56,18 @@ class MMParser (object):
   def __init__(self,obj):
         self.myobject = obj
         self.grammar  = Grammar(obj)
+        self.logger   = logging.getLogger("MysteryMachine.parsetools.MMParser")
 #        self.publisher= MMPublisher(obj)
 
   def evaluate(self,expr):
-        print "\n--evaling--\n%s\n----\n" % expr
+        self.logger.debug( "\n--evaling--\n%s\n----\n" % expr)
         value=self.grammar.parseString(expr) 
-        print "Parsed as->%s" % repr(value)
-        value=reduce(lambda x,y:x+y,value)
-        print "\n--evalled to --\n%s\n----\n" % value.__repr__() 
-        return value
+        self.logger.debug( "Parsed as->%s" % repr(value))
+        newval=value[0]
+        for part in value[1:]:
+            newval = newval + part
+        self.logger.debug( "\n--evalled to --\n%s\n----\n" % newval.__repr__() )
+        return newval
 
   def ProcessRawRst(self,rst_string,src=None,src_stack=[]):
     #Define the options and content for the role
@@ -77,28 +83,28 @@ class MMParser (object):
     role_def = ".. role:: mm(mm)\n :systemcntxt: %s\n\n" % src
     role_def+= "\n".join(map(lambda x: " "+x,src_stack))
     role_def+= "\n\n"
-    print "processed srd->" , src
-    print "raw+IN->%s<-" % rst_string
-    print "\n--Parsing--\n%s\n---\n" % (role_def+rst_string)
+    self.logger.debug( "processed srd->" , src)
+    self.logger.debug( "raw+IN->%s<-" % rst_string)
+    self.logger.debug( "\n--Parsing--\n%s\n---\n" % (role_def+rst_string))
     result =   publish_doctree(role_def+rst_string,source_path=src,
                                settings_overrides=MMParser.du_defaults
                                )
     source =   result[0].source
-    print "pnodelist-->%s<-" % result
-    print "source => %s" % source
+    self.logger.debug( "pnodelist-->%s<-" % result)
+    self.logger.debug( "source => %s" % source)
     #Strip  document header and main containing paragraph.
     result =   result.children 
-    #print "nodelist-->%s<-" % result
+    #self.logger.debug( "nodelist-->%s<-" % result)
     if len(result) ==1:
-        print "MMP-PRST: class is %s" % str(result[0].__class__)
+        self.logger.debug( "MMP-PRST: class is %s" % str(result[0].__class__))
         if result[0].__class__  == docutils.nodes.paragraph:
              result = result[0].children
     #Update source attrib in node.
     for docnode in result:
         if not source in docnode:
            docnode.source=source
-    #print "nodelist-->%s<-" % str(result)
-    #print "String[0]->%s<" % str(result[0])
+    #self.logger.debug( "nodelist-->%s<-" % str(result))
+    #self.logger.debug( "String[0]->%s<" % str(result[0]))
     return result
    
   def GetString(self,rst_string,src="unknown",src_stack=[]):
@@ -108,11 +114,11 @@ class MMParser (object):
     result = ""
     for n in nodes:
       result += str(n)
-    print "String->'%s',len %s"  % (result ,len(nodes))
+    self.logger.debug( "String->'%s',len %s"  % (result ,len(nodes)))
     if len(nodes) == 1:
       #Supress outer xml container.
       result =re.sub("<(\w+)>([^>]*)</\\1>","\\2",result)
-    print "string->%s<-" %result
+    self.logger.debug( "string->%s<-" %result)
     return result
  
 def role_handler(role, rawtext, text, lineno, inliner,
@@ -120,9 +126,9 @@ def role_handler(role, rawtext, text, lineno, inliner,
     msg   = []
     nodes = []
 
-    print "role handler (%s)" % text
-    print "role-options:%s"%str(options)
-    print "role-content:%s"%str(content)
+    modlogger.debug( "role handler (%s)" % text)
+    modlogger.debug( "role-options:%s"%str(options))
+    modlogger.debug( "role-content:%s"%str(content))
 
     mainobj = None
     if 'systemcntxt' in options:
@@ -137,22 +143,22 @@ def role_handler(role, rawtext, text, lineno, inliner,
                 nodes += mainobj.parser.ProcessRawRst(str(rst),src = repr(rst) ,
                                                       src_stack=content + [ text ] )
              #except Exception , e:
-             #   print "Error:%s" % str(e)
+             #   modlogger.debug( "Error:%s" % str(e))
              #   msg.append(str(e))
         else:
             msg.append(inliner.reporter.error("Cycle detected in macro expansion via:-%s\n" % content.join("\n")))
-    #print  nodes,msg
+    #modlogger.debug(  nodes,msg)
     return nodes ,msg
 
 
 #Convert Full object name into actual object.
 def ObjectOptionHandler(argument):
     items = argument.split(":")
-    print "--SysCntxt:role<-%s" % argument
+    modlogger.debug( "--SysCntxt:role<-%s" % argument)
     sys=GetLoadedSystemByName(items[0])
-    print repr(sys)
+    modlogger.debug( repr(sys))
     if sys != None:
-        print "--Fetching item (%s,%s)" % (items[1] , items[2])
+        modlogger.debug( "--Fetching item (%s,%s)" % (items[1] , items[2]))
         sys = sys.get_object(items[1],items[2])     
     return sys
 

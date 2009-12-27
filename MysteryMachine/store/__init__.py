@@ -25,7 +25,9 @@ import weakref
 import MysteryMachine.Exceptions
 
 _store_registry = dict()
+import logging
 
+modlogger  = logging.getLogger("MysteryMachine.store")
 
 def CreateStore(uri):
     """
@@ -35,7 +37,7 @@ def CreateStore(uri):
     Returns a MysteryMachine.store.Base instance
     """
     scheme = GetScheme(uri)
-    print "Looking for store scheme %s " % scheme
+    modlogger.debug( "Looking for store scheme %s " % scheme)
     storeclass = _store_registry[scheme]
     return storeclass(uri, create=True)
 
@@ -63,7 +65,7 @@ def RegisterStore(storename,storeclass):
     
     Registering the same storename multiple times is an error.
     """
-    print "registering store schema `%s'" % storename
+    modlogger.debug( "registering store schema `%s'" % storename)
     if storename not in _store_registry:
         _store_registry[storename] = storeclass
     else:

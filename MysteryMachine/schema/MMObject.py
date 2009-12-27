@@ -28,6 +28,7 @@ from MysteryMachine.schema.MMAttribute import *
 from MysteryMachine.schema.MMAttributeValue import  * 
 
 import weakref
+import logging
 
 class MMObject (MMBase):
 
@@ -63,13 +64,14 @@ class MMObject (MMBase):
     @author
     """
     MMBase.__init__(self)
-#    print "Creating %s" % id
+#    self.logger.debug( "Creating %s" % id)
     self.id = id
     #Ensure strong ref to parent.
     self.parent = parent.getSelf()
     self.store = store
     self.parser = MMParser(self)
     self.cache = weakref.WeakValueDictionary()    
+    self.logger = logging.getLogger("MysteryMachine.schema.MMObject")
 
   def _get_mm_attribute(self,attrn):
      try:
@@ -163,7 +165,7 @@ class MMObject (MMBase):
 
   def __contains__(self,name):
        a = self.store.HasAttribute(name) 
-       print "** %s does %s exist** " % (name , ("" if a else "not"))
+       self.logger.debug( "** %s does %s exist** ", name , ("" if a else "not"))
        return a
 
   def _validate(self):
@@ -183,8 +185,8 @@ class MMObject (MMBase):
     """
     #Bypass inheritance lookup.
     parent = self._get_mm_attribute(".parent") 
-    print "parent type is %s " %type(parent)
-    print "Parent = %r" % parent
+    self.logger.debug( "parent type is %s " %type(parent))
+    self.logger.debug( "Parent = %r" % parent)
     if parent != None:
         parent = parent.get_object()
     return parent
@@ -239,11 +241,11 @@ class MMAttributeValue_MMObjectRef(MMAttributeValue):
         own_obj is not valid or the value will not validate.
         """
         ##TODO Consider caching the return result.
-  #      print "refobj->%s<--" % attr
+  #      self.logger.debug( "refobj->%s<--" % attr)
         pstr = self.get_raw(attr)
-        print "MMA-O:go:pstr  ->%s<--" % pstr
+        self.logger.debug( "MMA-O:go:pstr  ->%s<--" % pstr)
         objref = Grammar(attr).parseString(pstr)[0]
-  #      print "ret = %s, class = %s" % (objref , objref.__class__ )
+  #      self.logger.debug( "ret = %s, class = %s" % (objref , objref.__class__ ))
         return objref
 
     def get_raw_rst(self,obj = None):

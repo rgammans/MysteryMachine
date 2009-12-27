@@ -159,7 +159,7 @@ def FileStoreAttributePart(filename,partname):
     infile = SafeFile.open_read(filename)
     data = infile.read()
     infile.close()
-    print "FSAPi:data:%s"%data
+    logging.getLogger("MysteryMachine.Store.file_store").debug("APi:data:%s",data)
     return {partname: data }
 
 class filestore(Base):
@@ -181,7 +181,8 @@ class filestore(Base):
         return os.path.normcase(os.path.realpath(os.path.normpath(uri)))
 
     def __init__(self,*args,**kwargs):
-        print args
+        self.logger = logging.getLogger("MysteryMachine.Store.file_store")
+        self.logger.debug( args)
         super(filestore,self).__init__(*args,**kwargs)
         uri = args[0]
         create = kwargs.setdefault('create',False)
@@ -291,13 +292,13 @@ class filestore(Base):
         attrtype = None
         for candidate in os.listdir(workuri):
             items = candidate.split(".")
-            print "GA:Candiate-items:%s" %items
+            self.logger.debug( "GA:Candiate-items:%s" %items)
             if items[0] == attrele[2]:
                 if attrtype == None:
                     attrtype = items[1]
                 if attrtype != items[1]:
                     raise exception("Inconsisent attrype in store")
-                print "GA:Loading:%s-%s)" %(candidate,items[2])
+                self.logger.debug( "GA:Loading:%s-%s)" %(candidate,items[2]))
                 files.update(FileStoreAttributePart(os.path.join(workuri,candidate),items[2]))
         
         if attrtype is None: return None

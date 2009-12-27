@@ -52,7 +52,6 @@ class Base(object):
         return self.owner
 
     def set_owner(self,v):
-        print "Setting owner to %s" % v
         self.owner = weakref.proxy(v)
 
     def commit(self,msg):

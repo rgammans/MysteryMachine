@@ -44,7 +44,6 @@ class MMBase(object):
     @return  :
     @author
     """
-    print "In MMBase.__init__ %s" % self.__class__
     with StartApp() as g:
         for helper in g.GetExtLib().get_helpers_for(self.__class__):
             if not hasattr(self,"_helpers"): self._helpers=[]

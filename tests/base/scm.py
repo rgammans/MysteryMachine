@@ -54,7 +54,6 @@ def ReadFile(store,name):
 
 class scmTests(object):
     def testSCM(self):
-        print self.store
         WriteFile(self.store,"test1","Test data")
         self.store.commit("commit msg")
         #Check size of changelog + files contained.

@@ -30,12 +30,13 @@ from MysteryMachine.store.dict_store import *
 
 import MysteryMachine.schema.MMAttributeValue
 import unittest
-
+import logging
 
 
 class ObjectTests(unittest.TestCase):
     def setUp(self):
         StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
+        self.logger = logging.getLogger("")
         self.system=MMSystem.Create("dict:ObjectTests")
         self.system.NewCategory( "Template" )
         self.dummyparent             = self.system.NewObject( "Template" )
@@ -48,24 +49,24 @@ class ObjectTests(unittest.TestCase):
         self.object                  = self.system.NewObject("Dummy") 
         self.object.set_parent(self.parent)       
 
-        print "dummy => " ,repr(self.dummyparent)
-        print "parent => " ,repr(self.parent)
-        print "object => " , repr(self.object)
+        self.logger.debug( "dummy => " ,repr(self.dummyparent))
+        self.logger.debug( "parent => " ,repr(self.parent))
+        self.logger.debug( "object => " , repr(self.object))
 
     def testgetparent(self):
-        print "----starting getparent test------"
+        self.logger.debug( "----starting getparent test------")
         self.assertTrue(self.parent is self.object.get_parent())
-        print "----completed getparent test------"
+        self.logger.debug( "----completed getparent test------")
  
     def testdefname(self):
 #        """
 #        Disabled tests until MMParser's tests are complete
-        print "----starting defname test------"
+        self.logger.debug( "----starting defname test------")
         self.assertEquals(str(self.dummyparent),"name")
         self.object["name"]="test"
-        print "--- next assert----"
+        self.logger.debug( "--- next assert----")
         self.assertEquals(str(self.object),"test")
-        print "----completed defname test------"
+        self.logger.debug( "----completed defname test------")
 #        """
 #        pass
 

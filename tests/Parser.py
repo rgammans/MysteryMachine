@@ -45,7 +45,6 @@ class ParsersTests(unittest.TestCase):
         
  
     def testParser(self):
-        print "attr -> %s" % self.c["carries"]
         self.assertEquals(self.c["carries"].GetFullExpansion(),"The one ring")
 
 def getTestNames():

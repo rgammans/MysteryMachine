@@ -29,6 +29,9 @@ import unittest
 import os
 import threading
 import time
+import logging
+
+modlogger = logging.getLogger("")
 
 class UtilsTest(unittest.TestCase):
     def testPath_make_rel(self):
@@ -55,41 +58,41 @@ class UtilsTest(unittest.TestCase):
                   rwl = locks.RWLock()
                   class Reader(threading.Thread):
                     def run(self):
-                      print self, 'start'
+                      modlogger.debug( self, 'start')
                       rwl.acquire_read()
-                      print self, 'acquired'
+                      modlogger.debug( self, 'acquired')
                       time.sleep(5)    
-                      print self, 'stop'
+                      modlogger.debug( self, 'stop')
                       rwl.release()
                   class Writer(threading.Thread):
                     def run(self):
-                      print self, 'start'
+                      modlogger.debug( self, 'start')
                       rwl.acquire_write()
-                      print self, 'acquired'
+                      modlogger.debug( self, 'acquired')
                       time.sleep(10)    
-                      print self, 'stop'
+                      modlogger.debug( self, 'stop')
                       rwl.release()
                   class ReaderWriter(threading.Thread):
                     def run(self):
-                      print self, 'start'
+                      modlogger.debug( self, 'start')
                       rwl.acquire_read()
-                      print self, 'acquired'
+                      modlogger.debug( self, 'acquired')
                       time.sleep(5)    
                       rwl.promote()
-                      print self, 'promoted'
+                      modlogger.debug( self, 'promoted')
                       time.sleep(5)    
-                      print self, 'stop'
+                      modlogger.debug( self, 'stop')
                       rwl.release()
                   class WriterReader(threading.Thread):
                     def run(self):
-                      print self, 'start'
+                      modlogger.debug( self, 'start')
                       rwl.acquire_write()
-                      print self, 'acquired'
+                      modlogger.debug( self, 'acquired')
                       time.sleep(10)    
-                      print self, 'demoted'
+                      modlogger.debug( self, 'demoted')
                       rwl.demote()
                       time.sleep(10)    
-                      print self, 'stop'
+                      modlogger.debug( self, 'stop')
                       rwl.release()
                   r1 =Reader()
                   r1.start()
@@ -128,59 +131,59 @@ class UtilsTest(unittest.TestCase):
                   rwl = locks.RRwLock()
                   class Reader(threading.Thread):
                     def run(self):
-                      print self, 'start'
+                      modlogger.debug( self, 'start')
                       rwl.acquire_read()
-                      print self, 'acquired'
+                      modlogger.debug( self, 'acquired')
                       time.sleep(5)    
-                      print self, 'stop'
+                      modlogger.debug( self, 'stop')
                       rwl.release()
                   class Writer(threading.Thread):
                     def run(self):
-                      print self, 'start'
+                      modlogger.debug( self, 'start')
                       rwl.acquire_write()
-                      print self, 'acquired'
+                      modlogger.debug( self, 'acquired')
                       time.sleep(10)    
-                      print self, 'stop'
+                      modlogger.debug( self, 'stop')
                       rwl.release()
                   class ReaderWriter(threading.Thread):
                     def run(self):
-                      print self, 'start'
+                      modlogger.debug( self, 'start')
                       rwl.acquire_read()
-                      print self, 'acquired'
+                      modlogger.debug( self, 'acquired')
                       time.sleep(5)    
                       rwl.acquire_write()
-                      print self, 'promoted'
+                      modlogger.debug( self, 'promoted')
                       time.sleep(5)    
-                      print self, 'stop'
+                      modlogger.debug( self, 'stop')
                       rwl.release()
                       rwl.release()
                   class WriterWriter(threading.Thread):
                     def run(self):
-                      print self, 'start'
+                      modlogger.debug( self, 'start')
                       rwl.acquire_write()
-                      print self, 'acquired'
+                      modlogger.debug( self, 'acquired')
                       time.sleep(10)    
                       rwl.acquire_write()
-                      print self, 'acquired 2'
+                      modlogger.debug( self, 'acquired 2')
                       time.sleep(5)    
-                      print self, 'stop 2'
+                      modlogger.debug( self, 'stop 2')
                       rwl.release()
                       time.sleep(5)    
-                      print self, 'stop'
+                      modlogger.debug( self, 'stop')
                       rwl.release()
                   class ReaderReaderWriter(threading.Thread):
                     def run(self):
-                      print self, 'start'
+                      modlogger.debug( self, 'start')
                       rwl.acquire_read()
-                      print self, 'acquired'
+                      modlogger.debug( self, 'acquired')
                       time.sleep(2)
                       rwl.acquire_read()
-                      print self, 'acquired 2'
+                      modlogger.debug( self, 'acquired 2')
                       time.sleep(5)    
                       rwl.acquire_write()
-                      print self, 'promoted'
+                      modlogger.debug( self, 'promoted')
                       time.sleep(5)    
-                      print self, 'stop'
+                      modlogger.debug( self, 'stop')
                       rwl.release()
                       rwl.release()
                       rwl.release()
