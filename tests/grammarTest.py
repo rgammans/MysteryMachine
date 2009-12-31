@@ -60,7 +60,7 @@ def helper(parser,input):
 
 class GraamarTest(unittest.TestCase):
     def setUp(self):
-        StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
+        StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
         self.parserA=Grammar( ObjectProxy( name="TestName",  title="A Title") )
         self.parserB=Grammar( ObjectProxy( name="WrongName", title="A Title") )
 

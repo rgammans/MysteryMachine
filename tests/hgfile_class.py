@@ -39,7 +39,7 @@ DummySystem=DummySystemClass()
 
 class filestoreTests(scmTests,storeTests,unittest.TestCase):
     def mySetUp(self):
-        StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"])
+        StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg", "--testmode"])
         self.mpath = tempfile.mkdtemp(prefix="mysmac")
         os.rmdir(self.mpath)
         self.store=HgFileStore("hgafile:"+self.mpath,create = True)

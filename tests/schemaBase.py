@@ -42,7 +42,7 @@ class bar(object):
 
 class BaseTest(unittest.TestCase):
     def testInit(self):
-        with StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg"]) as g:
+        with StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg"]) as g:
             if not bar in foo.__bases__: 
                 foo.__bases__ +=  ( bar, )
             g.GetExtLib().register_helper(foo,bar)
@@ -52,7 +52,7 @@ class BaseTest(unittest.TestCase):
             self.assertTrue(True)
 
     def testExtensions(self):
-         with StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg"]) as g:
+         with StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg"]) as g:
             if not bar in foo.__bases__: 
                 foo.__bases__ +=  ( bar, )
             g.GetExtLib().register_helper(foo,bar)

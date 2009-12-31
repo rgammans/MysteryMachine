@@ -31,7 +31,7 @@ import unittest
 
 class sysTests(unittest.TestCase):
     def setUp(self):
-        self.appctx = StartApp(["--cfgengine=pyConfigDict", "--logtarget=logging.StreamHandler", "--cfgfile=test.cfg", "--testmode"]) 
+        self.appctx = StartApp(["--cfgengine=ConfigDict", "--logtarget=logging.StreamHandler", "--cfgfile=test.cfg", "--testmode"]) 
         self.sys=MMSystem.Create("dict:test")
 
     def testCategory(self):

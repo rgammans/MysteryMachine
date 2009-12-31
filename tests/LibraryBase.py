@@ -27,6 +27,13 @@ from MysteryMachine.schema.MMSystem import MMSystem
 from MysteryMachine import *
 import unittest
 
+
+
+class MyUi(object):
+    def mercurial_ui(self):
+        return "MercurialUi"
+
+
 class LibBaseTest(unittest.TestCase):
 
     def testOptParsing(self):
@@ -45,6 +52,7 @@ class LibBaseTest(unittest.TestCase):
     def testLoadSave(self):
         with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) as g:
             #Load example pack file and test attributes
+
             test1 = g.OpenPackFile("examples/test1.mmpack")
             self.assertTrue(isinstance(test1,MMSystem))
             self.assertEqual(len(list(test1.EnumObjects("Items"))),2)
@@ -78,6 +86,13 @@ class LibBaseTest(unittest.TestCase):
 
     def testContxtMan(self):
         pass
+
+    def testUi(self):
+        MysteryMachine.MyUi = MyUi
+        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode",
+                       "--ui=MyUi"]) as g:
+            self.assertNotEquals(g.Ui,None)
+            self.assertEquals(g.GetMercurialUi(),"MercurialUi")
 
 def getTestNames():
 	return [ 'LibraryBase.LibBaseTest' ] 

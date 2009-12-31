@@ -227,3 +227,6 @@ class pyConfigDict(object):
         if self.cfg.has_section("__root__"):
             for k,v in self.cfg.items("__root__"):
                 yield k
+
+#Alias name from old to new.
+ConfigDict = pyConfigDict

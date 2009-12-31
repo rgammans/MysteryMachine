@@ -42,7 +42,7 @@ class dictstoreTests(storeTests,unittest.TestCase):
     """
     def mySetUp(self):
         global testscount
-        StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
+        StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
         #Ensure each new time this starts we use a new system
         testscount = testscount + 1
         self.store=dict_store("dict:test"+str(testscount))

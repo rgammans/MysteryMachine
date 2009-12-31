@@ -47,18 +47,17 @@ import os
 
 from MysteryMachine.ExtensionLib import ExtensionLib
 from MysteryMachine.VersionNr import VersionNr
-from MysteryMachine.ConfigDict import pyConfigDict
-from MysteryMachine.ConfigYaml import ConfigYaml
-from MysteryMachine.Exceptions import *
-from MysteryMachine.store import *
-from MysteryMachine.utils.path import make_rel
+
+import MysteryMachine.store
+import MysteryMachine.Exceptions
+import MysteryMachine.utils.path
 
 #Global vars
 #Configuration details...
 defaults=dict()
 
 #Compatible with python 2.5,2.6 and 3.0+
-def myCallable(obj):
+def _myCallable(obj):
     import collections
     try:
         #Py3.0 doesn't have callable
@@ -176,7 +175,6 @@ class _SingletonWithExternalLocking(type):
     def __call__(self, *args, **kw):
         if self.instance is None:
             self.instance = super(_SingletonWithExternalLocking, self).__call__(*args, **kw)
- 
         return self.instance
 
     def IsInstantiated(self):
@@ -211,21 +209,22 @@ class _LibraryContext(object):
 
         ##Initiliase Config engine.
         self.cfg_engine = self.get_app_option_object("cfgengine")
-        self.cfg_engine.read(self.get_app_option_object("cfgfile"))
+        self.cfg_engine.read(self.get_app_option("cfgfile"))
         if "testmode" in self.cmdline_options:
             self.cfg_engine.testmode()    
        
         #Setup Logging
-        self.logger.setLevel(self.get_app_option_object("loglevel"))
         handler = self.get_app_option_object("logtarget")
         #print "Handler is %s"%handler
         if handler:
             self.logger.addHandler(handler)
-
+        self.logger.setLevel(int(self.get_app_option("loglevel") or 0))
+        
         #Initialise Extlib
         self.ExtLib=ExtensionLib(self.cfg_engine)
-        #TODO Check config for Ui data.
-        self.Ui = None    
+
+        #Initialise Ui
+        self.Ui = self.get_app_option_object("ui")    
 
     def close(self):
          ## Do our Application finalisation here.
@@ -233,7 +232,9 @@ class _LibraryContext(object):
 
         # TODO Write close action to logfile. 
         #     (Important so we can trace any bug provoked by an early close).
- 
+
+        # TODO Iterate around opened systems and Save/NoSave action
+         
         #Delete our context to force a reinit
         self.__class__.instance = None
 
@@ -264,7 +265,8 @@ class _LibraryContext(object):
         if self.Ui == None:
             return mercurial.ui.ui()
         else:
-            return Ui.mercurial_ui()
+            return self.Ui.mercurial_ui()
+
 
     def get_app_option(self,name):
         """
@@ -290,28 +292,51 @@ class _LibraryContext(object):
         This is the same as get_app_option, but instanties a 
         object of the value's class iff the value has type str.
 
-        This function DOES NOT import any more modules so the
-        value must be a callable at the main level scope, and
-        take no arguments.
+        This function tries to import any modules  on the option's value's path
+        (eg --foo=bar.baz.quuz , may import bar, bar.baz & bar.baz.quux  in turn.)
+        The value must be a callable which takes no arguments.
         """
+        
+        #This is a pretty evil function as a result of that spec
         val=self.get_app_option(name)
         self.logger.debug( "MM:cfg:fetching %s -> %s" % (name,val))
         #print "MM:cfg:fetching %s -> %s" % (name,val)
+
         if type(val) in types.StringTypes:
-            #Call 'val' with no args.
-            elements = val.split(".")
+            #Go down the names list importing it all. 
+            elements =  val.split(".")
+            modname  =  val
+            #Import the actual named thing.
+            try: 
+                self.logger.debug("opt %s , tries importing %s",name,modname)
+                __import__(modname,globals())
+            except ImportError, e:
+                self.logger.debug("Import failed (%s)",str(e))
+            #No import each parent...,
+            for sz in range(1,len(elements)):
+                try:
+                    modname = ".".join(elements[0:-sz]) 
+                    self.logger.debug("opt %s , tries importing %s",name,modname)
+                    __import__(modname,globals())
+                except ImportError, e:
+                    self.logger.debug("Import failed (%s)",str(e))
+            
+            #Ok we've imported eveything named so try to walk up to find 
+            # the callable so we can create an instance. 
             self.logger.debug( "MM:cfg %s" % elements[0])
-            #print "MM:cfg %s -> %s" % (name, elements)
             tval = None
             if elements[0] in globals():
                tval=(globals()[elements[0]])
-               if myCallable(tval): tval=tval()
+               if _myCallable(tval): tval=tval()
             for ele in elements[1:]:
-                if tval == None: break
+                if tval is None: break     
                 self.logger.debug( "\tMM:cfg %s" % ele)
-                #print "MM:cfg:prgs %s ,%s"%(tval,ele) 
                 tval = getattr(tval,ele,None)
-                if myCallable(tval): tval=tval()
+                if _myCallable(tval): tval=tval()
+            #
+            if not _myCallable(tval):
+                another_tmp_val = getattr(tval,elements[-1],None)
+                if _myCallable(another_tmp_val): tval=another_tmp_val()
             if not tval is None:
                 val = tval   
         return val
@@ -334,8 +359,8 @@ class _LibraryContext(object):
             self.logger.debug( "MMI-GSB: ext = %s"%ext)
             self.logger.debug( "MMI-GSB: extobj = %s"%ext.plugin_object)
             if ext is None:
-                raise ExtensionError("Can't find %s" % lib)
-            elif 'storeclass' not in ext.plugin_object.getInterfaces(): raise ExtensionError("storeclass interfaces not advertised")
+                raise Exceptions.ExtensionError("Can't find %s" % lib)
+            elif 'storeclass' not in ext.plugin_object.getInterfaces(): raise Exceptions.ExtensionError("storeclass interfaces not advertised")
             rv +=  [ ext.plugin_object.getStoreMixin(classname,version) ]
         return rv
 
@@ -411,7 +436,7 @@ class _LibraryContext(object):
             #Build store class.
             #TODO: Check to see if store type already vivified
             storetype = type(filename,bases, { 'uriScheme': schema} )
-            mmstore = GetStore(aname+":"+workdir)
+            mmstore = store.GetStore(aname+":"+workdir)
             log = list(mmstore.getChangLog())
             #Unpack last rev into working dir and open MMsyste,
             mmstore.revert(log[len(log)-1])
@@ -425,7 +450,7 @@ class _LibraryContext(object):
         directory. It guarantees to use a hgfile_mixin and file_store.
  
         """
-        mmstore = GetStore(scheme+":"+workdir)
+        mmstore = store.GetStore(scheme+":"+workdir)
         log = list(mmstore.getChangeLog())
         #Unpack last rev into working dir and open MMsystem
         mmstore.revert(log[len(log)-1])
@@ -451,7 +476,7 @@ class _LibraryContext(object):
         for path,dirs,files in os.walk(rootpath):
             for filename in files: 
                 absname  = os.path.join(path,filename)
-                relname, = make_rel(rootpath,absname)
+                relname, = utils.path.make_rel(rootpath,absname)
                 pack.write(absname,arcname = relname)
         pack.close()
         system.Unlock()
@@ -467,8 +492,6 @@ class _LibraryContext(object):
         Confugration arguments provided overirde the application
         defaults.
         """
-
-
             
 class StartApp(object):
     """
@@ -496,6 +519,12 @@ class StartApp(object):
         if self.primary:
             self.maincntxt.close()
 
+
+
 if __name__ == '__main__':
-   with StartApp(sys.argv[1:]) as MyMM:
+   #Fixup the name space to be standard
+   defaults = [ ]
+   options = defaults + sys.argv[1:]
+   import MysteryMachine
+   with MysteryMachine.StartApp(options) as MyMM:
         MyMM.Run()

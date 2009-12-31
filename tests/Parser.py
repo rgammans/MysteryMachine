@@ -28,7 +28,7 @@ import unittest
 
 class ParsersTests(unittest.TestCase):
     def setUp(self):
-        StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
+        StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
         self.sys=MMSystem.Create("dict:test")
         self.sys.NewCategory("template")
         self.p=self.sys.NewObject("template")

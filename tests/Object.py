@@ -35,7 +35,7 @@ import logging
 
 class ObjectTests(unittest.TestCase):
     def setUp(self):
-        StartApp(["--cfgengine=pyConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
+        StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
         self.logger = logging.getLogger("")
         self.system=MMSystem.Create("dict:ObjectTests")
         self.system.NewCategory( "Template" )
