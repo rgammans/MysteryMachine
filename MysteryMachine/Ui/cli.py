@@ -25,6 +25,10 @@ import bpython.cli
 import MysteryMachine
 import mercurial
 
+def closed(self):
+    """A fixup function so mercurial and bpython play well together"""
+    return False
+
 class UiPython(object):
     def __init__(self,args=[]):
         self.args = args
@@ -33,6 +37,11 @@ class UiPython(object):
         return mercurial.ui.ui()
 
     def Run(self):
+        
+        #Mercurial 1.4 calls sys.stdout.closed() - this ensures that call exists
+        if not hasattr(bpython.cli.Repl,"closed"):
+            bpython.cli.Repl.closed = closed
+
         with MysteryMachine.StartApp(self.args) as ctx:
             bpython.cli.main(args=("--quiet",) ,locals_ = { 'ctx': ctx })
 
