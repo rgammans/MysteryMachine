@@ -84,6 +84,21 @@ class LibBaseTest(unittest.TestCase):
             oldpack.close()
             newpack.close()
 
+    def testCreate(self):
+        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) as g:
+            import MysteryMachine.store.dict_store
+            system = g.CreateNew(scheme = "dict")
+            self.assertFalse(system is None)
+            import MysteryMachine.schema.MMSystem
+            self.assertEquals(type(system),MysteryMachine.schema.MMSystem.MMSystem)
+            self.assertEquals(system.getUri()[0:5] , "dict:")
+            system = g.CreateNew(scheme = "foo", uri="dict:uritest")
+            self.assertFalse(system is None)
+            self.assertEquals(system.getUri() , "dict:uritest")
+            import MysteryMachine.store.hgfile_class
+            system = g.CreateNew(scheme = "hgafile")
+            system = g.CreateNew(uri = "dict:foo")
+
     def testContxtMan(self):
         pass
 

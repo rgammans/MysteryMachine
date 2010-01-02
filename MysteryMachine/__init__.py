@@ -485,14 +485,37 @@ class _LibraryContext(object):
         os.fsync(f.fileno())
         f.close()
             
-    def CreateNewSystem(self,**kwargs):
+    def CreateNew(self,**kwargs):
         """
         Creates a new MMSytem.
 
-        Confugration arguments provided overirde the application
+        Args:
+            uri    = uri use for backing store.
+            scheme = (overridden by uri) store sheme to use 
+            path   = (overridden by uri) store path to use
+                - None implies temp path created.
+
+        Configuration arguments provided override the application
         defaults.
         """
-            
+        scheme = self.get_app_option("defaultstore")
+        #Ensure default is sane
+        if scheme is None: scheme =""
+
+        scheme = kwargs.get("scheme",scheme)
+        path   = kwargs.get("path", tempfile.mkdtemp("mm-working") )
+        uri    = kwargs.get("uri", scheme+":"+path)
+
+        #Late import since MMSystem depends on this module - we only load 
+        # it at run time once we have been fully compiled.
+        from MysteryMachine.schema.MMSystem import MMSystem
+        #The store manages the path so delete it and see.
+        #  - this is horrid as create al the sort of problems
+        #    mkdtemp, mkstemp where speced to avoid. Sigh.
+        os.rmdir(path)
+        return MMSystem.Create(uri)            
+
+
 class StartApp(object):
     """
     Start up the main Mystery machine application.
