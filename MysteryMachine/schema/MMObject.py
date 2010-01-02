@@ -77,7 +77,11 @@ class MMObject (MMBase):
      try:
          a = self.cache[attrn]
      except KeyError: 
-         t, p  = self.store.GetAttribute(attrn)
+         attrval = self.store.GetAttribute(attrn)
+         if attrval is None:
+            raise KeyError(attrn)
+         else:
+            t,p = attrval
          a = MMAttribute(attrn,MakeAttributeValue(t,p),self)
          self.cache[attrn]= a
      return a
@@ -95,8 +99,12 @@ class MMObject (MMBase):
     if self.store.HasAttribute(attrname):
         return self._get_mm_attribute(attrname) 
     else:
-        parent = self.get_parent()
-        if parent != None: return parent[attrname]
+        try:
+            parent = self.get_parent()
+        except KeyError:
+            #No Parent so reraise as no attrname.
+            raise KeyError(attrname)
+        return parent[attrname]
 
     #Haven't found looked for attribute.
     #raise KeyError()

@@ -59,16 +59,19 @@ class ObjectTests(unittest.TestCase):
         self.logger.debug( "----completed getparent test------")
  
     def testdefname(self):
-#        """
-#        Disabled tests until MMParser's tests are complete
         self.logger.debug( "----starting defname test------")
         self.assertEquals(str(self.dummyparent),"name")
         self.object["name"]="test"
         self.logger.debug( "--- next assert----")
         self.assertEquals(str(self.object),"test")
         self.logger.debug( "----completed defname test------")
-#        """
-#        pass
+
+    def testAttrRef(self):
+        self.object["data"] ="some data"
+        self.assertEquals(str(self.object["data"]),"some data")
+        def noAttrTst():
+            return self.object["nodata"]
+        self.assertRaises(KeyError,noAttrTst)
 
     def testParentRef(self):
         p=self.object.get_parent()
