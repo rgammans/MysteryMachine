@@ -103,9 +103,7 @@ class scmTests(object):
         self.store.lock()
         self.store.clean()
         for dirpath,dirs,files in os.walk(self.store.get_path()):
-             if '.hg' in dirs:
-                #Don't scan .hg directory.
-                del dirs[dirs.index('.hg')]
+             self.processDirs(dirs)
              self.assertEquals(len(files),0)
     
 

@@ -34,118 +34,148 @@ import glob
 
 policy = MysteryMachine.policies
 
-
-class SafeFile(file):
-    """
-    This class implements Tytso's safe update mechanism.
-
-    It can also take an R/W lock which it holds as a reader() until complete.
-    The rationale for the reader lock is that multiple SafeFile() can share
-    the lock . Then when you need the filesystem to be quesient stable and
-    in a known state you acquire a writer lock.
-
-    Taking a writer lock is also an effective filesystem barrier.
-    
-    See:
-    http://thunk.org/tytso/blog/2009/03/12/delayed-allocation-and-the-zero-length-file-problem/#comment-1986http://thunk.org/tytso/blog/2009/03/12/delayed-allocation-and-the-zero-length-file-problem/#comment-1986
-     
-    """
-
-    active   = { }
-    dictlock = threading.Semaphore()
-
-    def __init__(self,*args,**kwargs):
-        self.finalname = args[0]
-        (path , file ) = os.path.split(self.finalname)
-        self.realname  = os.path.join(path,".new."+file)
-        self.lock      = kwargs.get('lock')
-        self.active    = self.__class__.active
-        self.dictlock  = self.__class__.dictlock
-        self.locksync  = threading.Semaphore(0)
-        
-        #FS Consistency.       
-        try:
-            os.stat(self.finalname)
-        except:
-            #Create sentinel file to ensure HasAttribute uptodate.
-            f = open(self.finalname,"w")
-            f.close()
-
-        #FIXME
-        # - what happens if realname already exists?
-           
-       #Keep track of the 'most recent' SafeFile for each
-        # final file. This is to stop us clobbering a later
-        # version with an earlier version in a racing close situation. 
+if True:
         #
-        # We also use this dict to maintain a consisent atomic filesystem
-        # view to users who use our open_read() and/or unlink class methods.
-        with self.dictlock:
-            self.active[ self.finalname] = self
-        newargs = [ self.realname ]
-        newargs.append( *args[1:]) 
-        super(SafeFile,self).__init__(*newargs)
+        # We don't use this class as it creates more problems than
+        # it solves. We don't need to be sure that the files have
+        # truly hit the disk in any way - except when we save a pack
+        # file.
+        #
+        # The exception to this is when we expect to be unable to 
+        # recover using these temporary files after a crash.
+        #
+        # At this stage (03/01/2010) this is an additional place
+        # obscure bugs can creep in - so lets disable it..
+        #
+        class SafeFile(file):
+            """
+            This class implements Tytso's safe update mechanism.
 
-    
-    def threadFn(self):
-        if self.lock:
-            self.lock.acquire_read()
-        #Let close() complete.
-        self.locksync.release()
-        self.flush()
-        os.fsync(self.fileno())
-        super(SafeFile,self).close()
-        with self.dictlock:
-            #Are we still the most recent update to this file.
-            try:
-                #Attribute as been deleted before fsync completed.
-                if self.active[self.finalname] == "unlink":
-                    os.unlink(self.realname) 
-                    #Leave the dict entry in case of multiple outstanding 
-                    # updates.
-                if self.active[self.finalname] == self:
-                    os.rename(self.realname,self.finalname)
-                    del self.active[self.finalname]
-            except KeyError, e: pass
-        if self.lock:
-            self.lock.release()
-    
-    def close(self):
-        #TODO - launch this in subsidary thread for performance.
-        # but note we need to keep a ref to this class. 
-        thread.start_new_thread(self.threadFn, () )
-        #Wait for thread to claim reader lock before releasing it here.
-        self.locksync.acquire()
-        #Release the lock in the main thread
-        if self.lock:
-            self.lock.release()
+            It can also take an R/W lock which it holds as a reader() until complete.
+            The rationale for the reader lock is that multiple SafeFile() can share
+            the lock . Then when you need the filesystem to be quesient stable and
+            in a known state you acquire a writer lock.
 
-    @classmethod
-    def open_read(cls,filename):
-        """
-        Open a file for reading. Normally opens filename - unless it is the process
-        of being updated in which case you get the update file - so you should 
-        see the most recent updates sent to the filesystem.
-        """
-        #With Posix file semantics we don't need to protect the actual reads as
-        # the file handle stays bound to the actual inode.
-        with cls.dictlock:
-            if filename in cls.active:
-                if cls.active[filename] == "unlink": raise IOError("File deleted")
-                return open(cls.active[filename].realname)
-            else:
+            Taking a writer lock is also an effective filesystem barrier.
+            
+            See:
+            http://thunk.org/tytso/blog/2009/03/12/delayed-allocation-and-the-zero-length-file-problem/#comment-1986http://thunk.org/tytso/blog/2009/03/12/delayed-allocation-and-the-zero-length-file-problem/#comment-1986
+             
+            """
+
+            active   = { }
+            dictlock = threading.Semaphore()
+
+            def __init__(self,*args,**kwargs):
+                self.finalname = args[0]
+                (path , file ) = os.path.split(self.finalname)
+                self.realname  = os.path.join(path,"..new."+file)
+                self.lock      = kwargs.get('lock')
+                self.active    = self.__class__.active
+                self.dictlock  = self.__class__.dictlock
+                self.locksync  = threading.Semaphore(0)
+                
+                #FS Consistency.       
+                try:
+                    os.stat(self.finalname)
+                except:
+                    #Create sentinel file to ensure HasAttribute uptodate.
+                    f = open(self.finalname,"w")
+                    f.close()
+
+                #FIXME
+                # - what happens if realname already exists?
+                   
+               #Keep track of the 'most recent' SafeFile for each
+                # final file. This is to stop us clobbering a later
+                # version with an earlier version in a racing close situation. 
+                #
+                # We also use this dict to maintain a consisent atomic filesystem
+                # view to users who use our open_read() and/or unlink class methods.
+                with self.dictlock:
+                    self.active[ self.finalname] = self
+                newargs = [ self.realname ]
+                newargs.append( *args[1:]) 
+                super(SafeFile,self).__init__(*newargs)
+
+            
+            def threadFn(self):
+                if self.lock:
+                    self.lock.acquire_read()
+                #Let close() complete.
+                self.locksync.release()
+                self.flush()
+                os.fsync(self.fileno())
+                super(SafeFile,self).close()
+                with self.dictlock:
+                    #Are we still the most recent update to this file.
+                    try:
+                        #Attribute as been deleted before fsync completed.
+                        if self.active[self.finalname] == "unlink":
+                            os.unlink(self.realname) 
+                            #Leave the dict entry in case of multiple outstanding 
+                            # updates.
+                        if self.active[self.finalname] == self:
+                            os.rename(self.realname,self.finalname)
+                            del self.active[self.finalname]
+                    except KeyError, e: pass
+                if self.lock:
+                    self.lock.release()
+            
+            def close(self):
+                #TODO - launch this in subsidary thread for performance.
+                # but note we need to keep a ref to this class. 
+                thread.start_new_thread(self.threadFn, () )
+                #Wait for thread to claim reader lock before releasing it here.
+                self.locksync.acquire()
+                #Release the lock in the main thread
+                if self.lock:
+                    self.lock.release()
+
+            @classmethod
+            def open_read(cls,filename):
+                """
+                Open a file for reading. Normally opens filename - unless it is the process
+                of being updated in which case you get the update file - so you should 
+                see the most recent updates sent to the filesystem.
+                """
+                #With Posix file semantics we don't need to protect the actual reads as
+                # the file handle stays bound to the actual inode.
+                with cls.dictlock:
+                    if filename in cls.active:
+                        if cls.active[filename] == "unlink": raise IOError("File deleted")
+                        return open(cls.active[filename].realname)
+                    else:
+                        return open(filename)
+
+            @classmethod
+            def unlink(cls,filename):
+                """
+                Ensure we don't create a file called fileame if there is outstanding
+                update for it  -  unlink the file if possible
+                """
+                with cls.dictlock:
+                    if filename in cls.active:
+                        cls.active[filename] = "unlink"
+
+else:
+    class SafeFile(file):
+          """
+          This is a NULL class which implements the same API as above,
+          except forwards the queries to the usual pyhton places
+          """
+          def __init__(self,*args,**kwargs):
+               del kwargs['lock']
+               super(SafeFile,self).__init__(*args,**kwargs)
+        
+          @classmethod
+          def open_read(cls,filename):
                 return open(filename)
 
-    @classmethod
-    def unlink(cls,filename):
-        """
-        Ensure we don't create a file called fileame if there is outstanding
-        update for it  -  unlink the file if possible
-        """
-        with cls.dictlock:
-            if filename in cls.active:
-                cls.active[filename] = "unlink"
-
+          @classmethod
+          def unlink(cls,filename):
+               pass
+ 
 
 #We may want to change this to a subclass later 
 # but at the moment factory method suffices.
@@ -212,8 +242,10 @@ class filestore(Base):
   
     def NewCategory(self,category):
         catpath = os.path.join(self.path , category)
-        os.mkdir(catpath)
-
+        try:
+            os.mkdir(catpath)
+        except OSError:
+            pass #Eat file exists becuase we it can happen
 
     def NewObject(self,category):
         objs = list(self.EnumObjects(category))
@@ -244,6 +276,7 @@ class filestore(Base):
         found = []
         for candidate in os.listdir(os.path.join(self.path,*objpath)):
             items = candidate.split(".")
+            #Filename has a leading space fixup the elements
             if len(items[0]) > 0 and items[0] not in found:
                 found += [ items[0] ]
                 yield items[0]
@@ -252,6 +285,9 @@ class filestore(Base):
         attrele = self.canonicalise(attr) 
         for candidate in os.listdir(os.path.join(self.path,*attrele[:2])):
             items = candidate.split(".")
+            if items[0] == "":
+                items = items[1:]
+                items[0] = "."+items[0]
             if items[0] == attrele[2]: return True
 
         return False
@@ -292,6 +328,9 @@ class filestore(Base):
         attrtype = None
         for candidate in os.listdir(workuri):
             items = candidate.split(".")
+            if items[0] == "":
+                items = items[1:]
+                items[0] = "."+items[0]
             self.logger.debug( "GA:Candiate-items:%s" %items)
             if items[0] == attrele[2]:
                 if attrtype == None:

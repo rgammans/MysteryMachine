@@ -78,10 +78,7 @@ class MMObject (MMBase):
          a = self.cache[attrn]
      except KeyError: 
          attrval = self.store.GetAttribute(attrn)
-         if attrval is None:
-            raise KeyError(attrn)
-         else:
-            t,p = attrval
+         t,p = attrval
          a = MMAttribute(attrn,MakeAttributeValue(t,p),self)
          self.cache[attrn]= a
      return a
@@ -192,7 +189,9 @@ class MMObject (MMBase):
     @author
     """
     #Bypass inheritance lookup.
-    parent = self._get_mm_attribute(".parent") 
+    if self.store.HasAttribute(".parent"):
+        parent = self._get_mm_attribute(".parent") 
+    else: raise KeyError(".parent")
     self.logger.debug( "parent type is %s " %type(parent))
     self.logger.debug( "Parent = %r" % parent)
     if parent != None:

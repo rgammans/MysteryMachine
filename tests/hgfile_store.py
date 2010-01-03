@@ -70,6 +70,10 @@ class hgstoreTests(scmTests, unittest.TestCase):
         os.rmdir(testpath)
         self.store= self.testtype("hgbasic:"+testpath,create = True)
    
+    def processDirs(self,dirs):
+        if '.hg' in dirs:
+           #Don't scan .hg directory.
+           del dirs[dirs.index('.hg')]
 
 def getTestNames():
     	return [ 'hgfile_store.hgstoreTests' ] 

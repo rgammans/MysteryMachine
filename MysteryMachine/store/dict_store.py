@@ -33,7 +33,7 @@ class dict_store(Base):
 
     def EnumCategories(self):
         for k in self.catdict.keys():
-            yield k
+            if k[0] != '.': yield k
 
     def EnumObjects(self,cat):
         for o in self.catdict[cat].keys():
@@ -53,6 +53,9 @@ class dict_store(Base):
         self.catdict[cat][newid] = { }
         return newid
 
+    def DeleteCategory(self,cat):
+        del self.catdict[cat]
+
     def DeleteObject(self,object):
         dbpath = object.split(":")
         del self.catdict[dbpath[0]][dbpath[1]]
@@ -61,13 +64,10 @@ class dict_store(Base):
         path = self.canonicalise(obj)
         return path[1] in self.catdict[path[0]]       
 
-    def DeleteCategory(self,cat):
-        del self.catdict[cat]
-
     def EnumAttributes(self,object):
         path = self.canonicalise(object)
         for a in self.catdict[path[0]][path[1]].keys():
-            yield a
+            if a[0] != '.': yield a
 
     def HasAttribute(self,attr):
         path = self.canonicalise(attr)

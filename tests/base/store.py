@@ -44,6 +44,7 @@ class storeTests(object):
         self.assertEqual(len(cats),0)
         self.store.NewCategory("One")
         self.store.NewCategory("Two")
+        self.store.NewCategory(".Three")
         cats=list(self.store.EnumCategories())
         self.assertEqual(len(cats),2)
         self.store.DeleteCategory("One")
@@ -68,7 +69,21 @@ class storeTests(object):
         self.assertEqual(len(objs1),2)
         self.assertEqual(len(objs2),1)
    
+        #Recreate cateogory - should have no effect.
+        self.store.NewCategory("Two")
+        objs2=list(self.store.EnumObjects("Two"))
+        self.assertEqual(len(objs2),1)
+       
+        #Test deletion 
         self.store.DeleteObject("One"+":"+o12)
+
+        # - Commented out next 4 lines as currently we don't
+        #   require this to work.
+        ##Test deletion if an attribute is applied.
+        ##Set an attribute.
+        #attrtuple = ( "simple",{ "":"fred" }  )
+        #self.store.SetAttribute("Two"+":"+o21+":name",*attrtuple)
+
         self.store.DeleteObject("Two"+":"+o21)
 
         objs1=list(self.store.EnumObjects("One"))
@@ -80,35 +95,43 @@ class storeTests(object):
     def testAttribute(self):
         #Create some cats and objs.
         self.store.NewCategory("One")
-        self.store.NewCategory("Two")
+        self.store.NewCategory(".Two")
+
         o11=self.store.NewObject("One")
         o12=self.store.NewObject("One")
-        o21=self.store.NewObject("Two")
+        o21=self.store.NewObject(".Two")
 
         #Set an attribute.
         attrtuple = ( "simple",{ "":"fred" }  )
         self.store.SetAttribute("One"+":"+o12+":name",*attrtuple)
+    
+        #Set an another attribute - with a leading dot!
+        attrtupled = ( "simple",{ "":"tom cobbley" }  )
+        self.store.SetAttribute("One"+":"+o12+":.dotfile",*attrtupled)
+
 
         #Count attributes.
         objs1=list(self.store.EnumAttributes("One:"+o12))
-        objs2=list(self.store.EnumAttributes("Two:"+o21))
+        objs2=list(self.store.EnumAttributes(".Two:"+o21))
         self.assertEqual(len(objs1),1)
         self.assertEqual(len(objs2),0)
-        
-        #Test presence
+       
+       #Test presence
         self.assertTrue(self.store.HasAttribute("One:"+o12+":name"))
         self.assertFalse(self.store.HasAttribute("One:"+o11+":name"))
         self.assertFalse(self.store.HasAttribute("One:"+o12+":notname"))
 
         #Retrieve attribute.
         self.assertEquals(self.store.GetAttribute("One:"+o12+":name"),attrtuple)
+        self.assertEquals(self.store.GetAttribute("One:"+o12+":.dotfile"),attrtupled)
         
         #Delete it.
         self.store.DelAttribute("One:"+o12+":name")
+        self.store.DelAttribute("One:"+o12+":.dotfile")
  
         #Count attributes.
         objs1=list(self.store.EnumAttributes("One:"+o12))
-        objs2=list(self.store.EnumAttributes("Two:"+o21))
+        objs2=list(self.store.EnumAttributes(".Two:"+o21))
         self.assertEqual(len(objs1),0)
         self.assertEqual(len(objs2),0)
                 

@@ -51,6 +51,11 @@ class filestoreTests(scmTests,storeTests,unittest.TestCase):
         self.store.unlock()
 #        os.rmdir(self.mpath)
 
+    def processDirs(self,dirs):
+        if '.hg' in dirs:
+           #Don't scan .hg directory.
+           del dirs[dirs.index('.hg')]
+
 
 def getTestNames():
     	return [ 'file_store.filestoreTests' ] 
