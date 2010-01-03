@@ -52,6 +52,8 @@ import MysteryMachine.store
 import MysteryMachine.Exceptions
 import MysteryMachine.utils.path
 
+import types
+
 #Global vars
 #Configuration details...
 defaults=dict()
@@ -60,7 +62,15 @@ defaults=dict()
 def _myCallable(obj):
     import collections
     try:
-        #Py3.0 doesn't have callable
+        #Py3.0 doesn't have callable but collections.Callable replaces
+        #   it from 2.6
+        #
+
+        #work round a 2.6 bug (7624) in collections.Callable 
+        #which doesn't handle old style classes.
+        # - not entirely accurate but will have to do!.
+        if type(obj) is types.InstanceType: return False
+        
         return isinstance(obj,collections.Callable)
     except AttributeError:
         #Py2.5 Doesn't have collections.Callable
