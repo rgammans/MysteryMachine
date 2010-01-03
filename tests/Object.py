@@ -69,9 +69,22 @@ class ObjectTests(unittest.TestCase):
     def testAttrRef(self):
         self.object["data"] ="some data"
         self.assertEquals(str(self.object["data"]),"some data")
-        def noAttrTst():
-            return self.object["nodata"]
-        self.assertRaises(KeyError,noAttrTst)
+        def noAttrTst(obj):
+            return obj["nodata"]
+        self.assertRaises(KeyError,noAttrTst,self.object)
+        try:
+            import MysteryMachine.store.file_store
+        except:
+            return
+        ##Also test dereference using the filestore
+        tmppath = tempfile.mkdtemp()
+        os.rmdir(tmppath)
+        self.sys2 = MMSystem.Create("attrfile:" + tmppath)
+        self.sys2.NewCategory( "Dummy" )
+        obj  = self.sys2.NewObject("Dummy")
+        obj["data"] = "soemdata"
+        self.assertEquals(str(obj["data"]),"soemdata")
+        self.assertRaises(KeyError,noAttrTst,obj) 
 
     def testParentRef(self):
         p=self.object.get_parent()
