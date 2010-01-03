@@ -201,6 +201,10 @@ class MMAttributeValue (MMBase ):
   def __eq__(self,other):
      return self.get_type() == other.get_type() and self.get_parts() == other.get_parts()
 
+  def __hash__(self):
+     #Simple hash
+     return hash(["MMAttributeVal" , self.get_type() , self.get_parts()])
+
 class MMAttributeValue_BasicText(MMAttributeValue):
     """
     A single Macro part value type.
