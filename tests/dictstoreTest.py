@@ -47,7 +47,7 @@ class dictstoreTests(storeTests,unittest.TestCase):
         testscount = testscount + 1
         self.store=dict_store("dict:test"+str(testscount))
         self.store.set_owner(DummySystem)
-   
+        self.has_scm = False   
     
 def getTestNames():
     	return [ 'dictstoreTest.dictstoreTests' ] 

@@ -25,6 +25,7 @@ import MysteryMachine.policies
 from MysteryMachine.store import *
 from MysteryMachine.store.Base import Base
 from MysteryMachine.utils.locks import RRwLock
+from MysteryMachine.utils.path import make_rel 
 
 import os
 import sys
@@ -309,7 +310,8 @@ class filestore(Base):
             file.write(value)
             file.close()
             #Ensure any RCS knows about the file.
-            self.Add_file(filename)
+            file , = make_rel(self.path,filename)
+            self.Add_file(file)
 
 
     def DelAttribute(self,attr):
@@ -320,6 +322,8 @@ class filestore(Base):
                 #     these two calls.
                 SafeFile.unlink(f)
                 os.remove(f)
+                f , = make_rel(self.path,f)
+                self.Remove_file(f)
 
     def GetAttribute(self,attr):
         attrele = self.canonicalise(attr)

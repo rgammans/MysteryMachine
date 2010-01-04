@@ -99,11 +99,13 @@ class scmTests(object):
         rev = changelog[0]
         self.store.revert(rev)
         self.assertEquals(ReadFile(self.store,"test1"),"Test data") 
+        self.doCleanTst()
 
+    def doCleanTst(self):
         self.store.lock()
         self.store.clean()
         for dirpath,dirs,files in os.walk(self.store.get_path()):
              self.processDirs(dirs)
              self.assertEquals(len(files),0)
-    
+        self.store.unlock() 
 

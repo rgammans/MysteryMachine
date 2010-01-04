@@ -54,6 +54,15 @@ class HgStoreMixin(object):
        if filename not in self.repo[None]:
           self.repo.add( [ filename  ]) 
 
+    def Remove_file(self,filename):
+       if filename in self.repo[None]:
+          s = self.repo.status()
+          #Is the file got the added status?
+          if filename in s[1]:
+            self.repo.forget( [filename] )
+          else:
+            self.repo.remove( [filename] )
+
     def commit(self,msg):
         self.lock()
         rv = self.repo.commit(msg, None, None , cmdutil.match(self.repo),
@@ -110,8 +119,6 @@ class HgStoreMixin(object):
 
             if not kwargs.get('force'): return
             
-        #Remove all files in the manifest - these can all be 
-        # checked out again.
         if kwargs.get('full'):
             #Do a 'full' clean. Remove all the files except for 
             # the repo itself. This /could/ lose data if you

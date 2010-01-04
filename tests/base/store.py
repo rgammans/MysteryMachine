@@ -134,6 +134,11 @@ class storeTests(object):
         objs2=list(self.store.EnumAttributes(".Two:"+o21))
         self.assertEqual(len(objs1),0)
         self.assertEqual(len(objs2),0)
+        
+        #Set an attribute - leave attribut set for SCM Interagtion tests
+        attrtuple = ( "simple",{ "":"fred" }  )
+        self.store.SetAttribute("One"+":"+o12+":name",*attrtuple)
+        self.attrnames =  { "One:"+o12+":name": attrtuple }
                 
     def testProxyObjAttr(self):
         """
@@ -178,4 +183,13 @@ class storeTests(object):
         objs2=list(o21store.EnumAttributes())
         self.assertEqual(len(objs1),0)
         self.assertEqual(len(objs2),0)
-     
+
+    def testSCMIntegration(self):
+        #Repeat a previous setup.
+        if self.has_scm:
+            self.testAttribute()
+            self.store.commit("First")
+            self.doCleanTst()
+            self.store.revert(self.store.getChangeLog().next())
+            for k,v in self.attrnames.iteritems():
+                self.assertEquals(self.store.GetAttribute(k),v)

@@ -42,6 +42,7 @@ class filestoreTests(storeTests,unittest.TestCase):
         self.mpath = tempfile.mkdtemp(prefix="mysmac")
         self.store=filestore("attrfile:"+self.mpath,create = False)
         self.store.set_owner(DummySystem)
+        self.has_scm = False
     
     def tearDown(self):
         self.store.lock()

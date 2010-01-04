@@ -275,6 +275,17 @@ class Base(object):
         to allow them to commincate to the SCM provider.
         """
 
+    def Remove_file(self,filename):
+        """
+        Removes a file from the SCMs repo 
+
+        Override this in your own store to if you provide tranasction
+        function usable by other store mixins.
+
+        This function is intended to be called by store modules, so
+        to allow them to commincate to the SCM provider.
+        """
+
     def lock(self):
         """
         Call to wait for the store to be queiscent - called prior to Saving

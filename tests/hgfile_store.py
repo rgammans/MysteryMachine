@@ -69,6 +69,7 @@ class hgstoreTests(scmTests, unittest.TestCase):
         #Ensure delte - will create again in a moment
         os.rmdir(testpath)
         self.store= self.testtype("hgbasic:"+testpath,create = True)
+        self.has_scm = True
    
     def processDirs(self,dirs):
         if '.hg' in dirs:

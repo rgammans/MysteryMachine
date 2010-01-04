@@ -44,6 +44,7 @@ class filestoreTests(scmTests,storeTests,unittest.TestCase):
         os.rmdir(self.mpath)
         self.store=HgFileStore("hgafile:"+self.mpath,create = True)
         self.store.set_owner(DummySystem)
+        self.has_scm     = True
     
     def tearDown(self):
         self.store.lock()

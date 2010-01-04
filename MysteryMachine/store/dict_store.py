@@ -90,3 +90,11 @@ class dict_store(Base):
         path = self.canonicalise(attr)
         self.logger.debug( "GETPATH = %s " % path)
         return self.catdict[path[0]][path[1]][path[2]]
+
+
+    def lock(self):
+        #FIXME - Lock store and save to uri on disk...
+        pass
+
+    def unlock(self):
+        pass
