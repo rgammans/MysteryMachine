@@ -27,6 +27,13 @@ from MysteryMachine.schema.MMSystem import MMSystem
 from MysteryMachine import *
 import unittest
 
+import MysteryMachine.utils.path as path
+import tempfile
+
+import mercurial
+import mercurial.verify 
+from mercurial import hg
+
 
 
 class MyUi(object):
@@ -54,35 +61,28 @@ class LibBaseTest(unittest.TestCase):
             #Load example pack file and test attributes
 
             test1 = g.OpenPackFile("examples/test1.mmpack")
+            for rev in test1.getChangeLog():
+                head = rev
+
             self.assertTrue(isinstance(test1,MMSystem))
             self.assertEqual(len(list(test1.EnumObjects("Items"))),2)
             self.assertEqual(len(list(test1.getChangeLog())),1)
-
+        
+            
             g.SavePackFile(test1,"/tmp/test1.mmpack")
 
             #Open new and old pack files up and compare.
             newpack = zipfile.ZipFile("/tmp/test1.mmpack","r")
-            oldpack = zipfile.ZipFile("examples/test1.mmpack","r")
-
-            newinflist = []
-            for f in newpack.infolist():
-                #We can ignore this file as it is a mercurial repo file
-                # which is new in mercurial 1.4    
-                if f.filename != '.hg/tags.cache': newinflist += [ f ]
-
-            oldinflist = [ x for x  in oldpack.infolist() if x.filename[-1] != os.sep ]
-            self.assertEqual(len(newinflist),len(oldinflist))
-            for newinf in newinflist:
-                #Don't check dirstate file
-                # Opening a file call hg.revert which can touch this. 
-                if newinf.filename == ".hg/dirstate": continue
-                oldinf = oldpack.getinfo(newinf.filename)
-                self.assertEqual(oldinf.CRC,newinf.CRC)
-                if newinf.filename == ".formatver":
-                    #Check permission on the file are at least owner read/write.
-                    pass
-            oldpack.close()
-            newpack.close()
+            dest = tempfile.mkdtemp()
+            path.zunpack(newpack,dest) 
+            # -  This following code assumes a mercurial scm based pack file.
+            ##Unpack the new files...(0
+            repo = hg.repository(g.GetMercurialUi() , dest ) 
+            self.assertTrue(mercurial.verify.verify(repo) is None)
+            #This breaks if our example file has multiple heads! So it must not.
+            #If the repo verifies and the nodeid's are the same , the repo MUST
+            # contain the same data . (Guarantee here are as strong or as weak as SHA1).
+            self.assertEquals(repo.heads(None)[0],head.node())
 
     def testCreate(self):
         with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) as g:
