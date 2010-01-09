@@ -50,3 +50,43 @@ def make_rel(root,*paths):
         #On unix root comes out as the empty element here
         if rpaths[-1] == "" : rpaths[-1] =os.sep
     return rpaths
+
+#Arguably this should be utils/files.py but I'm not
+# creating one just for this!
+def zunpack(azip,workdir):
+    """
+    Unpacks an open zipfile instance into workdir.
+
+    This uses azip.extractall() is it exists.
+    """
+    try:
+        azip.extractall(workdir)
+    except AttributeError:
+        #extractall not in the python2.5 library.
+        path = ""
+        for inf in azip.infolist():
+            #Construct destination path.
+            if inf.filename[0] == '/':
+                path = os.path.join(workdir, inf.filename[1:])
+            else:
+                path = os.path.join(workdir, inf.filename)
+            path = os.path.normpath(path)
+            
+            # Create all upper directories if necessary.
+            upperdirs = os.path.dirname(path)
+            if upperdirs and not os.path.exists(upperdirs):
+                os.makedirs(upperdirs)
+
+            if inf.filename[-1] == '/':
+                #Found dir entry in zip
+                try :
+                    os.mkdir(path)
+                except OSError ,e:
+                    #Ignore file exists error
+                    if e.errno != 17: raise e
+            else:
+                #Do save actual file
+                outf = file(path,"w")
+                outf.write(azip.read(inf.filename))
+                outf.close()
+

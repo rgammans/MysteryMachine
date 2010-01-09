@@ -165,7 +165,7 @@ def _parse_options(args):
             #State indicates we are waiting for a value.
             out_opts[state]=opt
             state=None
-    
+   
     #Handle any dangling options. (nonvalue options specified last) 
     if not (state is None or state == "--"):
         out_opts[state]=None
@@ -386,37 +386,7 @@ class _LibraryContext(object):
         #Unpack pack file..
         workdir = tempfile.mkdtemp("mm-working")
         pack = zipfile.ZipFile(filename,"r")
-        try:
-            pack.extractall(workdir)
-        except AttributeError:
-            #extractall not in the python2.5 library.
-            path = ""
-            for inf in pack.infolist():
-                #Construct destination path.
-                if inf.filename[0] == '/':
-                    path = os.path.join(workdir, inf.filename[1:])
-                else:
-                    path = os.path.join(workdir, inf.filename)
-                path = os.path.normpath(path)
-                
-                # Create all upper directories if necessary.
-                upperdirs = os.path.dirname(path)
-                if upperdirs and not os.path.exists(upperdirs):
-                    os.makedirs(upperdirs)
-
-                if inf.filename[-1] == '/':
-                    #Found dir entry in zip
-                    try :
-                        os.mkdir(path)
-                    except OSError ,e:
-                        #Ignore file exists error
-                        if e.errno != 17: raise e
-                else:
-                    #Do save actual file
-                    outf = file(path,"w")
-                    outf.write(pack.read(inf.filename))
-                    outf.close()
-
+        utils.path.zunpack(pack,workdir)
         pack.close()
         #Read format version requirements
         ver = file(os.path.join(workdir,".formatver"))
