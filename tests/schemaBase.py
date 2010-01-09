@@ -61,6 +61,28 @@ class BaseTest(unittest.TestCase):
             self.assertTrue(bar in f.__class__.__bases__)
             self.assertTrue(bar in map(lambda x:type(x) , f._helpers))
 
+
+    def testCanicalise(self):
+        with StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg"]) as g:
+            m  = MMBase()
+            self.assertTrue("hi",m.canonicalise("Hi"))
+            self.assertRaises(ValueError,m.canonicalise,";")
+            self.assertRaises(ValueError,m.canonicalise,"s ad ")
+            self.assertRaises(ValueError,m.canonicalise,"sdas/das;")
+            self.assertRaises(ValueError,m.canonicalise,"kjkl\\jlkjsa")
+            self.assertRaises(ValueError,m.canonicalise,"sdA:Ass")
+            self.assertRaises(ValueError,m.canonicalise,"foo,bar")
+            self.assertRaises(ValueError,m.canonicalise,"sad.ss")
+            self.assertRaises(ValueError,m.canonicalise,"[ss")
+            self.assertRaises(ValueError,m.canonicalise,"s]s")
+            self.assertRaises(ValueError,m.canonicalise,"*")
+            self.assertRaises(ValueError,m.canonicalise,"\"hiya\"")
+            self.assertRaises(ValueError,m.canonicalise,"ss``")
+            self.assertRaises(ValueError,m.canonicalise,"ss=")
+
+
+
+
 def getTestNames():
 	return [ 'schemaBase.BaseTest' ] 
 

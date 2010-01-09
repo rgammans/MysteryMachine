@@ -84,6 +84,7 @@ class ObjectTests(unittest.TestCase):
         obj  = self.sys2.NewObject("Dummy")
         obj["data"] = "soemdata"
         self.assertEquals(str(obj["data"]),"soemdata")
+        self.assertEquals(str(obj["DATa"]),"soemdata")
         self.assertRaises(KeyError,noAttrTst,obj) 
 
     def testParentRef(self):

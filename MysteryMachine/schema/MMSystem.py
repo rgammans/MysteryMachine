@@ -272,12 +272,26 @@ class MMSystem (MMBase):
   def EnumContents(self):
     for cat in self.EnumCategories():
         for obj in self.EnumObjects(cat):
-            yield obj
+            yield cat + ":" + obj
 
+
+  def __getitem__(self,obj):
+      path = obj.split(":")
+      if len(path) !=  2: raise KeyError(obj)       
+      return self.get_object(*path)
+    
+
+  def __delitem__(self,obj):
+      path = obj.split(":")
+      if len(path) !=  2: raise KeyError(obj)       
+      self.DeleteObject(obj)
+      
 
   def getSelf(self):
     """
-    A hack function required for our memory Management Strategy
+    returns self. 
+
+    Used to strengthen a weakref.
     """
     ## This exists so that MMObject can dereferences the weak proxy
     #  object that the store subsystem will normally pass it.

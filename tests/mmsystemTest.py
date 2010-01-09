@@ -65,11 +65,19 @@ class sysTests(unittest.TestCase):
       
         objs1=list(self.sys.EnumObjects("One"))
         objs2=list(self.sys.EnumObjects("Two"))
+        objs2a=list(self.sys.EnumObjects("TWo"))
         self.assertEqual(len(objs1),2)
         self.assertEqual(len(objs2),1)
+        self.assertEqual(len(objs2a),1)
+
+        allobjs = list(self.sys.EnumContents())
+        self.assertEqual(len(allobjs),3)
+        for o in allobjs:
+            self.assertNotEquals(type(self.sys[o]),type(None))
+        
    
         self.sys.DeleteObject(repr(o12))
-        self.sys.DeleteObject(repr(o21))
+        del self.sys[repr(o21)]
 
         objs1=list(self.sys.EnumObjects("One"))
         objs2=list(self.sys.EnumObjects("Two"))
