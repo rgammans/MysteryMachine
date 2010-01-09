@@ -92,7 +92,8 @@ class MMObject (MMBase):
     @return MMAttribute :
     @author
     """
-    #TODO Detect deleted attributes?
+    attrname = self.canonicalise(attrname)
+
     if self.store.HasAttribute(attrname):
         return self._get_mm_attribute(attrname) 
     else:
@@ -116,6 +117,7 @@ class MMObject (MMBase):
     @author
     """
 
+    attrname = self.canonicalise(attrname)
     #Don't store None values.
     if attrvalue is None:
         del self[attrname] 
@@ -155,7 +157,8 @@ class MMObject (MMBase):
     #
     #FIXME - Mark as destoryed in case references exist.
     # - we can do this by pulling the ref out of the cache.
-    
+   
+    attrname = self.canonicalise(attrname) 
     #Remove from cache - ignore not finding it.
     try:
         del self.cache[attrname]

@@ -94,5 +94,25 @@ class MMBase(object):
         root = root.parent
     return root
 
+  def canonicalise(self,name):
+    if (len(name) <= 0  or
+       "."  in name[1:] or  #Allow '.' in the first char position
+       " "  in name     or
+       "/"  in name     or
+       "\\" in name     or
+       ":"  in name     or
+       ";"  in name     or 
+       "|"  in name     or
+       ","  in name     or
+       "*"  in name     or
+       "["  in name     or
+       "]"  in name     or
+       "\"" in name     or
+       "`"  in name     or
+       "="  in name     ):
+           raise ValueError("`%s` is not valid in the MysteryMachine Namespace" % name)
+    
+    return name.lower()
+    
   def __iter__(self):
     return []

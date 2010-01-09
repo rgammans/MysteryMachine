@@ -117,6 +117,18 @@ class MMAttributeValue (MMBase ):
     self.value = None
     if 'parts' in kwargs:
         self.parts=kwargs['parts']
+        partsmap = { }
+        for k in self.parts.iterkeys():
+            #Check k is valid - will throw if not.
+            newk = self.canonicalise(k)
+            if k != newk:
+                partsmap[k] = self.canonicalise(k)
+                if newk in self.parts: raise ValueError("%s and %s conflict" % (k ,newk))
+            
+        for oldkey , newkey in partsmap.iteritems():
+            self.parts[newkey] = self.parts[oldkey]
+            del self.parts[oldkey]
+  
     if 'value' in kwargs:
         self.value=kwargs['value']
 
@@ -161,8 +173,14 @@ class MMAttributeValue (MMBase ):
     @authorMysteryMachine/schema/MMAttribute.py:
     """
     ok = True
-    #Test we can parse succesfully, and no more.
+    #Test we can parse succesfully, and valid part naems but no more.
     try:
+        for k in self.parts.iterkeys():
+            if k != self.canonicalise(k):
+                ok = False
+                #exit early
+                return ok
+
         if attr is None:
             grammar.parse(self.get_raw_rst())
         else:
@@ -221,4 +239,4 @@ class MMAttributeValue_BasicText(MMAttributeValue):
         MMAttributeValue.__init__(self,*args,**kwargs)
         #Get passed in value.
         if self.value is not None:
-            self.parts[""] = str(self.value)
+            self.parts["txt"] = str(self.value)

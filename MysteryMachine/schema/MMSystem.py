@@ -106,6 +106,7 @@ class MMSystem (MMBase):
     @author
     """
 
+    cat = self.canonicalise(cat)
     objlist = list(self.EnumObjects(cat))
     if len(objlist) == 0:
         self.store.DeleteCategory(cat)
@@ -122,7 +123,7 @@ class MMSystem (MMBase):
     @return  :
     @author
     """
-    return self.store.EnumObjects(category)
+    return self.store.EnumObjects(self.canonicalise(category))
    
   def get_object(self, cat , id):
     """
@@ -132,6 +133,8 @@ class MMSystem (MMBase):
     @return MMObject :
     @author
     """
+
+    cat = self.canonicalise(cat)
     fullid = cat + ":" + id
     try:
         o = self.cache[fullid]
@@ -188,6 +191,7 @@ class MMSystem (MMBase):
     @return bool :
     @author
     """
+    CategoryName = self.canonicalise(CategoryName)
     self.store.NewCategory(CategoryName)
 
   def NewObject(self, category, parent = None , formathelper = None):
@@ -198,6 +202,8 @@ class MMSystem (MMBase):
     @return MMOBject: Created object. 
     @author
     """
+    category = self.canonicalise(category)
+
     id = self.store.NewObject(category)
     obj = self.get_object(category,id)
     obj.set_parent(parent)
