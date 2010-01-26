@@ -62,8 +62,8 @@ class attribValTest(unittest.TestCase):
        self.objA=ObjectProxy("Proxy", "1", name="TestName",title="A Title")
        self.objB=ObjectProxy("Proxy", "2", name="WrongName",title="A Title")
     
-    def testCreate(self):
-       val=MMAttributeValue(parts = {1:"test",2:"this"})
+    def testUnderInit(self):
+       val=MMAttributeValue(parts = {"1":"test","2":"this"})
        self.assertEqual(val.get_raw_rst(),"test\nthis")
        self.assertEqual(len(val.get_parts()),2)
 
