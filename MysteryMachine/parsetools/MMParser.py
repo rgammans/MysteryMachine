@@ -80,7 +80,7 @@ class MMParser (object):
     if src is None:
         src =repr(self.myobject)+":unknown"
     src = repr(self.myobject.parent)+":"+src
-    role_def = ".. role:: mm(mm)\n :systemcntxt: %s\n\n" % src
+    role_def = ".. role:: mm(mmbase)\n :systemcntxt: %s\n\n" % src
     role_def+= "\n".join(map(lambda x: " "+x,src_stack))
     role_def+= "\n\n"
     self.logger.debug( "processed srd->" , src)
@@ -130,6 +130,7 @@ def role_handler(role, rawtext, text, lineno, inliner,
     modlogger.debug( "role-options:%s"%str(options))
     modlogger.debug( "role-content:%s"%str(content))
 
+
     mainobj = None
     if 'systemcntxt' in options:
         mainobj = options['systemcntxt']
@@ -167,6 +168,6 @@ role_handler.options = { 'systemcntxt' : ObjectOptionHandler,
                         }
 
 role_handler.content = True
-roles.register_canonical_role('mm',role_handler)
-roles.register_local_role('mm',role_handler)
+roles.register_canonical_role('mmbase',role_handler)
+roles.register_local_role('mmbase',role_handler)
 

@@ -33,6 +33,7 @@ class ParsersTests(unittest.TestCase):
         self.sys.NewCategory("template")
         self.p=self.sys.NewObject("template")
         self.p[".defname"] = ":mm:`:name`"
+        self.p["name"] = "Dummy"
         self.sys.NewCategory("Item")
         self.i=self.sys.NewObject("Item")
         self.i["name"]="The one ring"
@@ -46,6 +47,7 @@ class ParsersTests(unittest.TestCase):
  
     def testParser(self):
         self.assertEquals(self.c["carries"].GetFullExpansion(),"The one ring")
+        self.assertEquals(str(self.c),"Frodo")
 
     def testCycle(self):
         self.c["cycle"]=":mm:`:cycle`"
