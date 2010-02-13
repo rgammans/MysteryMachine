@@ -47,6 +47,12 @@ class ParsersTests(unittest.TestCase):
     def testParser(self):
         self.assertEquals(self.c["carries"].GetFullExpansion(),"The one ring")
 
+    def testCycle(self):
+        self.c["cycle"]=":mm:`:cycle`"
+        #Trigger a cycle and check we don't raise an exception.
+        a=self.c["cycle"].GetFullExpansion()
+   
+
 def getTestNames():
     	return [ 'Parser.ParserTests' ] 
 

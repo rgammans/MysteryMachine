@@ -146,7 +146,8 @@ def role_handler(role, rawtext, text, lineno, inliner,
              #   modlogger.debug( "Error:%s" % str(e))
              #   msg.append(str(e))
         else:
-            msg.append(inliner.reporter.error("Cycle detected in macro expansion via:-%s\n" % content.join("\n")))
+            msg.append(inliner.reporter.error("Cycle detected in macro expansion '%s' via:-%s\n" % 
+                      (text,"\n".join(content))))
     #modlogger.debug(  nodes,msg)
     return nodes ,msg
 
