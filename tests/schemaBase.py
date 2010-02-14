@@ -66,6 +66,7 @@ class BaseTest(unittest.TestCase):
         with StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg"]) as g:
             m  = MMBase()
             self.assertTrue("hi",m.canonicalise("Hi"))
+            self.assertTrue("hi",m.canonicalise("Hi_world"))
             self.assertRaises(ValueError,m.canonicalise,";")
             self.assertRaises(ValueError,m.canonicalise,"s ad ")
             self.assertRaises(ValueError,m.canonicalise,"sdas/das;")

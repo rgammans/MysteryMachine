@@ -25,7 +25,12 @@
 from __future__ import with_statement
 
 from  MysteryMachine import StartApp
- 
+
+#We import identifier to allow to ensure consisentcy 
+from MysteryMachine.parsetools.grammar import identifier
+import pyparsing
+import logging
+
 class MMBase(object):
 
   """
@@ -44,6 +49,7 @@ class MMBase(object):
     @return  :
     @author
     """
+    self.logger = logging.getLogger("MysteryMachine.schema.MMBase")
     with StartApp() as g:
         for helper in g.GetExtLib().get_helpers_for(self.__class__):
             if not hasattr(self,"_helpers"): self._helpers=[]
@@ -95,23 +101,17 @@ class MMBase(object):
     return root
 
   def canonicalise(self,name):
-    if (len(name) <= 0  or
-       "."  in name[1:] or  #Allow '.' in the first char position
-       " "  in name     or
-       "/"  in name     or
-       "\\" in name     or
-       ":"  in name     or
-       ";"  in name     or 
-       "|"  in name     or
-       ","  in name     or
-       "*"  in name     or
-       "["  in name     or
-       "]"  in name     or
-       "\"" in name     or
-       "`"  in name     or
-       "="  in name     ):
-           raise ValueError("`%s` is not valid in the MysteryMachine Namespace" % name)
-    
+    ##This keeps it synchronized with the definition
+    # of identifier in parsetools/grammar.py
+    try:
+       #Supress leading dot from the test.
+       tstname = name
+       if tstname[0] == '.': tstname = tstname[1:]
+       #Check that the identifier is good enough to match it.
+       identifier.parseString(tstname,parseAll=True)    
+    except pyparsing.ParseException:
+       raise ValueError("`%s` is not valid in the MysteryMachine Namespace" % name)
+
     return name.lower()
     
   def __iter__(self):

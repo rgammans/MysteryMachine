@@ -9,25 +9,26 @@ import sys
 
 modlogger = logging.getLogger("MysteryMachine.parsetools.grammar")
 
+#Tokens
+openExpr   =   Literal("${")
+closeExpr  =   Literal("}")
+seperator  =   Literal(":")
+queryOp    =   Literal("?")
+equalsOp   =   Literal("=")
+notequalsOp=   Literal("!=")
+
+identifier =   Word("_" + alphas + nums)
+objectName =   identifier.copy()
+fieldName  =   identifier.copy()
+ObjectId   =   Word(nums)
+NonExpr    =   CharsNotIn("$")
+
+ExprLimit  =   Regex("[^ \n\t]*[ \n\t]")
+Value      =   QuotedString('"') 
+
+
 def Grammar(obj):
     home=obj
-    #Tokens
-    openExpr   =   Literal("${")
-    closeExpr  =   Literal("}")
-    seperator  =   Literal(":")
-    queryOp    =   Literal("?")
-    equalsOp   =   Literal("=")
-    notequalsOp=   Literal("!=")
-
-    identifier =   Word("_" + alphas + nums)
-    objectName =   identifier.copy()
-    fieldName  =   identifier.copy()
-    ObjectId   =   Word(nums)
-    NonExpr    =   CharsNotIn("$")
-
-    ExprLimit  =   Regex("[^ \n\t]*[ \n\t]")
-    Value      =   QuotedString('"') 
-
     # Productions
     cfoperator  =   equalsOp ^ notequalsOp
     ObjectUID   =   Optional(objectName + seperator + ObjectId)
