@@ -43,17 +43,25 @@ class ParsersTests(unittest.TestCase):
         self.c["name"]="Frodo"
         self.c["carries"]=self.i
         self.c.set_parent(self.p)
+        #modlogger   = logging.getLogger("MysteryMachine.parsetools.MMParser")
+        #modlogger.setLevel(logging.DEBUG)
+
         
  
     def testParser(self):
         self.assertEquals(self.c["carries"].GetFullExpansion(),"The one ring")
         self.assertEquals(str(self.c),"Frodo")
+        self.p['.defname'] =  ":mm:`:name` :mm:`:lname`"
+        #self.p['lname'] = ""
+        self.c['lname'] = "Baggins"
+        self.assertEquals(str(self.c),"Frodo Baggins")
+        self.assertEquals(str(self.i),"The one ring ")
 
     def testCycle(self):
         self.c["cycle"]=":mm:`:cycle`"
         #Trigger a cycle and check we don't raise an exception.
         a=self.c["cycle"].GetFullExpansion()
-   
+        ##TODO Set up somethin that looks like a cycle but isn't.
 
 def getTestNames():
     	return [ 'Parser.ParserTests' ] 

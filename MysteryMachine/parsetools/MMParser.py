@@ -66,7 +66,7 @@ class MMParser (object):
         newval=value[0]
         for part in value[1:]:
             newval = newval + part
-        self.logger.debug( "\n--evalled to --\n%s\n----\n" % newval.__repr__() )
+        self.logger.debug( "\--evalled to --\n%s\n----\n" % newval.__repr__() )
         return newval
 
   def ProcessRawRst(self,rst_string,src=None,src_stack=[]):
@@ -83,15 +83,26 @@ class MMParser (object):
     role_def = ".. role:: mm(mmbase)\n :systemcntxt: %s\n\n" % src
     role_def+= "\n".join(map(lambda x: " "+x,src_stack))
     role_def+= "\n\n"
-    self.logger.debug( "processed srd->" , src)
+    self.logger.debug( "processed src-> %s" % src)
     self.logger.debug( "raw+IN->%s<-" % rst_string)
     self.logger.debug( "\n--Parsing--\n%s\n---\n" % (role_def+rst_string))
+
     result =   publish_doctree(role_def+rst_string,source_path=src,
                                settings_overrides=MMParser.du_defaults
-                               )
-    source =   result[0].source
+               
+                )
+
+    self.logger.debug( "raw+IN->%s<-" % rst_string)
     self.logger.debug( "pnodelist-->%s<-" % result)
-    self.logger.debug( "source => %s" % source)
+    
+    try:
+        source = result[0]
+        source = source.source
+    except:
+        self.logger.info("Can't resolve docutils to find source, using src") 
+        source = src
+
+    self.logger.debug( "source[ => %s" % source)
     #Strip  document header and main containing paragraph.
     result =   result.children 
     #self.logger.debug( "nodelist-->%s<-" % result)
@@ -130,7 +141,6 @@ def role_handler(role, rawtext, text, lineno, inliner,
     modlogger.debug( "role-options:%s"%str(options))
     modlogger.debug( "role-content:%s"%str(content))
 
-
     mainobj = None
     if 'systemcntxt' in options:
         mainobj = options['systemcntxt']
@@ -139,17 +149,20 @@ def role_handler(role, rawtext, text, lineno, inliner,
     else:
         #Check for cycles in expansion
         if not text in content:
-             #try:
+             try:
                 rst    = mainobj.parser.evaluate(text)
                 nodes += mainobj.parser.ProcessRawRst(str(rst),src = repr(rst) ,
                                                       src_stack=content + [ text ] )
-             #except Exception , e:
-             #   modlogger.debug( "Error:%s" % str(e))
-             #   msg.append(str(e))
+             except:
+                import traceback
+                import sys
+                e_info = sys.exc_info()
+                modlogger.debug( traceback.format_exc() )
+                msg +=  docutils.nodes.error(traceback.format_exception_only(e_info[0],e_info[1]))
         else:
             msg.append(inliner.reporter.error("Cycle detected in macro expansion '%s' via:-%s\n" % 
                       (text,"\n".join(content))))
-    #modlogger.debug(  nodes,msg)
+    modlogger.debug("%s %s",  str(nodes),str(msg))
     return nodes ,msg
 
 
