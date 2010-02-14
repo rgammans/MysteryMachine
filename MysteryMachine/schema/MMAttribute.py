@@ -63,6 +63,9 @@ class MMAttribute (MMBase):
     self.valueobj=CreateAttributeValue(value)
     self.parent=parent
 
+  def get_owner(self):
+    return self.parent
+
   def __str__(self):
     """
 
@@ -113,7 +116,7 @@ class MMAttribute (MMBase):
   def __getattr__(self,name):
       if name in self.valueobj.exports:
         return functools.partial(getattr(self.valueobj,name),self)
-      else: raise KeyError()
+      else: raise AttributeError("%s not in %s"% ( name,repr(self) ) )
 
   def _writeback(self):
-     self.parent[self.name] = self.value
+     self.parent[self.name] = self.valueobj

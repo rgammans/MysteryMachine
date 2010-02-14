@@ -131,19 +131,19 @@ class MMObject (MMBase):
 
     #Fetch exists attribute if any to preserve value type.
     if attrname in self:
-        val=self[attrname]
-        if val is not None:
-            if val.get_owner() is not self:
-                val=val.copy(self,attrname)
-            val.set_value(attrvalue)
+        valobj = self[attrname]
+        if valobj  is not None:
+            if valobj.get_owner() is not self:
+                valobj =valobj.copy(self,attrname)
+            valobj.set_value(attrvalue)
     else:
         #No existing attr create a new one
-        val = MMAttribute(attrname,attrvalue,self)
+        valobj  = MMAttribute(attrname,attrvalue,self)
     
     #Get AttributeValue type object - so it is ready for the storage engine.
-    attrvalue = val.get_value()
+    attrvalue = valobj.get_value()
     #Write back to store engine
-    self.cache[attrname] = val
+    self.cache[attrname] = valobj 
     self.store.SetAttribute(attrname,attrvalue.get_type(),attrvalue.get_parts())    
 
   def __delitem__(self, attrname):
