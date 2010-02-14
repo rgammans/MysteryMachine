@@ -94,7 +94,11 @@ class ObjectTests(unittest.TestCase):
         self.object["test"] = "other"
         self.assertNotEquals(self.object["test"],p["test"])
         #Test parent update
-        p[".defname"] = "l"
+        p[".defname"] = "parent"
+        #Test parent de-ref
+        self.object[".defname"]= "object" 
+        self.assertEquals(str(self.object), "object")
+        self.assertEquals(str(p), "parent")
         
 def getTestNames():
 	return [ 'Object.ObjectTests' ] 
