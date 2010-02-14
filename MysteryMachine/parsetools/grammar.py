@@ -1,13 +1,13 @@
 #!/usr/bin/python
 
 ###Grammar stuff
-from pyparsing import  Regex,Optional,ZeroOrMore, QuotedString , Literal, Word, alphas , nums , printables  , CharsNotIn
+from pyparsing import  Regex,Optional,ZeroOrMore, QuotedString , Literal, Word, alphas , nums , printables  , CharsNotIn , stringEnd
 from functools import partial
 
 import logging
 import sys
 
-modlogger = logging.getLogger("MysteryMachine.parsetools.gramar")
+modlogger = logging.getLogger("MysteryMachine.parsetools.grammar")
 
 def Grammar(obj):
     home=obj
@@ -19,7 +19,7 @@ def Grammar(obj):
     equalsOp   =   Literal("=")
     notequalsOp=   Literal("!=")
 
-    identifier =   Word(alphas + nums)
+    identifier =   Word("_" + alphas + nums)
     objectName =   identifier.copy()
     fieldName  =   identifier.copy()
     ObjectId   =   Word(nums)
@@ -42,8 +42,11 @@ def Grammar(obj):
     ExprText   =    ExprField ^ \
     		QueryExpr
 
-    Expr       =   openExpr + ExprText + closeExpr
     #Error      =   openExpr + ExprLimit 
+
+    #These production are about handling expressions
+    # in run of text. The use is mainly historical.
+    Expr       =   openExpr + ExprText + closeExpr
 
     textEle    =   NonExpr  ^ \
                    Expr 
@@ -54,7 +57,7 @@ def Grammar(obj):
     ## Functions for parsing.
 
     def getField(s,loc,toks):
-    	modlogger.debug( "getfielg(%s)\n" % toks)
+    	modlogger.debug( "getField(%s)\n" % toks)
     	field=toks[2]
     	obj=toks[0]
     	return obj[field]
@@ -74,7 +77,7 @@ def Grammar(obj):
     		return toks[4]
 
     def initFromParse(s,loc,toks):
-    	modlogger.debug( "Creating form :%s (current=%s)\n"%(toks,repr(home)))
+    	modlogger.debug( "Creating from :'%s'->%s (current=%s)\n" %(s,str(toks),repr(home)))
         isSelf=len(toks)==0
        	if isSelf:         return home 
         elif home is None: return None
@@ -94,4 +97,4 @@ def Grammar(obj):
 
     ObjectUID.setParseAction(initFromParse)
     
-    return ExprText
+    return ExprText + stringEnd

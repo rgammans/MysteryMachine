@@ -25,7 +25,7 @@ from MysteryMachine import *
 from MysteryMachine.parsetools.grammar import Grammar
  
 import unittest
-
+import logging
 
 ##Dummy fucntions to which use python DuckTyping to remove deps on 
 # higehr level modules/class
@@ -64,6 +64,8 @@ class GraamarTest(unittest.TestCase):
         self.parserA=Grammar( ObjectProxy( name="TestName",  title="A Title") )
         self.parserB=Grammar( ObjectProxy( name="WrongName", title="A Title") )
 
+        #self.logger = logging.getLogger("MysteryMachine.parsetools.grammar")
+        #self.logger.setLevel(logging.DEBUG)
     
     def testWhitespace(self):
         #testString="This is a parser\n Test string\n to test whitespace  preservation"
@@ -77,9 +79,11 @@ class GraamarTest(unittest.TestCase):
     def testExpansions(self):
         self.assertEqual("TestName",helper(self.parserA,":name"))
         self.assertEqual("WrongName",helper(self.parserB,":name"))
-        
+    
+    def testInvalidSyntax(self):
+        import pyparsing
+        self.assertRaises(pyparsing.ParseException,helper,self.parserA,"NothingMeaningfull")    
 
-    # TODO
     def testObjectFetch(self):
         self.assertEqual(helper(self.parserA,"Object:1").__class__ ,    MMObject)
         self.assertEqual(repr(helper(self.parserA,"Object:1")) , "Object:1" )

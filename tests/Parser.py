@@ -25,6 +25,7 @@ from MysteryMachine import *
 from MysteryMachine.store.dict_store import *
 from MysteryMachine.schema.MMSystem import MMSystem
 import unittest
+import pyparsing
 
 class ParsersTests(unittest.TestCase):
     def setUp(self):
@@ -44,6 +45,7 @@ class ParsersTests(unittest.TestCase):
         self.c["carries"]=self.i
         self.c.set_parent(self.p)
         #modlogger   = logging.getLogger("MysteryMachine.parsetools.MMParser")
+        #logging.getLogger("MysteryMachine.parsetools.grammar").setLevel(logging.DEBUG)
         #modlogger.setLevel(logging.DEBUG)
 
         
@@ -56,6 +58,11 @@ class ParsersTests(unittest.TestCase):
         self.c['lname'] = "Baggins"
         self.assertEquals(str(self.c),"Frodo Baggins")
         self.assertEquals(str(self.i),"The one ring ")
+        #Test Invalid syntax
+        self.c['foo'] = ':mm:`not_a_macro`'
+        #There will be and error message as well
+        self.assertEquals(str(self.c['foo'].GetFullExpansion()),"")
+        
 
     def testCycle(self):
         self.c["cycle"]=":mm:`:cycle`"
