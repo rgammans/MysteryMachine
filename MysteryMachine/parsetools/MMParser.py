@@ -79,7 +79,7 @@ class MMParser (object):
     # First - prepent system details to src..
     if src is None:
         src =repr(self.myobject)+":unknown"
-    src = repr(self.myobject.parent)+":"+src
+    src = repr(self.myobject.owner)+":"+src
     role_def = ".. role:: mm(mmbase)\n :systemcntxt: %s\n\n" % src
     role_def+= "\n".join(map(lambda x: " "+x,src_stack))
     role_def+= "\n\n"

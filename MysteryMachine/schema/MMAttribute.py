@@ -58,13 +58,13 @@ class MMAttribute (MMBase):
 
   """
     
-  def __init__(self,name,value,parent):
+  def __init__(self,name,value,owner):
     self.name=name
     self.valueobj=CreateAttributeValue(value)
-    self.parent=parent
+    self.owner=owner
 
   def get_owner(self):
-    return self.parent
+    return self.owner
 
   def __str__(self):
     """
@@ -80,7 +80,7 @@ class MMAttribute (MMBase):
     @return string :
     @author
     """
-    return repr(self.parent)+":"+self.name
+    return repr(self.owner)+":"+self.name
 
   def GetFullExpansion(self):
     """
@@ -88,7 +88,7 @@ class MMAttribute (MMBase):
 
     @return string :
     """
-    return self.parent.parser.GetString(self.get_raw_rst(),repr(self))
+    return self.owner.parser.GetString(self.get_raw_rst(),repr(self))
 
   #Special case to override the definiton in Base.
   def _validate(self):
@@ -119,4 +119,4 @@ class MMAttribute (MMBase):
       else: raise AttributeError("%s not in %s"% ( name,repr(self) ) )
 
   def _writeback(self):
-     self.parent[self.name] = self.valueobj
+     self.owner[self.name] = self.valueobj

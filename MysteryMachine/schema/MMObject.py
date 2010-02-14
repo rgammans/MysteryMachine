@@ -55,7 +55,7 @@ class MMObject (MMBase):
 
   """
 
-  def __init__(self, id,parent,store):
+  def __init__(self, id,owner,store):
     """
      Get an object handle on an existing object with id.
 
@@ -66,8 +66,8 @@ class MMObject (MMBase):
     MMBase.__init__(self)
 #    self.logger.debug( "Creating %s" % id)
     self.id = id
-    #Ensure strong ref to parent.
-    self.parent = parent.getSelf()
+    #Ensure strong ref to owner.
+    self.owner = owner.getSelf()
     self.store = store
     self.parser = MMParser(self)
     self.cache = weakref.WeakValueDictionary()    

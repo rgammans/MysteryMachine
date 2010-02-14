@@ -94,10 +94,10 @@ class MMBase(object):
     Returns the root (eg. MMSystem) node for the system which this object is
     a member of.
     """
-    root = self.parent
-    # Walk up the parent links
-    while hasattr(root,"parent") and root.parent != None:
-        root = root.parent
+    root = self.owner
+    # Walk up the owner links
+    while hasattr(root,"owner") and root.owner != None:
+        root = root.owner
     return root
 
   def canonicalise(self,name):
