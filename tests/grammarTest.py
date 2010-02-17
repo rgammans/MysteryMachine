@@ -88,6 +88,10 @@ class GraamarTest(unittest.TestCase):
         self.assertEqual(helper(self.parserA,"Object:1").__class__ ,    MMObject)
         self.assertEqual(repr(helper(self.parserA,"Object:1")) , "Object:1" )
 
+    def testQueryOp(self):
+        self.assertEqual(helper(self.parserA,":name=\"TestName\"?\"Yes\"/\"No\""),"Yes")
+        self.assertEqual(helper(self.parserA,":name=\"WrongName\"?\":Yes\"/\"No\""),"No")
+
     # Test handling of parse errors.
 def getTestNames():
 	return [ 'grammarTest.GrammarTest' ] 

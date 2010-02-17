@@ -17,6 +17,7 @@ queryOp    =   Literal("?")
 equalsOp   =   Literal("=")
 notequalsOp=   Literal("!=")
 
+#Characters to avoid ?,:,/,!,= (eg other literals)
 identifier =   Word("_" + alphas + nums)
 objectName =   identifier.copy()
 fieldName  =   identifier.copy()
@@ -38,7 +39,7 @@ def Grammar(obj):
     		NamedField
 
     BoolExpr   =    ExprField + cfoperator + Value.copy() 
-    QueryExpr  =    BoolExpr + queryOp + Value.copy() + seperator +Value.copy()
+    QueryExpr  =    BoolExpr + queryOp + Value.copy() + "/" +Value.copy()
 
     ExprText   =    ExprField ^ \
     		QueryExpr
