@@ -19,8 +19,7 @@ identifier =   Word("-" + "_" + alphas + nums)
 LiteralVal =   QuotedString('"') 
 
 
-def Grammar(obj):
-    home=obj
+def Grammar(home):
     # Productions
     cfoperator  =   equalsOp ^ notequalsOp
   
@@ -79,12 +78,7 @@ def Grammar(obj):
 
         return origin
     
-
-    #def gotError(s,loc,toks):
-    #	sys.stderr.write("BARR")
-
     ## Bind functions to parse actions
-    
     ExprField.setParseAction(ExprFieldAction)
     BoolExpr.setParseAction(doBool)
     QueryExpr.setParseAction(doQuery)
