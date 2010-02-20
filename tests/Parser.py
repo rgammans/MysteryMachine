@@ -38,6 +38,8 @@ class ParsersTests(unittest.TestCase):
         self.sys.NewCategory("Item")
         self.i=self.sys.NewObject("Item")
         self.i["name"]="The one ring"
+        self.i["not_a_cycle"]="hovercraft"
+        self.i["bike"]       =":mm:`:not_a_cycle`"
         self.i.set_parent(self.p)
         self.sys.NewCategory("Character")
         self.c=self.sys.NewObject("Character")
@@ -62,13 +64,17 @@ class ParsersTests(unittest.TestCase):
         self.c['foo'] = ':mm:`not_a_macro`'
         #There will be and error message as well
         self.assertEquals(str(self.c['foo'].GetFullExpansion()),"")
+        #Test settings
+        #self.assertEquals(str(self.i['bike'].GetFullExpansion()),"hovercraft")
         
 
     def testCycle(self):
         self.c["cycle"]=":mm:`:cycle`"
         #Trigger a cycle and check we don't raise an exception.
         a=self.c["cycle"].GetFullExpansion()
-        ##TODO Set up somethin that looks like a cycle but isn't.
+        #Set up something that might look like a cycle but isn't.
+        self.c["not_a_cycle"]=":mm:`"+repr(self.i)+":bike`"
+        self.assertEquals(str(self.c["not_a_cycle"].GetFullExpansion()),"hovercraft")
 
 def getTestNames():
     	return [ 'Parser.ParserTests' ] 
