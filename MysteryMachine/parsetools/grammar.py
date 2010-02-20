@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 ###Grammar stuff
-from pyparsing import  Regex,Optional,ZeroOrMore, QuotedString , Literal, Word, alphas , nums , printables  , CharsNotIn , stringEnd
+from pyparsing import Forward, Regex,Optional,ZeroOrMore, QuotedString , Literal, Word, alphas , nums , printables  , CharsNotIn , stringEnd
 from functools import partial
 
 import logging
@@ -25,7 +25,7 @@ ObjectId   =   Word(nums)
 NonExpr    =   CharsNotIn("$")
 
 ExprLimit  =   Regex("[^ \n\t]*[ \n\t]")
-Value      =   QuotedString('"') 
+LiteralVal =   QuotedString('"') 
 
 
 def Grammar(obj):
@@ -38,18 +38,20 @@ def Grammar(obj):
     ExprField   =   ObjectUID ^  \
     		NamedField
 
-    BoolExpr   =    ExprField + cfoperator + Value.copy() 
-    QueryExpr  =    BoolExpr + queryOp + Value.copy() + "/" +Value.copy()
+    ExprText   =    Forward()   
+    BoolExpr   =    ExprField + cfoperator + ExprText.copy() 
+    QueryExpr  =    BoolExpr + queryOp + ExprText.copy() + "/" +ExprText.copy()
 
-    ExprText   =    ExprField ^ \
-    		QueryExpr
+    ExprText   <<  (  ExprField ^ \
+    		          QueryExpr ^ \
+                      LiteralVal.copy()  )
 
     #Error      =   openExpr + ExprLimit 
 
     #These production are about handling expressions
     # in run of text. The use is mainly historical.
     Expr       =   openExpr + ExprText + closeExpr
-
+    
     textEle    =   NonExpr  ^ \
                    Expr 
        

@@ -18,10 +18,9 @@
 #
 # 
 """
-Tests for the MysteryMachine.VersionNr class
+Tests for the MysteryMachine.parsetools.gramar file
 """
 
-from MysteryMachine import * 
 from MysteryMachine.parsetools.grammar import Grammar
  
 import unittest
@@ -60,8 +59,8 @@ def helper(parser,input):
 
 class GraamarTest(unittest.TestCase):
     def setUp(self):
-        StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
-        self.parserA=Grammar( ObjectProxy( name="TestName",  title="A Title") )
+        self.A = ( ObjectProxy( name="TestName",  title="A Title", yes="YEAH!", no="Nope") )
+        self.parserA=Grammar( self.A )
         self.parserB=Grammar( ObjectProxy( name="WrongName", title="A Title") )
 
         #self.logger = logging.getLogger("MysteryMachine.parsetools.grammar")
@@ -91,6 +90,13 @@ class GraamarTest(unittest.TestCase):
     def testQueryOp(self):
         self.assertEqual(helper(self.parserA,":name=\"TestName\"?\"Yes\"/\"No\""),"Yes")
         self.assertEqual(helper(self.parserA,":name=\"WrongName\"?\":Yes\"/\"No\""),"No")
+        #Now check with different lvalues..
+        self.assertEqual(helper(self.parserA,":name=\"TestName\"?:yes/:no"),"YEAH!")
+        self.assertEqual(helper(self.parserA,":name=\"WrongName\"?:yes/:no"),"Nope")
+        self.assertEqual(helper(self.parserA,":name=:title?:yes/:no"),"Nope")
+        #Check Not equals
+        self.assertEqual(helper(self.parserA,":name!=\"WrongName\"?:yes/:no"),"YEAH!")
+
 
     # Test handling of parse errors.
 def getTestNames():
