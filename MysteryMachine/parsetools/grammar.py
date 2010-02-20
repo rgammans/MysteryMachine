@@ -39,12 +39,12 @@ def Grammar(obj):
     		NamedField
 
     ExprText   =    Forward()   
-    BoolExpr   =    ExprField + cfoperator + ExprText.copy() 
-    QueryExpr  =    BoolExpr + queryOp + ExprText.copy() + "/" +ExprText.copy()
+    BoolExpr   =    ExprField + cfoperator + ExprText 
+    QueryExpr  =    BoolExpr + queryOp + ExprText + "/" +ExprText
 
     ExprText   <<  (  ExprField ^ \
     		          QueryExpr ^ \
-                      LiteralVal.copy()  )
+                      LiteralVal  )
 
     #Error      =   openExpr + ExprLimit 
 
