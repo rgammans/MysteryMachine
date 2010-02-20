@@ -38,7 +38,7 @@ class MMObject:
         for key in kwargs:
            self.items[key] = kwargs[key] 
     def get_root(self):
-        return SystemProxy()
+        return SystemProxy(self.items["test"])
     def __repr__(self):
         return self.id
     def __getitem__(self,name):
@@ -46,7 +46,11 @@ class MMObject:
 
 ObjectProxy = MMObject
 class SystemProxy: 
+    def __init__(self,test):
+        self.test = test
     def get_object(self,cat,id):
+        if cat == "Test":
+            return getattr(self.test,id)
         return MMObject(cat + ":" +id)
     
 
@@ -59,9 +63,10 @@ def helper(parser,input):
 
 class GraamarTest(unittest.TestCase):
     def setUp(self):
-        self.A = ( ObjectProxy( name="TestName",  title="A Title", yes="YEAH!", no="Nope") )
+        self.C = ( ObjectProxy( name="AnotherName",  test=self, title="A Title", yes="YEAH!", no="Nope") )
+        self.A = ( ObjectProxy( name="TestName",    test=self, obj=self.C, title="A Title", yes="YEAH!", no="Nope") )
         self.parserA=Grammar( self.A )
-        self.parserB=Grammar( ObjectProxy( name="WrongName", title="A Title") )
+        self.parserB=Grammar( ObjectProxy( test=self, name="WrongName", title="A Title", a=self.A) )
 
         #self.logger = logging.getLogger("MysteryMachine.parsetools.grammar")
         #self.logger.setLevel(logging.DEBUG)
@@ -78,6 +83,12 @@ class GraamarTest(unittest.TestCase):
     def testExpansions(self):
         self.assertEqual("TestName",helper(self.parserA,":name"))
         self.assertEqual("WrongName",helper(self.parserB,":name"))
+        self.assertEqual("TestName", helper(self.parserB,":a:name") )
+        self.assertEqual("AnotherName", helper(self.parserB,":a:obj:name") )
+        self.assertEqual("AnotherName", helper(self.parserB,"Test:C:name") )
+        self.assertEqual("TestName", helper(self.parserB,"Test:A:name") )
+        self.assertEqual("AnotherName", helper(self.parserB,"Test:A:obj:name") )
+
     
     def testInvalidSyntax(self):
         import pyparsing
