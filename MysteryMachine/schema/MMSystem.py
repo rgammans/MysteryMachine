@@ -287,16 +287,6 @@ class MMSystem (MMBase):
       self.DeleteObject(obj)
       
 
-  def getSelf(self):
-    """
-    returns self. 
-
-    Used to strengthen a weakref.
-    """
-    ## This exists so that MMObject can dereferences the weak proxy
-    #  object that the store subsystem will normally pass it.
-    return self
-
   def Lock(self):
     """
     Wait for the backing to to be in a stable state and prevent

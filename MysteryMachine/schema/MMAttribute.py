@@ -120,3 +120,14 @@ class MMAttribute (MMBase):
 
   def _writeback(self):
      self.owner[self.name] = self.valueobj
+
+
+  def getSelf(self):
+     """
+     Override the basic get self so will find deref the attribute
+     to a stored object.
+     """
+     if "get_object" in self.valueobj.exports:
+        return self.valueobj.get_object(self)
+     
+     return self

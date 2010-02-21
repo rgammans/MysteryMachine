@@ -70,13 +70,17 @@ def Grammar(home):
         else:
             origin  = home.get_root().get_object(toks[0],toks[2])
             path    = toks[4:]
-       
+        
         #Walk along the attributes
+        field = origin
         for ele in path:
             if ele != ":": #Skip ':' as grammar noise.
-                origin = origin[ele]
-
-        return origin
+                field = field[ele]
+                try:
+                    field = field.getSelf()
+                except:
+                    pass
+        return field
     
     ## Bind functions to parse actions
     ExprField.setParseAction(ExprFieldAction)

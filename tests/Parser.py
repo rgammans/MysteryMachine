@@ -65,7 +65,9 @@ class ParsersTests(unittest.TestCase):
         #There will be and error message as well
         self.assertEquals(str(self.c['foo'].GetFullExpansion()),"")
         #Test settings
-        #self.assertEquals(str(self.i['bike'].GetFullExpansion()),"hovercraft")
+        self.assertEquals(str(self.i['bike'].GetFullExpansion()),"hovercraft")
+        self.c['test']=":mm:`:carries:bike`"
+        self.assertEquals(str(self.c['test'].GetFullExpansion()),"hovercraft")
         
 
     def testCycle(self):

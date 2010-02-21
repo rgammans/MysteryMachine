@@ -113,6 +113,18 @@ class MMBase(object):
        raise ValueError("`%s` is not valid in the MysteryMachine Namespace" % name)
 
     return name.lower()
-    
+  
+
+  def getSelf(self):
+    """
+    returns self. 
+
+    Used to strengthen a weakref and find the prefered object.
+    """
+    ## This exists so that MMObject can dereferences the weak proxy
+    #  object that the store subsystem will normally pass it.
+    return self
+
+
   def __iter__(self):
     return []
