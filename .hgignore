@@ -1,4 +1,6 @@
-.*\.py[co~]
+.*\.py[co~]$
 .*~
-generated/.*
-.*\.swp
+^generated/
+.*\.sw[ponm]$
+\.orig$
+\.old$
