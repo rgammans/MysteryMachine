@@ -171,8 +171,7 @@ class MMAttributeValue (MMBase ):
     """
     self.logger.debug( str(self.__class__))
     self.logger.debug( self.parts)
-    #FIXME: Ensure consistent ordering
-    result = "\n".join(self.parts.values())
+    result = "\n".join([x[1] for x in  sorted(self.parts.items())])
     self.logger.debug( "raw-->%s<--" % result)
     return result
 
