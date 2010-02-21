@@ -219,19 +219,19 @@ class MMObject (MMBase):
     return self.id
 
 
-class MMAttributeValue_MMObjectRef(MMAttributeValue):
+class MMAttributeValue_MMRef(MMAttributeValue):
     """
     """
-    typename = "objectref"
-    contain_prefs = { MMObject: 100 }
+    typename = "ref"
+    contain_prefs = { MMBase: 50 }
 
     def __init__(self,*args,**kwargs):
-        super(MMAttributeValue_MMObjectRef, self).__init__(*args,**kwargs)
-        if isinstance(self.value,MMObject):
+        super(MMAttributeValue_MMRef, self).__init__(*args,**kwargs)
+        if isinstance(self.value,MMBase):
             #Get string represenation of the object.
             #TODO Store object here so it cached.
             self.parts['obj'] = repr(self.value)
-        
+            
         if not self._validate(): raise Error()    
         #All ok.
         self.exports += [ "get_object" ]

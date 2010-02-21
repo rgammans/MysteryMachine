@@ -81,8 +81,23 @@ def register_value_type(name,acls,nativelist):
 def FindBestValueType(atype):
     """
     """
-    #Handle base class and more sets in the key. 
-    return (sorted(TypeLookup[atype],key=operator.itemgetter(1),reverse= True ))[0][0]
+    #Handle base class and more sets in the key get a list 
+    # of classes to use for candidate handlers. 
+    candidates = list()
+    try:
+        typelist = atype.__mro__
+    except:
+        typelist = list(atype)
+
+    #Collect the handlers for the functions.
+    for t in typelist:
+        if t in TypeLookup:
+            candidates += TypeLookup[t]
+    
+    modlogger.debug("candiate attrval's %s" % candidates)
+    rlist = sorted(candidates,key=operator.itemgetter(1),
+                    reverse= True )
+    return rlist[0][0]
 
 
 class _AttrMeta(type):
@@ -142,6 +157,10 @@ class MMAttributeValue (MMBase ):
     @author
     """
     return str(self.__class__)+"(\""+self.get_raw()+"\")"
+
+
+  def __str__(self):
+    return self.get_raw()
 
   def get_raw(self, obj = None):
     """

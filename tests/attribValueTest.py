@@ -75,10 +75,9 @@ class attribValTest(unittest.TestCase):
         self.assertEqual(self.objrefA.get_object(self.objA) , self.objA )
         self.assertEqual(self.objrefB.get_object(self.objA) , self.objB )
 
-
     def makeRef(self):
-        self.objrefA = MMAttributeValue_MMObjectRef( value = self.objA )
-        self.objrefB = MMAttributeValue_MMObjectRef( value = self.objB )        
+        self.objrefA = MMAttributeValue_MMRef( value = self.objA )
+        self.objrefB = MMAttributeValue_MMRef( value = self.objB )        
  
 
     def testCreate(self):

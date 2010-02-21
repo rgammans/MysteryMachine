@@ -31,6 +31,16 @@ class DummyPart:
     def get_value(self):
         return self.x
 
+class fakeParent:
+    def __init__(self):
+        self.updated = False
+    def Updated(self):
+        return self.updated
+
+    def __setitem__(self,name,val):
+        self.updated = True
+    def resetUpdate(self):
+        self.updated = False
 class attribTest(unittest.TestCase):
     
     def testCreate(self):
@@ -41,8 +51,24 @@ class attribTest(unittest.TestCase):
     # TODO
     # Test MMObject fetching
     # Test handling of parse errors.
+    # Test AttributeValue export resolution.
+    def testAttrValExport(self):
+       attr=MMAttribute("document","test\n----\n\n\nA Message",None)
+       self.assertEquals("test\n----\n\n\nA Message",attr.get_raw())
+
+    def testAttrParentStuff(self):
+       p = fakeParent()
+       attr=MMAttribute("document","test\n----\n\n\nA Message",p)
+       self.assertTrue(p is attr.get_owner())
+       v = attr.get_value()
+
+       attr.set_value("diff")
+       self.assertTrue(p.Updated())
+       v1 = attr.get_value()
+       self.assertEquals("diff",str(v1))
+
 def getTestNames():
-	return [ 'attribTest.attribTest' ] 
+    return [ 'attribTest.attribTest' ] 
 
 if __name__ == '__main__':
     unittest.main()
