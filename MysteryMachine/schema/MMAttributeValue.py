@@ -258,3 +258,48 @@ class MMAttributeValue_BasicText(MMAttributeValue):
         #Get passed in value.
         if self.value is not None:
             self.parts["txt"] = str(self.value)
+
+
+class MMAttributeValue_MMRef(MMAttributeValue):
+    """
+    This Value typeobjct store reference to other
+    attributes or objects insidea MMObject system.
+    """
+    typename = "ref"
+    contain_prefs = { MMBase: 50 }
+
+    def __init__(self,*args,**kwargs):
+        super(MMAttributeValue_MMRef, self).__init__(*args,**kwargs)
+        if isinstance(self.value,MMBase):
+            #Get string represenation of the object.
+            #TODO Store object here so it cached.
+            self.parts['obj'] = repr(self.value)
+            
+        if not self._validate(): raise Error()    
+        #All ok.
+        self.exports += [ "get_object" ]
+
+    def _validate(self, attr = None):
+        objref = None
+        #try:
+        objref = self.get_object( attr )
+        #except exceptions.Exception , e:
+        #    logging.warn(e.msg())
+        #    objref = None
+        return not objref is None
+
+    def get_object(self, attr = None ):
+        """
+        This method may raise and exception if the
+        own_obj is not valid or the value will not validate.
+        """
+        ##TODO Consider caching the return result.
+  #      self.logger.debug( "refobj->%s<--" % attr)
+        pstr = self.get_raw(attr)
+        self.logger.debug( "MMA-O:go:pstr  ->%s<--" % pstr)
+        objref = Grammar(attr).parseString(pstr)[0]
+  #      self.logger.debug( "ret = %s, class = %s" % (objref , objref.__class__ ))
+        return objref
+
+    def get_raw_rst(self,obj = None):
+        return ":mm:`"+ self.get_raw(obj) + "`"
