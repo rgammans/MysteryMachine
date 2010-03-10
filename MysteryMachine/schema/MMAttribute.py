@@ -89,7 +89,7 @@ class MMAttribute (MMBase):
 
     @return string :
     """
-    return self.owner.parser.GetString(self.get_raw_rst(),repr(self))
+    return self.get_parser().GetString(self.get_raw_rst(),repr(self))
 
   #Special case to override the definiton in Base.
   def _validate(self):
@@ -138,3 +138,7 @@ class MMAttribute (MMBase):
         return self.valueobj.get_object(self)
      
      return self
+
+
+  def get_parser(self):
+    return self.owner.get_parser()

@@ -218,4 +218,7 @@ class MMObject (MMBase):
     """
     return self.id
 
+   
+  def get_parser(self):
+    return self.parser
 
