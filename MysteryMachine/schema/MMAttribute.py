@@ -23,12 +23,13 @@
 #
 
 from MMBase import *
-from MMAttributeValue import CreateAttributeValue 
+from MMAttributeValue import CreateAttributeValue , MMAttributeValue_MMRef
 
 import operator
 import functools
 import sys
  
+import logging
  
 class MMAttribute (MMBase):
 
@@ -121,6 +122,12 @@ class MMAttribute (MMBase):
   def _writeback(self):
      self.owner[self.name] = self.valueobj
 
+  def getRef(self):
+    """
+    @returns: A reference to this attribute which can be used
+             instead of the value.
+    """    
+    return MMAttributeValue_MMRef(value = self)
 
   def getSelf(self):
      """

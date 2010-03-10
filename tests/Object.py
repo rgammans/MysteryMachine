@@ -87,6 +87,11 @@ class ObjectTests(unittest.TestCase):
         self.assertEquals(str(obj["DATa"]),"soemdata")
         self.assertRaises(KeyError,noAttrTst,obj) 
 
+        obj["atref"]=obj["data"].getRef()
+        self.assertEquals(obj,obj.getRef())
+        self.assertEquals(obj["data"],obj["atref"].getSelf())
+
+
     def testParentRef(self):
         p=self.object.get_parent()
         p["test"] = "test"
@@ -99,7 +104,8 @@ class ObjectTests(unittest.TestCase):
         self.object[".defname"]= "object" 
         self.assertEquals(str(self.object), "object")
         self.assertEquals(str(p), "parent")
-        
+   
+
 def getTestNames():
 	return [ 'Object.ObjectTests' ] 
 

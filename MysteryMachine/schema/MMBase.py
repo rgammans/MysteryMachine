@@ -125,6 +125,19 @@ class MMBase(object):
     #  object that the store subsystem will normally pass it.
     return self
 
+  def getRef(self):
+    """
+    This function is sort of the opposite of getSelf().
+
+    Use on an schema object when creating a schema reference
+    this ensures a reference is taken rather than a copy. There is
+    only a few places this matters but this method is available
+    everywhere.
+
+    @returns: value which references self
+    """
+    ##Actually a NULL op in the general case. Overriden where it matters. 
+    return self
 
   def __iter__(self):
     return []
