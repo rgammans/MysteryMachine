@@ -59,10 +59,12 @@ class MMAttribute (MMBase):
 
   """
     
-  def __init__(self,name,value,owner):
+  def __init__(self,name,value,owner , copy = True):
     self.name=name
-    self.valueobj=CreateAttributeValue(value)
+    self.valueobj=CreateAttributeValue(value , copy)
     self.owner=owner
+    self.logger    = logging.getLogger("MysteryMachine.schema.MMAttribute")
+    #self.logger.setLevel(logging.DEBUG)
 
   def get_owner(self):
     return self.owner

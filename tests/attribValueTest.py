@@ -108,6 +108,12 @@ class attribValTest(unittest.TestCase):
         val2 = CreateAttributeValue(val)
         self.assertEquals(val, val2)
         self.assertFalse(val is val2)
+        
+        #ValueCreate with copy=false
+        val3 = CreateAttributeValue(val,copy = False)
+        self.assertEquals(val, val3)
+        self.assertTrue(val is val3)
+
 
 
     def testMake(self):

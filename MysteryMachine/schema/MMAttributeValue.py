@@ -32,7 +32,7 @@ import exceptions
 import sys
 import types
 import operator
-import copy
+import copy as _copy
 
 
 AttrTypes = dict()
@@ -41,8 +41,16 @@ TypeLookup = dict()
 modlogger = logging.getLogger("MysteryMachine.schema.MMAttributeValue")
 
 #FIXME make a __new__ method.
-def CreateAttributeValue(val):
+def CreateAttributeValue(val, copy = True):
     """
+    Create an appropriate MMAttributeValue to store val.
+
+
+    This searches through the registered types to find the most preferred
+    MMAttributeValue class to store and value of type(val).
+
+    If a MMAttributeClass is pass as val a copy is created and returned,
+    unless copy=False , in which case val is returned.
     """
     global AttrTypes
        
@@ -54,7 +62,7 @@ def CreateAttributeValue(val):
     else:
         modlogger.debug( "CAV2:type:%s" % val.__class__.typename)
         modlogger.debug( "CAV2:parts:%s" % val.parts)
-        val= copy.copy(val)
+        if copy: val= _copy.copy(val)
         modlogger.debug( "CAV2:newparts:%s" % val.parts)
 
     return val

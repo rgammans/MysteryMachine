@@ -47,6 +47,13 @@ class attribTest(unittest.TestCase):
        attr=MMAttribute("document","test\n----\n\n\nA Message",None)
        #sys.stderr.write(str(attr.get_raw_rst))
        self.assertEqual(attr.get_raw_rst(),"test\n----\n\n\nA Message")
+       attr2 =MMAttribute("otherdoc",attr.get_value(),None)
+       self.assertEqual(attr.get_value(),attr2.get_value())
+       self.assertFalse(attr.get_value() is attr2.get_value())
+       attr3 =MMAttribute("otherdoc",attr.get_value(),None ,copy = False)
+       self.assertEqual(attr.get_value(),attr3.get_value())
+       self.assertTrue(attr.get_value() is attr3.get_value())
+ 
 
     # TODO
     # Test MMObject fetching
@@ -66,6 +73,7 @@ class attribTest(unittest.TestCase):
        self.assertTrue(p.Updated())
        v1 = attr.get_value()
        self.assertEquals("diff",str(v1))
+
 
 def getTestNames():
     return [ 'attribTest.attribTest' ] 
