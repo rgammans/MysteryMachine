@@ -95,17 +95,29 @@ class ObjectTests(unittest.TestCase):
     def testParentRef(self):
         p=self.object.get_parent()
         p["test"] = "test"
-        self.assertEquals(self.object["test"],p["test"])
+        self.assertEquals(str(self.object["test"]),str(p["test"]))
         self.object["test"] = "other"
-        self.assertNotEquals(self.object["test"],p["test"])
+        self.assertNotEquals(str(self.object["test"]),str(p["test"]))
         #Test parent update
         p[".defname"] = "parent"
         #Test parent de-ref
         self.object[".defname"]= "object" 
         self.assertEquals(str(self.object), "object")
         self.assertEquals(str(p), "parent")
-   
 
+
+    def testInheritedEval(self):
+        p=self.object.get_parent()
+        p["test"] = "test"
+        self.object["test"] = "other"
+        #Test parent update
+        p["name"] = ":mm:`:test`"
+        #Test parent ref
+        self.assertEquals(p["name"].GetFullExpansion(), "test")
+        self.assertEquals(self.object["name"].GetFullExpansion(), "other")
+
+
+       
 def getTestNames():
 	return [ 'Object.ObjectTests' ] 
 

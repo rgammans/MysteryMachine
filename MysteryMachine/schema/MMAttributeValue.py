@@ -311,3 +311,64 @@ class MMAttributeValue_MMRef(MMAttributeValue):
 
     def get_raw_rst(self,obj = None):
         return ":mm:`"+ self.get_raw(obj) + "`"
+
+
+
+
+class ShadowAttributeValue(MMAttributeValue):
+    
+    """
+    This class is a place holder value for inherited attributes.
+
+    We need to create an MMAttribute object for those object so that 
+    they are always evaluated in the correct context , however they cannot
+    share the value object as that has a hard to fix failure mode when
+    the inherited value is updated. If the update creates a new value object
+    any inherited attributes do not piclk up the new value as they are still
+    pointing at the old value.
+
+    This class is designed to fix that problem by handling the forwarding directly.
+
+    Note that the class only hold a reference to it's owning object as that
+    means it doens't impact on the GC at all.
+    """
+
+    typename = ".inhertitance_shadow"
+    contain_prefs = { }
+
+    def __init__(self,*args,**kwargs):
+        super(ShadowAttributeValue, self).__init__(*args,**kwargs)
+        self.obj       = kwargs.get("object",None)
+        self.attrname  = kwargs.get("attrname","")
+        self.exports   = self._get_target().exports
+        self.logger    = logging.getLogger("MysteryMachine.schema.MMAttributeValue.ShadowAV")
+        #self.logger.setLevel(logging.DEBUG)
+        self.logger.debug("Created forward for %s[%s] " % ( repr(self.obj), self.attrname) )
+
+    def __getattr__(self,attrname):
+        self.logger.debug(attrname)
+        fwd_to = self._get_target().__getattr__(attrname)
+        return fwd_to
+
+    def _get_target(self):
+        p = self._get_parent()
+        t = p[self.attrname]
+        return t.get_value()
+
+    def _get_parent(self):
+        p = self.obj.get_parent()
+        return p 
+        
+
+    def __str__(self):
+        return self._get_target().__str__()
+        
+    def get_raw_rst(self, obj = None):
+        self.logger.debug("%s[%s].raw_rst ( obj = %s ) "% (  repr(self.obj), self.attrname , repr(obj) ))
+        return self._get_target().get_raw_rst(obj)
+
+
+    def get_raw(self, obj = None):
+        return self._get_target().get_raw(obj)
+
+  

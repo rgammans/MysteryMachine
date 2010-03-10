@@ -105,8 +105,15 @@ class MMObject (MMBase):
             parent = self.get_parent()
         except KeyError:
             #No Parent so reraise as no attrname.
-            raise KeyError(attrname)
-        return parent[attrname]
+           raise KeyError(attrname)
+        
+        #Ensure the attribute can be fetched - if not parent will
+        # raise an exception.
+        pattr = parent[attrname]
+        attr  = MMAttribute(attrname,ShadowAttributeValue(self,attrname=attrname,object=self),
+                            self,copy = False) 
+        self.cache[attrname] = attr
+        return attr        
 
     #Haven't found looked for attribute.
     #raise KeyError()
@@ -128,8 +135,7 @@ class MMObject (MMBase):
         return
 
     #Deal only with any value part of an existing attribute.
-    # TODO - decide if this is really what want to do - or would
-    # this create a reference.
+    #  to create a reference caller should use getRef()
     if isinstance(attrvalue,MMAttribute):
         attrvalue=attrvalue.get_value()
 
