@@ -117,6 +117,7 @@ class MMAttribute (MMBase):
 
   #This is intend for method lookup
   def __getattr__(self,name):
+      self.logger.debug("dereffing %s for %s" % (name , repr(self.owner)))
       if name in self.valueobj.exports:
         return functools.partial(getattr(self.valueobj,name),self)
       else: raise AttributeError("%s not in %s"% ( name,repr(self) ) )

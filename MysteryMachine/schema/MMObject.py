@@ -79,7 +79,7 @@ class MMObject (MMBase):
      except KeyError: 
          attrval = self.store.GetAttribute(attrn)
          t,p = attrval
-         a = MMAttribute(attrn,MakeAttributeValue(t,p),self)
+         a = MMAttribute(attrn,MakeAttributeValue(t,p),self,copy = False )
          self.cache[attrn]= a
      return a
     
