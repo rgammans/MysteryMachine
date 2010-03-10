@@ -94,6 +94,10 @@ class MMObject (MMBase):
     """
     attrname = self.canonicalise(attrname)
 
+    try:
+        return self.cache[attrname]
+    except KeyError: pass
+
     if self.store.HasAttribute(attrname):
         return self._get_mm_attribute(attrname) 
     else:
