@@ -31,6 +31,9 @@ from MysteryMachine.parsetools.grammar import identifier
 import pyparsing
 import logging
 
+#For the container base class
+import weakref
+
 class MMBase(object):
 
   """
@@ -141,3 +144,38 @@ class MMBase(object):
 
   def __iter__(self):
     return []
+
+
+
+
+class MMContainer(MMBase):
+    """
+    This is the base class for object which manage container of
+    other MMBase objects to inherit from.
+
+    This is important as the a MMSystem is supposed to provide a guarantee
+    a guaranteee about that an Attribute or instance has a single in-core
+    instance. 
+    """
+    def __init__(self,*args,**kwargs):
+        super(MMContainer,self).__init__(self,*args,**kwargs)
+        self.cache = weakref.WeakValueDictionary()
+
+
+    def _invalidate_item(self,item):
+        try:
+            del self.cache[item]
+        except KeyError: pass
+
+    def _get_item(self,key,func,*args):
+        try:
+            item = self.cache[key]
+        except KeyError:
+            item = func(*args)
+            self.cache[key] = item
+        return item
+
+    def _set_item(self,k,v):
+        self.cache[k] = v
+
+

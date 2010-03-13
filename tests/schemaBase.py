@@ -38,7 +38,11 @@ class foo(MMBase):
 
 class bar(object):
     def __init__(self,owner):
-        self.owner = owner 
+         self.owner = owner 
+    def __hash__(self):
+         return hash(self.owner)
+    def __eq__(self,o):
+          return type(o) == type(self) and self.owner == o.owner
 
 class BaseTest(unittest.TestCase):
     def testInit(self):
@@ -81,7 +85,22 @@ class BaseTest(unittest.TestCase):
             self.assertRaises(ValueError,m.canonicalise,"ss``")
             self.assertRaises(ValueError,m.canonicalise,"ss=")
 
+    def testContainer(self):
+        with StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg"]) as g:
+            m = MMContainer()
+            v = bar("one")
 
+            m._set_item(1,v)
+            #Whitebox test.
+            self.assertTrue(m.cache[1] is v)
+            self.assertTrue(m._get_item(1,bar,"one") is v)
+            vf2 = m._get_item(2,bar,"two")
+            self.assertEquals(vf2,bar("two"))
+            self.assertTrue(m._get_item(2,bar,"two") is vf2)
+            m._invalidate_item(1)
+            self.assertRaises(KeyError ,m.cache.__getitem__,1)
+            self.assertFalse(m._get_item(1,bar,"one") is v)
+         
 
 
 def getTestNames():

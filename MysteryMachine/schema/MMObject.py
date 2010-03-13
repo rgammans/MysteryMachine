@@ -30,7 +30,7 @@ from MysteryMachine.schema.MMAttributeValue import  *
 import weakref
 import logging
 
-class MMObject (MMBase):
+class MMObject (MMContainer):
 
   """
    This class represents an object in an MMSystem, each object exists in a category
@@ -63,26 +63,21 @@ class MMObject (MMBase):
     @return  :
     @author
     """
-    MMBase.__init__(self)
+    super(MMObject,self).__init__(self)
 #    self.logger.debug( "Creating %s" % id)
     self.id = id
     #Ensure strong ref to owner.
     self.owner = owner.getSelf()
     self.store = store
     self.parser = MMParser(self)
-    self.cache = weakref.WeakValueDictionary()    
     self.logger = logging.getLogger("MysteryMachine.schema.MMObject")
 
-  def _get_mm_attribute(self,attrn):
-     try:
-         a = self.cache[attrn]
-     except KeyError: 
-         attrval = self.store.GetAttribute(attrn)
-         t,p = attrval
-         a = MMAttribute(attrn,MakeAttributeValue(t,p),self,copy = False )
-         self.cache[attrn]= a
-     return a
-    
+  def _make_attr(self,name):
+      attrval = self.store.GetAttribute(name)
+      t,p = attrval
+      a = MMAttribute(name,MakeAttributeValue(t,p),self,copy = False )
+      return a 
+ 
   def __getitem__(self, attrname):
     """
     Basic get item handling. Returns 'attribute' of attrname.
@@ -99,7 +94,7 @@ class MMObject (MMBase):
     except KeyError: pass
 
     if self.store.HasAttribute(attrname):
-        return self._get_mm_attribute(attrname) 
+        return self._get_item(attrname,self._make_attr,attrname) 
     else:
         try:
             parent = self.get_parent()
@@ -153,7 +148,7 @@ class MMObject (MMBase):
     #Get AttributeValue type object - so it is ready for the storage engine.
     attrvalue = valobj.get_value()
     #Write back to store engine
-    self.cache[attrname] = valobj 
+    self._set_item(attrname,valobj) 
     self.store.SetAttribute(attrname,attrvalue.get_type(),attrvalue.get_parts())    
 
   def __delitem__(self, attrname):
@@ -169,10 +164,8 @@ class MMObject (MMBase):
     # - we can do this by pulling the ref out of the cache.
    
     attrname = self.canonicalise(attrname) 
-    #Remove from cache - ignore not finding it.
-    try:
-        del self.cache[attrname]
-    except KeyError: pass
+    #Remove from cache 
+    self._invalidate_item(attrname)
     #Remove from backing store. 
     if self.store.HasAttribute(attrname):
         self.store.DelAttribute(attrname)    
@@ -203,7 +196,7 @@ class MMObject (MMBase):
     """
     #Bypass inheritance lookup.
     if self.store.HasAttribute(".parent"):
-        parent = self._get_mm_attribute(".parent") 
+        parent = self._get_item(".parent",self._make_attr,".parent") 
     else: raise KeyError(".parent")
     self.logger.debug( "parent type is %s " %type(parent))
     self.logger.debug( "Parent = %r" % parent)

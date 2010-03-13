@@ -39,7 +39,7 @@ import weakref
 import binascii
 
 
-class MMSystem (MMBase):
+class MMSystem (MMContainer):
 
   """
    This class represents all the data within a single related set of MMObjects,
@@ -73,6 +73,7 @@ class MMSystem (MMBase):
     @return  :
     @author
     """
+    super(MMSystem,self).__init__(self,store,new)
     self.store  = store
     self.policies = None #FIXME: what should this be?
     #Add back link to store - call as set in store.Base?
@@ -80,7 +81,6 @@ class MMSystem (MMBase):
     self.name = EscapeSystemUri(self.uri)
     DocsLoaded[self.name] = self
     store.set_owner(self)
-    self.cache = weakref.WeakValueDictionary()
 
   def __repr__(self):
     return self.name
@@ -113,6 +113,7 @@ class MMSystem (MMBase):
     else: raise "Can't delete non-empty category"
  
   def DeleteObject(self,object):
+    self._invalidate_item(object)
     return self.store.DeleteObject(object)    
 
   def EnumObjects(self, category):
@@ -136,13 +137,7 @@ class MMSystem (MMBase):
 
     cat = self.canonicalise(cat)
     fullid = cat + ":" + id
-    try:
-        o = self.cache[fullid]
-    except KeyError:
-        o = MMObject(fullid,self,self.store.GetObjStore(fullid))
-        self.cache[fullid] = o
-    #TODO:Unlock Cache.
-    return o
+    return self._get_item(fullid,MMObject,fullid,self,self.store.GetObjStore(fullid))
 
   def Commit(self, msg):
     """
