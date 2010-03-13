@@ -30,7 +30,7 @@ from MysteryMachine.schema.MMAttributeValue import  *
 import weakref
 import logging
 
-class MMObject (MMContainer):
+class MMObject (MMAttributeContainer):
 
   """
    This class represents an object in an MMSystem, each object exists in a category
@@ -128,27 +128,10 @@ class MMObject (MMContainer):
     if attrvalue is None:
         del self[attrname] 
         return
-
-    #Deal only with any value part of an existing attribute.
-    #  to create a reference caller should use getRef()
-    if isinstance(attrvalue,MMAttribute):
-        attrvalue=attrvalue.get_value()
-
-    #Fetch exists attribute if any to preserve value type.
-    if attrname in self:
-        valobj = self[attrname]
-        if valobj  is not None:
-            if valobj.get_owner() is not self:
-                valobj =valobj.copy(self,attrname)
-            valobj.set_value(attrvalue)
-    else:
-        #No existing attr create a new one
-        valobj  = MMAttribute(attrname,attrvalue,self)
     
+    attrobj = self._set_item(attrname,attrvalue)
     #Get AttributeValue type object - so it is ready for the storage engine.
-    attrvalue = valobj.get_value()
-    #Write back to store engine
-    self._set_item(attrname,valobj) 
+    attrvalue = attrobj.get_value()
     self.store.SetAttribute(attrname,attrvalue.get_type(),attrvalue.get_parts())    
 
   def __delitem__(self, attrname):

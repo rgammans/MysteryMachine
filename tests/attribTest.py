@@ -25,7 +25,9 @@ from MysteryMachine.schema.MMAttributeValue import MMAttributeValue
 from MysteryMachine.schema.MMAttribute import * 
 import unittest
 
-class DummyPart:
+from types import NoneType
+
+class DummyPart(object):
     def __init__(self,x):
         self.x=x
     def get_value(self):
@@ -41,8 +43,24 @@ class fakeParent:
         self.updated = True
     def resetUpdate(self):
         self.updated = False
+
+
+class container(MMAttributeContainer):
+    def __getitem__(self,i):
+        return self._get_item(i,NoneType)
+    def __setitem__(self,k,v):
+        return self._set_item(k,v)
+    def __delitem__(self,i):
+        return self._invaldate_item(i)
+
+    def __iter__(self):
+        for k in self.cache.keys():
+            yield k
+
 class attribTest(unittest.TestCase):
-    
+    def setUp(self):
+        StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg", "--testmode"])    
+ 
     def testCreate(self):
        attr=MMAttribute("document","test\n----\n\n\nA Message",None)
        #sys.stderr.write(str(attr.get_raw_rst))
@@ -74,6 +92,22 @@ class attribTest(unittest.TestCase):
        v1 = attr.get_value()
        self.assertEquals("diff",str(v1))
 
+    def testAttribContainer(self):
+        m = container()
+        #Keep the attrib around so it stays in the cache.
+        a = m._set_item("name","str")
+        self.assertEquals(type( a ) , MMAttribute )
+        self.assertEquals(type( m._get_item("name",DummyPart,"Crap")) , MMAttribute )
+        self.assertEquals(str(a),"str")
+        self.assertEquals( m._get_item("name",DummyPart,"Crap") , a )
+        b = m._set_item("name","no string")
+        self.assertEquals(a,b)
+        c = m._set_item("notname","foo")
+        self.assertNotEquals(b,c)
+        b = m._set_item("name",c)
+        self.assertEquals(str(a),"foo")
+
+        
 
 def getTestNames():
     return [ 'attribTest.attribTest' ] 

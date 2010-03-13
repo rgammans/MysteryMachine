@@ -31,6 +31,43 @@ import sys
  
 import logging
  
+
+
+
+class MMAttributeContainer(MMContainer):
+    """
+    This is specialisation of MMContainer for objects which contain 
+    MMAttributes
+    """
+    def _set_item(self,attrname  , attrvalue ):
+        """
+        Handle MMAttribute assignment.
+
+        This needs to see if there is an existing attribute, and set it value
+        or create a new Attribute object.
+        """
+        #Deal only with any value part of an existing attribute.
+        #  to create a reference caller should use getRef()
+        if isinstance(attrvalue,MMAttribute):
+            attrvalue=attrvalue.get_value()
+
+        #Fetch exists attribute if any to preserve value type.
+        if attrname in self:
+            attrobj = self[attrname]
+            #This a test for and old an buggy behaviours.
+            if  ( attrobj  is None ) or ( attrobj.get_owner() is not self ):
+                raise RuntimeError("Attributes should be know their reference owners")
+
+            attrobj.set_value(attrvalue)
+        else:
+            #No existing attr create a new one
+            attrobj  = MMAttribute(attrname,attrvalue,self)
+    
+        #Write back to the cache
+        super(MMAttributeContainer,self)._set_item(attrname,attrobj) 
+        return attrobj
+
+
 class MMAttribute (MMBase):
 
   """
@@ -145,3 +182,4 @@ class MMAttribute (MMBase):
 
   def get_parser(self):
     return self.owner.get_parser()
+
