@@ -40,6 +40,7 @@ class MMAttributeContainer(MMContainer):
     MMAttributes
     """
     def _set_item(self,attrname  , attrvalue ):
+
         """
         Handle MMAttribute assignment.
 
@@ -68,7 +69,7 @@ class MMAttributeContainer(MMContainer):
         return attrobj
 
 
-class MMAttribute (MMBase):
+class MMAttribute (MMAttributeContainer):
 
   """
    This class represents an attribute of an MMObject in a MMSystem, such attributes
@@ -97,77 +98,78 @@ class MMAttribute (MMBase):
   """
     
   def __init__(self,name,value,owner , copy = True):
-    self.name=name
-    self.valueobj=CreateAttributeValue(value , copy)
-    self.owner=owner
-    self.logger    = logging.getLogger("MysteryMachine.schema.MMAttribute")
-    #self.logger.setLevel(logging.DEBUG)
+     super(MMAttribute,self).__init__(self,name,value,owner,copy)
+     self.name=str(name)
+     self.valueobj=CreateAttributeValue(value , copy)
+     self.owner=owner
+     self.logger    = logging.getLogger("MysteryMachine.schema.MMAttribute")
+     #self.logger.setLevel(logging.DEBUG)
 
   def get_owner(self):
-    return self.owner
+     return self.owner
 
   def __str__(self):
-    """
+     """
 
-    @return string :
-  
-    """
-    return self.get_raw_rst() 
+     @return string :
+   
+     """
+     return self.get_raw_rst() 
 
   def __repr__(self):
-    """
-
-    @return string :
-    @author
-    """
-    return repr(self.owner)+":"+self.name
+     """
+ 
+     @return string :
+     @author
+     """
+     return repr(self.owner)+":"+self.name
 
   def GetFullExpansion(self):
-    """
-    This function returns a Fully expanded string represenation of the Attribute.
+     """
+     This function returns a Fully expanded string represenation of the Attribute.
 
-    @return string :
-    """
-    return self.get_parser().GetString(self.get_raw_rst(),repr(self))
+     @return string :
+     """
+     return self.get_parser().GetString(self.get_raw_rst(),repr(self))
 
   #Special case to override the definiton in Base.
   def _validate(self):
-    """
+     """
 
-    @return bool :
-    @author
-    """
-    self.valueobj._validate(self)
+     @return bool :
+     @author
+     """
+     self.valueobj._validate(self)
  
   def get_value(self):
-    return self.valueobj
+     return self.valueobj
 
   def set_value(self,val):
-    #Quit early in case of No-Op - triggered by _writeback.
-    if val is self.valueobj: return
+     #Quit early in case of No-Op - triggered by _writeback.
+     if val is self.valueobj: return
 
-    try:
+     try:
         self.valueobj.assign(val)
-    except:
+     except:
         self.valueobj = CreateAttributeValue(val)
-    self._writeback()
+     self._writeback()
 
   #This is intend for method lookup
   def __getattr__(self,name):
-      self.logger.debug("dereffing %s for %s" % (name , repr(self.owner)))
+      self.logger.debug("dereffing %s for %s" % (name , repr(self)))
       if name in self.valueobj.exports:
-        return functools.partial(getattr(self.valueobj,name),self)
+        return functools.partial(getattr(self.valueobj,name),obj = self)
       else: raise AttributeError("%s not in %s"% ( name,repr(self) ) )
 
   def _writeback(self):
      self.owner[self.name] = self.valueobj
 
   def getRef(self):
-    """
-    @returns: A reference to this attribute which can be used
-             instead of the value.
-    """    
-    return MMAttributeValue_MMRef(value = self)
+     """
+     @returns: A reference to this attribute which can be used
+              instead of the value.
+     """    
+     return MMAttributeValue_MMRef(value = self)
 
   def getSelf(self):
      """
@@ -181,5 +183,37 @@ class MMAttribute (MMBase):
 
 
   def get_parser(self):
-    return self.owner.get_parser()
+     return self.owner.get_parser()
+
+  def _makeattr(self,name):
+     return MMAttribute(name,self.valueobj.__getitem__(name,obj= self),self,False)
+
+  def __getitem__(self,name):
+     if '__getitem__' not in self.valueobj.exports:
+        raise TypeError("%s is not indexable (MM)" % self.valueobj.__class__)
+     
+     return self._get_item(name,self._makeattr,name)
+  
+  def __setitem__(self,name,value):
+     if '__setitem__' not in self.valueobj.exports:
+        raise TypeError("%s is not indexable (MM)" % self.valueobj.__class__)
+     
+     attr = self._set_item(name,value)
+     self.valueobj.__setitem__(name,attr.get_value(), obj = self)
+     self._writeback()
+
+  def __delitem__(self,name):
+     if '__delitem__' not in self.valueobj.exports:
+       raise TypeError("%s is not indexable (MM)" % self.valueobj.__class__)
+     
+     self._invalidate_item(name)
+     self.valueobj.__delitem__(name,obj = self )
+     self._writeback()
+
+  def __contains__(self,name):
+     if '__contains__' not in self.valueobj.exports:
+       raise TypeError("%s is not indexable (MM)" % self.valueobj.__class__)
+     
+     return self.valueobj.__contains__(name,obj = self)
+
 

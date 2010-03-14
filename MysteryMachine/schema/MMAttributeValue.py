@@ -243,6 +243,7 @@ class MMAttributeValue (MMBase ):
 
 
   def __eq__(self,other):
+     if not isinstance(other,MMAttributeValue): return False 
      return self.get_type() == other.get_type() and self.get_parts() == other.get_parts()
 
   def __hash__(self):
@@ -287,25 +288,25 @@ class MMAttributeValue_MMRef(MMAttributeValue):
         #All ok.
         self.exports += [ "get_object" ]
 
-    def _validate(self, attr = None):
+    def _validate(self, obj = None):
         objref = None
         #try:
-        objref = self.get_object( attr )
+        objref = self.get_object( obj )
         #except exceptions.Exception , e:
         #    logging.warn(e.msg())
         #    objref = None
         return not objref is None
 
-    def get_object(self, attr = None ):
+    def get_object(self, obj = None ):
         """
         This method may raise and exception if the
         own_obj is not valid or the value will not validate.
         """
         ##TODO Consider caching the return result.
   #      self.logger.debug( "refobj->%s<--" % attr)
-        pstr = self.get_raw(attr)
+        pstr = self.get_raw(obj)
         self.logger.debug( "MMA-O:go:pstr  ->%s<--" % pstr)
-        objref = Grammar(attr).parseString(pstr)[0]
+        objref = Grammar(obj).parseString(pstr)[0]
   #      self.logger.debug( "ret = %s, class = %s" % (objref , objref.__class__ ))
         return objref
 
