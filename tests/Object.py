@@ -123,7 +123,15 @@ class ObjectTests(unittest.TestCase):
         self.assertTrue("name" in self.object)
         self.assertTrue("attr1" in self.object)
         self.assertEquals(len(list(iter(self.object))),2)
-       
+        names = [ "attr1" , "name" ]
+        fndNames= []
+        for k,v in self.object:
+            self.assertTrue(k in names)
+            self.assertFalse(k in fndNames)
+            fndNames += [ k ]
+            self.assertTrue(isinstance( v, MMAttribute))
+            self.assertEquals(v,self.object[k])
+
 def getTestNames():
 	return [ 'Object.ObjectTests' ] 
 

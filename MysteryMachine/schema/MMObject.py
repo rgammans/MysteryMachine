@@ -155,7 +155,7 @@ class MMObject (MMAttributeContainer):
   
   def __iter__(self):
         for a in self.store.EnumAttributes():
-            if a[0] != '.': yield self[a]
+            if a[0] != '.': yield ( a,  self[a] )
 
   def __contains__(self,name):
        a = self.store.HasAttribute(name) 

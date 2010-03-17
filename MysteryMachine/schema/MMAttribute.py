@@ -160,7 +160,7 @@ class MMAttribute (MMAttributeContainer):
 
   #This is intend for method lookup
   def __getattr__(self,name):
-      self.logger.debug("dereffing %s for %s" % (name , repr(self)))
+      self.logger.debug("dereffing attr %s for %s" % (name , repr(self)))
       if name in self.valueobj.exports:
         return functools.partial(getattr(self.valueobj,name),obj = self)
       else: raise AttributeError("%s not in %s"% ( name,repr(self) ) )
@@ -180,6 +180,8 @@ class MMAttribute (MMAttributeContainer):
      Override the basic get self so will find deref the attribute
      to a stored object.
      """
+     
+     self.logger.debug("dereffing ref %s " % repr(self))
      if "get_object" in self.valueobj.exports:
         return self.valueobj.get_object(self)
      
@@ -224,6 +226,6 @@ class MMAttribute (MMAttributeContainer):
      if '__iter__' not in self.valueobj.exports:
        raise TypeError("%s is not iterable (MM)" % self.valueobj.__class__)
      
-     return self.valueobj.__iter__(obj = self)
-
-
+     for name in self.valueobj.__iter__(obj = self):
+       yield (name  , self._get_item(name,self._makeattr,name) )
+  

@@ -273,7 +273,7 @@ class MMSystem (MMContainer):
 
   def __iter__(self):
     for k in self.EnumContents():
-        yield self[k]
+        yield (k , self[k] )
 
   def __getitem__(self,obj):
       path = obj.split(":")

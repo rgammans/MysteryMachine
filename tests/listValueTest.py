@@ -145,6 +145,18 @@ class ListValTest(unittest.TestCase):
                    
         self.assertRaises(TypeError,test,attr)
 
+        ###Test itertation..
+        names = [ 0,1,2,3 ]
+        fndNames= []
+        for k,v in attr:
+            self.assertTrue(k in names)
+            self.assertFalse(k in fndNames)
+            fndNames += [ k ]
+            self.assertTrue(isinstance( v, MMAttribute))
+            self.assertEquals(v,attr[k])
+
+
+
 
     def testKey(self):
         a = ListKey()

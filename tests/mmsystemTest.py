@@ -87,7 +87,17 @@ class sysTests(unittest.TestCase):
    
         o21=self.sys.NewObject("Two",None)
     
+        names = list(self.sys.EnumContents()) 
+        fndNames= []
+        for k,v in self.sys:
+            self.assertTrue(k in names)
+            self.assertFalse(k in fndNames)
+            fndNames += [ k ]
+            self.assertTrue(isinstance( v, MMObject))
+            self.assertEquals(v,self.sys[k])  
+
     def testLoaded(self):
+
         # __init__ del calls them ok.
         # Test open / create semanitcs.
         self.assertEquals(UnEscapeSystemUri(EscapeSystemUri("dict:test")),"dict:test")

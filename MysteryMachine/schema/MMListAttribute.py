@@ -71,8 +71,8 @@ class MMListAttribute(MMAttributeValue):
         return self._convert_to_val(key,self.parts[key],obj)        
 
     def __iter__(self, obj = None):
-        for key in sorted(self.parts.keys()):
-            yield self._convert_to_val(key,self.parts[key],obj)
+        for key in xrange(len(self.parts)):
+            yield key 
 
     def __setitem__(self,index,value , obj = None):
         key = self._get_key(index,obj)
