@@ -224,6 +224,6 @@ class MMAttribute (MMAttributeContainer):
      if '__iter__' not in self.valueobj.exports:
        raise TypeError("%s is not iterable (MM)" % self.valueobj.__class__)
      
-     return self.valueobj.__iter__(name,obj = self)
+     return self.valueobj.__iter__(obj = self)
 
 

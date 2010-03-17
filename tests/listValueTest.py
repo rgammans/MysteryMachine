@@ -102,9 +102,12 @@ class ListValTest(unittest.TestCase):
         self.assertEquals(str(attr.__getitem__(1)) , "second" )        
         self.assertEquals(str(attr[1]) ,"second" )        
         self.assertEquals(str(attr["1"]) ,"second" )        
+        self.assertTrue("second" in attr )
         self.assertEquals(str(attr["-1"]) ,"third" )        
         del attr["1"]
         self.assertEquals(attr.count() ,2 )        
+        self.assertEquals(len(list(iter(attr))),2)
+        self.assertFalse("second" in attr )
         self.assertEquals(str(attr["1"]) ,"third" )        
         #Check writeback occurred.
         self.assertEquals(obj["test"],val)
