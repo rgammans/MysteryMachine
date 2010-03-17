@@ -47,6 +47,7 @@ class fakeParent:
 
 class container(MMAttributeContainer):
     def __getitem__(self,i):
+        if i not in self.cache: raise KeyError(i)
         return self._get_item(i,NoneType)
     def __setitem__(self,k,v):
         return self._set_item(k,v)

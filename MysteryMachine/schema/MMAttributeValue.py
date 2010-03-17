@@ -105,6 +105,8 @@ def FindBestValueType(atype):
     modlogger.debug("candiate attrval's %s" % candidates)
     rlist = sorted(candidates,key=operator.itemgetter(1),
                     reverse= True )
+    
+    if len(rlist) == 0: raise TypeError("No schema type for %s" % atype)
     return rlist[0][0]
 
 

@@ -52,10 +52,11 @@ class MMListAttribute(MMAttributeValue):
             for item in self.value:
                 self.append(item)
 
-        self.exports+= [ "__contains__","__getitem__","__setitem__","__delitem__","count","extend","insert","append" ]
+        self.exports+= [ "__iter__" , "__contains__","__getitem__","__setitem__","__delitem__","count","extend","insert","append" ]
 
-    def __contains__(self,x , obj = None ):
-        return x in self.parts.values()
+    def __contains__(self,val , obj = None ):
+        val = self._convert_to_str(None,val,obj)
+        return val in self.parts.values()
 
 
     def _get_key(self,index,obj = None):
@@ -67,7 +68,11 @@ class MMListAttribute(MMAttributeValue):
 
     def __getitem__(self,index , obj = None):
         key = self._get_key(index,obj)
-        return self._convert_to_val(key,self.parts[key])        
+        return self._convert_to_val(key,self.parts[key],obj)        
+
+    def __iter__(self, obj = None):
+        for key in sorted(self.parts.keys()):
+            yield self._convert_to_val(key,self.parts[key],obj)
 
     def __setitem__(self,index,value , obj = None):
         key = self._get_key(index,obj)

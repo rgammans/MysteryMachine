@@ -64,6 +64,8 @@ class ListValTest(unittest.TestCase):
         self.assertEquals(str(val[3])   , "third")      
         self.assertEquals(str(val[4])   , "fourth")      
         self.assertEquals(val.count(),5)
+        self.assertTrue("third" in val)
+        self.assertEquals(len(list(iter(val))),5)
         val.insert(0,"zeroth")
         self.assertEquals(str(val[0] )  , "zeroth")      
         self.assertEquals(str(val[1] )  , "first")      
@@ -71,13 +73,17 @@ class ListValTest(unittest.TestCase):
         self.assertEquals(str(val[3] ) ,  "2 and half'th")
         self.assertEquals(str(val[4] )  , "third")      
         self.assertEquals(str(val[5] )  , "fourth")  
+        self.assertTrue("third" in val)
+        self.assertTrue("zeroth" in val)
         self.assertEquals(val.count(),6)
+        self.assertEquals(len(list(iter(val))),6)
         del val[4]
         self.assertEquals(str(val[0] )  , "zeroth")      
         self.assertEquals(str(val[1] )  , "first")      
         self.assertEquals(str(val[2] )  , "second")      
         self.assertEquals(str(val[3])  ,  "2 and half'th")
         self.assertEquals(str(val[4])   , "fourth")  
+        self.assertFalse("third" in val)
         self.assertEquals(val.count(),5)
         val[3]="third" 
         self.assertEquals(str(val[0] )  , "zeroth")      
@@ -86,6 +92,7 @@ class ListValTest(unittest.TestCase):
         self.assertEquals(str(val[3] )  ,  "third")
         self.assertEquals(str(val[4])   , "fourth")  
         self.assertEquals(val.count(),5)
+        self.assertEquals(len(list(iter(val))),5)
 
     def testAttributeForward(self):
         val  = MMListAttribute(value =  [ "first" , "second" , "third" ] )

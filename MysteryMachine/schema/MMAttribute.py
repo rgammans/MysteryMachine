@@ -51,19 +51,23 @@ class MMAttributeContainer(MMContainer):
         #  to create a reference caller should use getRef()
         if isinstance(attrvalue,MMAttribute):
             attrvalue=attrvalue.get_value()
-
+       
+        overwrite = False
+        attrobj   = None
         #Fetch exists attribute if any to preserve value type.
-        if attrname in self:
+        try:
             attrobj = self[attrname]
-            #This a test for and old an buggy behaviours.
-            if  ( attrobj  is None ) or ( attrobj.get_owner() is not self ):
-                raise RuntimeError("Attributes should be know their reference owners")
-
-            attrobj.set_value(attrvalue)
-        else:
-            #No existing attr create a new one
+            overwrite = True
+        except KeyError:
+            pass
+        
+        #Check the attribute didn't come from a parent.
+        if  ( attrobj  is None ) or ( attrobj.get_owner() is not self ):
             attrobj  = MMAttribute(attrname,attrvalue,self)
-    
+        
+        #Update Attribute if necessary
+        if overwrite: attrobj.set_value(attrvalue )
+        
         #Write back to the cache
         super(MMAttributeContainer,self)._set_item(attrname,attrobj) 
         return attrobj
@@ -144,14 +148,14 @@ class MMAttribute (MMAttributeContainer):
   def get_value(self):
      return self.valueobj
 
-  def set_value(self,val):
+  def set_value(self,val, copy = True):
      #Quit early in case of No-Op - triggered by _writeback.
      if val is self.valueobj: return
 
      try:
         self.valueobj.assign(val)
      except:
-        self.valueobj = CreateAttributeValue(val)
+        self.valueobj = CreateAttributeValue(val,copy)
      self._writeback()
 
   #This is intend for method lookup
@@ -212,8 +216,14 @@ class MMAttribute (MMAttributeContainer):
 
   def __contains__(self,name):
      if '__contains__' not in self.valueobj.exports:
-       raise TypeError("%s is not indexable (MM)" % self.valueobj.__class__)
+       raise TypeError("%s is not iterable (MM)" % self.valueobj.__class__)
      
      return self.valueobj.__contains__(name,obj = self)
+
+  def __iter__(self):
+     if '__iter__' not in self.valueobj.exports:
+       raise TypeError("%s is not iterable (MM)" % self.valueobj.__class__)
+     
+     return self.valueobj.__iter__(name,obj = self)
 
 

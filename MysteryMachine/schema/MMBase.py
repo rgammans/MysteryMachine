@@ -142,11 +142,6 @@ class MMBase(object):
     ##Actually a NULL op in the general case. Overriden where it matters. 
     return self
 
-  def __iter__(self):
-    return []
-
-
-
 
 class MMContainer(MMBase):
     """

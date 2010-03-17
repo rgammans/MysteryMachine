@@ -117,6 +117,12 @@ class ObjectTests(unittest.TestCase):
         self.assertEquals(self.object["name"].GetFullExpansion(), "other")
 
 
+    def testIterIf(self):
+        self.object["Attr1"] = "some data"
+        self.object["name"]  = "fred blogs"
+        self.assertTrue("name" in self.object)
+        self.assertTrue("attr1" in self.object)
+        self.assertEquals(len(list(iter(self.object))),2)
        
 def getTestNames():
 	return [ 'Object.ObjectTests' ] 

@@ -72,6 +72,7 @@ class sysTests(unittest.TestCase):
 
         allobjs = list(self.sys.EnumContents())
         self.assertEqual(len(allobjs),3)
+        self.assertEquals(len(list(iter(self.sys))),3)
         for o in allobjs:
             self.assertNotEquals(type(self.sys[o]),type(None))
         

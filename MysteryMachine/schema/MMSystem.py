@@ -125,7 +125,8 @@ class MMSystem (MMContainer):
     @author
     """
     return self.store.EnumObjects(self.canonicalise(category))
-   
+  
+ 
   def get_object(self, cat , id):
     """
      Returns the specified object.
@@ -269,6 +270,10 @@ class MMSystem (MMContainer):
         for obj in self.EnumObjects(cat):
             yield cat + ":" + obj
 
+
+  def __iter__(self):
+    for k in self.EnumContents():
+        yield self[k]
 
   def __getitem__(self,obj):
       path = obj.split(":")
