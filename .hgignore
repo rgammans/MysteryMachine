@@ -1,6 +1,10 @@
 .*\.py[co~]$
 .*~
-^generated/
+^generated/.*
 .*\.sw[ponm]$
+^build/.*
+.egg-info
+^paver-minilib.zip$
+^dist/
 \.orig$
 \.old$
