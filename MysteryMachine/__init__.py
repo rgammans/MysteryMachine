@@ -214,7 +214,8 @@ class _LibraryContext(object):
     
         #Define the logger early so that it is ready for use if not configured.
         self.logger = logging.getLogger("MysteryMachine")
-    
+        logging.getLogger("").addHandler(logging.StreamHandler(sys.stderr)) 
+
         self.cmdline_options,self.args=_parse_options(args)
 
         ##Initiliase Config engine.
