@@ -27,7 +27,8 @@ from MysteryMachine.ExtensionSecureID import *
 import unittest
 
 import types
-
+import logging
+import sys
 
 ########################################
 ## DANGER, Will Robinson,  DANGER 
@@ -42,6 +43,8 @@ import types
 ## I suspect just commenting out the type tests
 ## will still leave the a valuable test - as all the 
 ## dict actions are sepearatley tested... But still
+
+logging.getLogger("").addHandler(logging.StreamHandler(sys.stderr)) 
 
 class ConfigDictTest(unittest.TestCase):
     def setUp(self):
@@ -85,6 +88,23 @@ class ConfigDictTest(unittest.TestCase):
             self.assertFalse(self.cfg["testsection"] is i)
         for i in self.cfg["testlist"]:
             self.assertFalse(self.cfg["testlist"] is i)       
+
+    def testNoFile(self):
+        try:
+            os.remove("/tmp/mmtest.yaml") 
+        except:
+            pass
+        cfg= ConfigYaml(False)
+        cfg.read("/tmp/mmtest.yaml")
+        cfg['test1'] ="foo"
+        cfg['test2'] = {'a':'2' }
+        cfg.write()
+        cfg = None
+        cfg1 = ConfigYaml(False)
+        cfg1.read("/tmp/mmtest.yaml")
+        self.assertEquals(cfg1['test1'],"foo")
+        self.assertEquals(cfg1['test2'],{'a':'2' })
+     
 
     def testTestMode(self):
         #Set testmode

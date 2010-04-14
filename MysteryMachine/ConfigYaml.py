@@ -42,6 +42,7 @@ based on python's Yaml module.
 """
 
 import yaml
+import logging
 
 def argshift(args,default):
     """
@@ -63,8 +64,8 @@ class ConfigYaml(object):
     def __init__(self,*args,**kwargs):
         self.persistent,args = argshift(args,True)
         self.readonly ,args = argshift(args,False)
+        self.logger = logging.getLogger("MysteryMachine.ConfigYaml") 
  
-        
     def __setitem__(self, name, value):
         if self.readonly: raise ReadOnly()  
         else: self.modified=True
@@ -97,10 +98,20 @@ class ConfigYaml(object):
 
     def read(self,filename):
         self.filename=filename
-        f = file(self.filename,"r")
-        self.cfg = yaml.safe_load(f)
+        try:
+            f = file(self.filename,"r")
+            self.cfg = yaml.safe_load(f)
+        except IOError, e:
+            self.logger.warn(str(e))
+            self.logger.warn("Using empty config")
+            self.cfg = { }
+            #If not FILE NOT FOUND , diable writeback.
+            # to avoid clobbering an otherwise good config.
+            if e.errno != 2: self.filename=None
+    
     
     def write(self):
         #Should probably use SafeFile from the store here.
-        f = file(self.filename,"w")
-        yaml.dump(self.cfg,f)
+        if self.filename:
+            f = file(self.filename,"w")
+            yaml.dump(self.cfg,f)
