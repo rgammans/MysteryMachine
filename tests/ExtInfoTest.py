@@ -68,7 +68,7 @@ class ExtInfoTest(unittest.TestCase):
 			self.plugin_info[0] = self.simplePluginManager.getPluginsOfCategory(sole_category)[0]
 			self.plugin_info[1] = self.simplePluginManager.getPluginsOfCategory(sole_category)[1]
 			# test that the name of the plugin has been correctly defined
-			self.assertEqual(self.plugin_info[0].name,"FirstPlugin")
+			self.assertTrue("FirstPlugin" in [x.name for x in  self.plugin_info])
 			self.assertEqual(sole_category,self.plugin_info[0].category)
 		else:
 			self.assert_(True)
