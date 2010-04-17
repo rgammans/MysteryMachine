@@ -48,6 +48,8 @@ class ExtensionLib(object):
 
   """
   def __init__(self,cfg):
+    if not 'extensions' in cfg:
+        cfg['extensions'] = {'path':[] , 'trusted': [] }
     self.plugin_man =TrustedPluginManager.TrustedPluginManager(
 			      directories_list=cfg['extensions']['path'],
                   plugin_info_ext="mm-plugin",  
