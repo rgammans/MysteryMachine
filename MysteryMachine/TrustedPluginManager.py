@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#   			TrustedPluginManager.py - Copyright roger
+#               TrustedPluginManager.py - Copyright roger
 # 
 #
 #    This program is free software; you can redistribute it and/or modify
@@ -40,29 +40,29 @@ class TrustedPluginManager (FilteredPluginManager):
   trustList  (private)
 
   """
-	
+    
   def __init__(self, 
-		decorated_manager=None,
-		categories_filter={"Default":IPlugin}, 
-		directories_list=None, 
-		plugin_info_ext="mm-plugin",
-		trustList=None):
-		"""
-		Create the plugin manager and record the trustlists 
-		that will be used afterwards.
-		
-		"""
-		# Create the base decorator class
-		if type(directories_list) in types.StringTypes:
-			directories_list = [ directories_list ] 
+        decorated_manager=None,
+        categories_filter={"Default":IPlugin}, 
+        directories_list=None, 
+        plugin_info_ext="mm-plugin",
+        trustList=None):
+        """
+        Create the plugin manager and record the trustlists 
+        that will be used afterwards.
+        
+        """
+        # Create the base decorator class
+        if type(directories_list) in types.StringTypes:
+            directories_list = [ directories_list ] 
 
-		FilteredPluginManager.__init__(self,decorated_manager,
-										categories_filter,
-										directories_list,
-										plugin_info_ext)
-		
-    		self.setPluginInfoClass(ExtensionInfo)
-    		self.trustlist=trustList
+        FilteredPluginManager.__init__(self,decorated_manager,
+                                        categories_filter,
+                                        directories_list,
+                                        plugin_info_ext)
+        
+        self.setPluginInfoClass(ExtensionInfo)
+        self.trustlist=trustList
 
   def isPluginOk(self,  plugin_info ):
     """
