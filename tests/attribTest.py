@@ -60,7 +60,7 @@ class container(MMAttributeContainer):
 
 class attribTest(unittest.TestCase):
     def setUp(self):
-        StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg", "--testmode"])    
+        StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])    
  
     def testCreate(self):
        attr=MMAttribute("document","test\n----\n\n\nA Message",None)

@@ -47,7 +47,7 @@ class ObjectProxy(dict):
     
 class ListValTest(unittest.TestCase):
     def setUp(self):
-       StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
+       StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
     
     def testList(self):
         val  = MMListAttribute(value =  [ "first" , "second" , "third" ] )

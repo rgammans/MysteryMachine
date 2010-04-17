@@ -28,7 +28,7 @@ import unittest
 class ConfigDictTest(unittest.TestCase):
     def setUp(self):
         self.cfg= pyConfigDict(False)
-        self.cfg.read("test.cfg")
+        self.cfg.read("tests/test.cfg")
         pass
     
     def testRead(self):

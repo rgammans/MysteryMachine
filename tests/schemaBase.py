@@ -46,7 +46,7 @@ class bar(object):
 
 class BaseTest(unittest.TestCase):
     def testInit(self):
-        with StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg"]) as g:
+        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml"]) as g:
             if not bar in foo.__bases__: 
                 foo.__bases__ +=  ( bar, )
             g.GetExtLib().register_helper(foo,bar)
@@ -56,7 +56,7 @@ class BaseTest(unittest.TestCase):
             self.assertTrue(True)
 
     def testExtensions(self):
-         with StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg"]) as g:
+         with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml"]) as g:
             if not bar in foo.__bases__: 
                 foo.__bases__ +=  ( bar, )
             g.GetExtLib().register_helper(foo,bar)
@@ -67,7 +67,7 @@ class BaseTest(unittest.TestCase):
 
 
     def testCanicalise(self):
-        with StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg"]) as g:
+        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml"]) as g:
             m  = MMBase()
             self.assertTrue("hi",m.canonicalise("Hi"))
             self.assertTrue("hi",m.canonicalise("Hi_world"))
@@ -86,7 +86,7 @@ class BaseTest(unittest.TestCase):
             self.assertRaises(ValueError,m.canonicalise,"ss=")
 
     def testContainer(self):
-        with StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg"]) as g:
+        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml"]) as g:
             m = MMContainer()
             v = bar("one")
 

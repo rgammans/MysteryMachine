@@ -36,7 +36,7 @@ class fakeSys(fakeBase):
 
 class sysTests(unittest.TestCase):
     def setUp(self):
-        StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
+        StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
 
     def testRegistration(self):
         self.assertRaises(KeyError,GetStore,"test:")

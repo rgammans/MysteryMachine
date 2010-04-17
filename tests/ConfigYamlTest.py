@@ -46,7 +46,7 @@ import sys
 
 logging.getLogger("").addHandler(logging.StreamHandler(sys.stderr)) 
 
-class ConfigDictTest(unittest.TestCase):
+class ConfigYamlTest(unittest.TestCase):
     def setUp(self):
         self.id = ExtensionSecureID.fromPathName("tests/test.yaml")
         self.cfg= ConfigYaml(False)
@@ -94,13 +94,13 @@ class ConfigDictTest(unittest.TestCase):
             os.remove("/tmp/mmtest.yaml") 
         except:
             pass
-        cfg= ConfigYaml(False)
+        cfg= ConfigYaml()
         cfg.read("/tmp/mmtest.yaml")
         cfg['test1'] ="foo"
         cfg['test2'] = {'a':'2' }
         cfg.write()
         cfg = None
-        cfg1 = ConfigYaml(False)
+        cfg1 = ConfigYaml()
         cfg1.read("/tmp/mmtest.yaml")
         self.assertEquals(cfg1['test1'],"foo")
         self.assertEquals(cfg1['test2'],{'a':'2' })
@@ -108,16 +108,19 @@ class ConfigDictTest(unittest.TestCase):
 
     def testTestMode(self):
         #Set testmode
-        self.cfg.testmode()
+        cfg= ConfigYaml()
+        cfg.read("/tmp/mmtest.yaml")
+        cfg.testmode()
         #Make change
-        self.cfg["new"]="Really!"
+        cfg["new"]="Really!"
         #Release the handle
-        self.cfg = None
-        newid = ExtensionSecureID.fromPathName("tests/test.yaml")
-        self.assertEquals(newid,self.id)
+        cfg = None
+        cfg1=ConfigYaml()
+        cfg1.read("/tmp.mmtest.yaml")
+        self.assertRaises(KeyError,lambda x:cfg1[x],"new")
 
 def getTestNames():
-	return [ 'ConfigDictTest.ConfigDictTest' ] 
+	return [ 'ConfigYamlTest.ConfigYamlTest' ] 
 
 if __name__ == '__main__':
     unittest.main()

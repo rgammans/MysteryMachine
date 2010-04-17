@@ -29,7 +29,7 @@ import pyparsing
 
 class ParsersTests(unittest.TestCase):
     def setUp(self):
-        StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
+        StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
         self.sys=MMSystem.Create("dict:test")
         self.sys.NewCategory("template")
         self.p=self.sys.NewObject("template")

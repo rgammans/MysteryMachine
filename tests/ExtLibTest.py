@@ -15,7 +15,6 @@
 #    You should have received a copy of the GNU General Public License along
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-#
 # 
 # This file was generated on Tue Dec 30 2008 at 15:39:18
 # The original location of this file is /home/roger/sources/MysteryMachine/generated/VersionNr.py
@@ -42,7 +41,7 @@ class ExtensionLibTest(unittest.TestCase):
         self.logger = logging.getLogger("")
         
     def gettrustedlist(self):
-      with StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg", "--testmode"])  as g:
+      with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])  as g:
         self.extlib = g.GetExtLib()
         plugins = []
         for p in self.extlib.get_extension_list():
@@ -51,7 +50,7 @@ class ExtensionLibTest(unittest.TestCase):
         return plugins
           
     def testTrusted(self):
-      with StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg", "--testmode"])  as g:
+      with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])  as g:
         self.extlib = g.GetExtLib()
         # check the number of plugins
         plugins = self.gettrustedlist()
@@ -60,7 +59,7 @@ class ExtensionLibTest(unittest.TestCase):
         self.assertEqual(plugins[0].name,"FirstPlugin")
 
     def testRejected(self):
-      with StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg", "--testmode"])  as g:
+      with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])  as g:
         self.extlib = g.GetExtLib()
         #Check plugins accestp/reject are the ones we expect.
         rejects = []
@@ -73,7 +72,7 @@ class ExtensionLibTest(unittest.TestCase):
 
 
     def testAddTrust(self):
-      with StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg", "--testmode"])  as g:
+      with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])  as g:
         self.extlib = g.GetExtLib()
         #Add second to trust list
         self.logger.debug("starting addtrust======")
@@ -87,7 +86,7 @@ class ExtensionLibTest(unittest.TestCase):
         self.assertEqual(len(plugins),2)
 
     def testHelpers(self):
-      with StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg", "--testmode"])  as g:
+      with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])  as g:
         self.extlib = g.GetExtLib()
         self.extlib.register_helper("bar",foo);
         self.assertEqual(len(self.extlib.get_helpers_for("bar")),1)

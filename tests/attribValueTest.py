@@ -58,7 +58,7 @@ class SystemProxy:
     
 class attribValTest(unittest.TestCase):
     def setUp(self):
-       StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg", "--testmode"]) 
+       StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
        self.objA=ObjectProxy("Proxy", "1", name="TestName",title="A Title")
        self.objB=ObjectProxy("Proxy", "2", name="WrongName",title="A Title")
     

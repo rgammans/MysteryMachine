@@ -60,7 +60,7 @@ class BasicStore(Base):
 
 class hgstoreTests(scmTests, unittest.TestCase):
     def setUp(self):
-        StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg", "--testmode"])
+        StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])
         try:
             testpath = tempfile.mkdtemp("mysmachg")
         except:

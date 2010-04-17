@@ -33,7 +33,7 @@ import unittest
 
 class docTest(unittest.TestCase):
     def setUp(self):
-        self.app = StartApp(["--cfgengine=ConfigDict", "--cfgfile=test.cfg", "--testmode"]).__enter__()
+        self.app = StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]).__enter__()
  
         self.s=self.app.CreateNew(scheme="dict")
         self.s.NewCategory("character")

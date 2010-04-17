@@ -111,6 +111,7 @@ class ConfigYaml(object):
     
     
     def write(self):
+        if not self.persistent: return
         #Should probably use SafeFile from the store here.
         if self.filename:
             f = file(self.filename,"w")
