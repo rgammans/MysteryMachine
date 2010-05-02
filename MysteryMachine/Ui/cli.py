@@ -23,11 +23,62 @@ import sys
 import bpython.cli
 
 import MysteryMachine
+from MysteryMachine.schema.MMAttribute import MMAttribute
+from MysteryMachine.schema.MMAttributeValue import MakeAttributeValue
 import mercurial
+
+import tempfile
+import os
+
+import curses
 
 def closed(self):
     """A fixup function so mercurial and bpython play well together"""
     return False
+
+
+def launch_edit(filename):
+    """
+    Starts a text editor on a named file
+    """
+    if sys.platform == "win":
+        editor = os.getenv("EDITOR","edit")
+    else:
+        editor = os.getenv("EDITOR","vi")
+        
+    #Save and restore curses mode.
+    curses.reset_shell_mode()
+    os.system(editor +" "+ filename)
+    curses.reset_prog_mode()
+
+def edit_str(string):
+    """
+    Launches a text editor on a tempory file conatinaing string.
+    Returns the contents of the file when the editor is closed.
+    """
+    f = tempfile.NamedTemporaryFile(suffix=".attribute",mode="w+")
+    f.write(string)
+    f.flush()
+    launch_edit(f.name)
+    f.seek(0L)
+    newval = f.readlines()
+    f.close()
+    return "\n".join(newval)
+
+def edit_attribute(self):
+    """
+    Launches a text editor allowing an attribute's contents to be editted.
+    """
+    myval   =  self.get_value()
+    myparts = myval.get_parts()
+    if len ( myparts ) == 1:
+        key = myparts.keys()[0]
+        newstr = edit_str(myparts[key])
+        newpart  = { key: newstr}
+        newval   = MakeAttributeValue(myval.get_type(),newpart)
+        self.set_value(newval)
+    else:
+        raise RuntimeError("Can't edit mulitpart attribute")
 
 class UiPython(object):
     def __init__(self,args=[]):
@@ -42,6 +93,10 @@ class UiPython(object):
         if not hasattr(bpython.cli.Repl,"closed"):
             bpython.cli.Repl.closed = closed
 
+        #Monkeypatch MAttributr to call out to a local editor.
+        MMAttribute.edit = edit_attribute 
+        
+ 
         with MysteryMachine.StartApp(self.args) as ctx:
             bpython.cli.main(args=("--quiet",) ,locals_ = { 'ctx': ctx })
 
