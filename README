@@ -74,10 +74,24 @@ work equally. 0.4 will probably work too but I haven't tested it in a while.
 Running MysteryMachine
 ----------------------
 
-Mystery machine only has a single Cli ui at the moment which dumps you at the
+Mystery machine has a two Cli ui's at the moment which dumps you at the
 python shell with the global 'ctx' bound to MysteryMachine Library.
 
-    mysterymachine --ui=Ui.cli.UiPython
+The are basically identical, the primary one is base on bpython and can
+be started like this:
 
-should start it. But at the moment there are some bug requiring you to provide
-your own configuration file. 
+    mysterymachine --ui=Ui.cli.BPython
+
+Bpython support auto completion and help pop-up documentation. The
+down side of Bpython is that it requires a Unix (or unix-like) terminal
+to run in, so is not compatible with windows.
+
+For windows , althought it shoulkd work anywhere that has python there is
+an alternative Ui based on the Idle development environment, this
+Ui can be started like this:-
+
+    mysterymachine --ui=Ui.cli.Idle
+
+Similiarily this supports auto-completion and pop-up documentation but
+where as Bpython will show the complete docstring, Idle tries to 
+shorten it. 

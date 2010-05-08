@@ -216,7 +216,8 @@ class _LibraryContext(object):
         self.logger = logging.getLogger("MysteryMachine")
         logging.getLogger("").addHandler(logging.StreamHandler(sys.stderr)) 
 
-        self.cmdline_options,self.args=_parse_options(args)
+        self.argv = args
+        self.cmdline_options,self.args=_parse_options(self.argv)
 
         ##Initiliase Config engine.
         self.cfg_engine = self.get_app_option_object("cfgengine")
@@ -261,6 +262,17 @@ class _LibraryContext(object):
         if self.Ui is not None:
             self.Ui.Run()
 
+
+    def GetArgv(self):
+        """
+        Returns the argument list that this machine instance was instatited
+        with. The oly real use of this is to allow a duplicate instance to
+        be started.
+
+        You certainly should not use this to parse arguments - you should use the
+        various get_app_option_*() methods as appropriate.
+        """
+        return self.argv
 
     def GetExtLib(self):
         """

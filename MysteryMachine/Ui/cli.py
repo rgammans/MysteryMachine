@@ -18,9 +18,25 @@
 #
 
 from __future__ import with_statement
+import types
 
-import sys
-import bpython.cli
+idle_installed=0
+try: 
+    import idlelib.PyShell
+    idle_installed = 1
+except ImportError:
+    pass
+
+bpython_installed = 0
+try: 
+    import bpython.cli
+    import curses
+    bpython_installed = 1
+except ImportError:
+    pass
+
+if bpython_installed + idle_installed < 1:
+    raise ImportError("Must have one of BPython or Idle installed")
 
 import MysteryMachine
 from MysteryMachine.schema.MMAttribute import MMAttribute
@@ -29,80 +45,136 @@ import mercurial
 
 import tempfile
 import os
-
-import curses
+import sys
 
 def closed(self):
     """A fixup function so mercurial and bpython play well together"""
     return False
 
-
-def launch_edit(filename):
-    """
-    Starts a text editor on a named file
-    """
-    if sys.platform == "win":
-        editor = os.getenv("EDITOR","edit")
-    else:
-        editor = os.getenv("EDITOR","vi")
-        
-    #Save and restore curses mode.
-    curses.reset_shell_mode()
-    os.system(editor +" "+ filename)
-    curses.reset_prog_mode()
-
-def edit_str(string):
-    """
-    Launches a text editor on a tempory file conatinaing string.
-    Returns the contents of the file when the editor is closed.
-    """
-    f = tempfile.NamedTemporaryFile(suffix=".attribute",mode="w+")
-    f.write(string)
-    f.flush()
-    launch_edit(f.name)
-    f.seek(0L)
-    newval = f.readlines()
-    f.close()
-    return "\n".join(newval)
-
-def edit_attribute(self):
-    """
-    Launches a text editor allowing an attribute's contents to be editted.
-    """
-    myval   =  self.get_value()
-    myparts = myval.get_parts()
-    if len ( myparts ) == 1:
-        key = myparts.keys()[0]
-        newstr = edit_str(myparts[key])
-        newpart  = { key: newstr}
-        newval   = MakeAttributeValue(myval.get_type(),newpart)
-        self.set_value(newval)
-    else:
-        raise RuntimeError("Can't edit mulitpart attribute")
-
-class UiPython(object):
-    def __init__(self,args=[]):
-        self.args = args
+class UiBase(object):
+    def __init__(self,args = [] ):    
+        self.args      = args
+        self.in_curses = False 
 
     def mercurial_ui(self):
         return mercurial.ui.ui()
 
-    def Run(self):
-        
-        #Mercurial 1.4 calls sys.stdout.closed() - this ensures that call exists
-        if not hasattr(bpython.cli.Repl,"closed"):
-            bpython.cli.Repl.closed = closed
+    def edit_attribute(self,attr):
+        """
+        Launches a text editor allowing an attribute's contents to be editted.
+        """
+        print self,attr
+        myval   =  attr.get_value()
+        myparts = myval.get_parts()
+        if len ( myparts ) == 1:
+            key = myparts.keys()[0]
+            newstr = self.edit_str(myparts[key])
+            newpart  = { key: newstr}
+            newval   = MakeAttributeValue(myval.get_type(),newpart)
+            attr.set_value(newval)
+        else:
+            raise RuntimeError("Can't edit mulitpart attribute")
 
-        #Monkeypatch MAttributr to call out to a local editor.
-        MMAttribute.edit = edit_attribute 
-        
+    def edit_str(self,string):
+        """
+        Launches a text editor on a tempory file conatinaing string.
+        Returns the contents of the file when the editor is closed.
+        """
+        f = tempfile.NamedTemporaryFile(suffix=".attribute",mode="w+")
+        f.write(string)
+        f.flush()
+        self.launch_edit(f.name)
+        f.seek(0L)
+        newval = f.readlines()
+        f.close()
+        return "\n".join(newval)
+
+    def launch_edit(self,filename):
+        """
+        Starts a text editor on a named file
+        """
+        if sys.platform[:3] == "win":
+            editor = os.getenv("EDITOR","edit")
+        else:
+            editor = os.getenv("EDITOR","vi")
+            
+        #Save and restore curses mode.
+        # =Can't guarantee - curses is availble.
+        if self.in_curses: curses.reset_shell_mode()
+        os.system(editor +" "+ filename)
+        if self.in_curses: curses.reset_prog_mode()
+
+    def DoPatches(self):
+         #Monkeypatch MAttributr to call out to a local editor.
+         MMAttribute.edit =  types.UnboundMethodType(self.edit_attribute,None,MMAttribute)
+                
+
+if bpython_installed:
+    class BPython(UiBase):
+        def DoPatches(self):
+            super(BPython,self).DoPatches()
+            #Mercurial 1.4 calls sys.stdout.closed() - this ensures that call exists
+            if not hasattr(bpython.cli.Repl,"closed"):
+                bpython.cli.Repl.closed = closed
+            
+        def Run(self):
+            self.DoPatches()           
+     
+            with MysteryMachine.StartApp(self.args) as ctx:
+                self.in_curses = True
+                bpython.cli.main(args=("--quiet",) ,locals_ = { 'ctx': ctx })
+
+
+
+if idle_installed:
+    class IdleBackend(UiBase):
+        def _Run(self):
+            self.DoPatches()
  
-        with MysteryMachine.StartApp(self.args) as ctx:
-            bpython.cli.main(args=("--quiet",) ,locals_ = { 'ctx': ctx })
+            self.lib = MysteryMachine.StartApp(self.args)
+            import atexit
+            atexit.register(self._Exit)
+            return  self.lib.__enter__()
 
+        def _Exit(self):
+            self.lib.__exit__()
+       
+
+    class Idle(UiBase):
+        def Run(self):
+            sys.argv = [ "dummy",  "-t", "Mystery Machine",'-c']
+            if __name__ == '__main__':                
+                # 
+                # We can't guarantee to find our module in the Python namespace
+                # and MysteryMachine/Idle doesn't run well without subprocess control
+                # so we run it without the monkey patch stuff provided by IdleBackend.
+                #
+                # We also don't bother with the patching as I doubt the edit patch would
+                # work right
+                #
+                sys.argv += [ 
+                             "import MysteryMachine\n"+ 
+                             "import atexit\n"+ 
+                             "ctx=MysteryMachine.StartApp(" + str(self.args)+").__enter__()\n"+
+                             "atexit.register(ctx.close)" 
+                            ]
+
+            else:
+               with MysteryMachine.StartApp() as lib:
+                    sys.argv += [
+                                 "import "+__name__+"\n"+
+                                 "ctx = "+__name__+".IdleBackend("+str(lib.GetArgv())+")._Run()"
+                                ]
+
+            idlelib.PyShell.main()
 
 if __name__ == '__main__':
-    ui = UiPython(sys.argv[1:])
+    if bpython_installed:
+        ui = BPython(sys.argv[1:])
+    elif idle_installed:
+        ui = Idle(sys.argv[1:])
+    else:
+        raise LogicError("Can't get here - should have raised ImportError during import")
+        
+
     ui.Run() 
-
-
