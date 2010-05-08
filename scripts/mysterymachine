@@ -24,7 +24,10 @@ import MysteryMachine
 import sys
 import os
  
-cfgfile = os.path.join(os.getenv('HOME'),'.mysterymachine.yaml')
+if sys.platform == 'win32':
+	cfgfile = os.path.join(os.getenv('HOMEDRIVE'),os.getenv('HOMEPATH'),'.mysterymachine.yaml')
+else:
+	cfgfile = os.path.join(os.getenv('HOME'),'.mysterymachine.yaml')
 
 defaults = [ '--cfgengine=ConfigYaml' , '--cfgfile=%s' % cfgfile ]
 
