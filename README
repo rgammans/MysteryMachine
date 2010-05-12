@@ -5,21 +5,43 @@ If you are installing from a built source distribution then the command:-
 
      python setup.py install -d <DirectoryToInstallInto>
 
-should work.
+should work, if you have python virtualenv and setuptools already installed, and
+windows users should see the note under pyparsing below. 
 
 This will create a python virtualenv in the specified installation directory and
 install MysteryMachine, a customised yapsy plus all of the dependencies into to
 it.
 
+You can still install MysteryMachine into you global environment if you don't have
+or want to install virtualenv by running
+
+     python setup.py install_here
+
+instead.
+
 If you are installing from the mercurial repo you need the following libraries
 on your PYTHONPATH. Once the libraries below and MysteryMachine itself are on your
-python path the scripts in the `scripts' directory should work. Or you can install
+python path the scripts in the 'scripts' directory should work. Or you can install
 a patched version of yapsy (patch is in the patches directory) and paver then use:- 
 
     paver sdist
 
 to build you own source distribution and install from that.
 
+Windows Install Quick Reference
+-------------------------------
+
+To install on windows I suggest the following commands, if you use python for
+other applications want more control I suggest you read all of this README before
+doing this
+
+    1. Download a recent Python (2.6.x is recommended) from www.python.org and install it.
+    2. Download mercurial from  http://bitbucket.org/tortoisehg/thg-winbuild/downloads/ and install it. 
+    3. From the MysteryMachine zip file run 
+            python install -d c:\mysterymachine
+
+    4. Run c:\mysterymachine\scripts\activate
+    5. You ready to go - make sure you  
 
 Libraries Required
 ------------------
@@ -32,13 +54,17 @@ pyparsing > 1.5.0
 
 Yapsy 
 '''''
-Yapsy does not currently meet our python3 requirements, and tin fact the use of 
+Yapsy does not currently meet our python3 requirements, and in fact the use of 
 exec, rather than execfile creates a small security race hazard. Wether
 our application's useis sensitive enough to worry about this is a moot point
 though. 
 
 Having said that since for python3 we need to fix yapsy - changing it to be
 secure as well strikes me as a good idea.
+
+Additionall MysteryMachine ships with a patched ersion of Yapsy which should
+be backwardly compatible with 1.7 - but add a filter mechanism which is currently
+used so we ignore UnTrusted plugins.
 
 Pyparsing
 '''''''''
@@ -52,18 +78,33 @@ Also Pyparsing 1.4 did not throw and exception if it couldn't parse the whole st
 it would just silently discard the remaining output. SO don't blame me if you
 attempt to use it with and early version and find your mssing half your character sheet.
 
+The automatic setup will try to copy install the current version of pyparsing
+from my development environment into MysteryMachine's library if you haven't
+already got a global copy.
+
 Mercurial
 '''''''''
 MysteryMachine needs to be able to use Mercurial as a library , on a POSIX
-OS (Linux & MacOs) just installing mercurial should be enough , but on windows
-you will need to ensure it is install as a python library. You can do this
-using easy_install. If you not famaliar with easy install try one of the
-downloadable archives, or read up on it on the web. It should be straightforward.
+OS (Linux & MacOs) just installing mercurial asa  system applciation should be 
+enough , but on windows you will need to ensure it is install as a python library,
+if this  doesn't work, `easy_install mercurial` will download it for you but
+it require python2.X-dev and working C toolchain installed . But that is quite
+common on Unix machines.
+
+I haven't yet worked out the best to get Mercurial installed appropriately on windows,
+due to the common lack of Visual Studio , which is required to build the C extension
+parts. However a binary version which can be used a a library can be downloaded from
+http://bitbucket.org/tortoisehg/thg-winbuild/downloads/
+
 
 Bpython
 '''''''
-The same goes for Bpython as mercurial. Use easy_install or your OS package manager
-to install it.
+This package os no longer considerer required as it doesn't work on windows, 
+however it is recommended on those platforms where it does work.
+
+Use easy_install or your OS package manager
+to install it. If it ia not already installed the installer will try to fetch and 
+install it automatically.
 
 Docutils
 ''''''''
@@ -71,8 +112,20 @@ MysteryMachine was first developed with docutils 0.4 but I'm currently using 0.6
 as it generates less noise of on the python comaptiblity tests. I suspect 0.5 and 0.6 should
 work equally. 0.4 will probably work too but I haven't tested it in a while.
 
+Docutils can either be installed wiht easy_install or the installer will pull in the
+latest version for you.
+
+PyYaml
+''''''
+Yaml is the current prefered format for the MysteryMachine config file , and if you
+intend to start MysteryMachine with it default settings it will need PyYaml.
+PyYaml can be install easily using easy_install. Like so:
+    easy_install pyyaml
+
+But it should pulled in with the installer.
+
 Running MysteryMachine
-----------------------
+======================
 
 Mystery machine has a two Cli ui's at the moment which dumps you at the
 python shell with the global 'ctx' bound to MysteryMachine Library.
@@ -80,7 +133,7 @@ python shell with the global 'ctx' bound to MysteryMachine Library.
 The are basically identical, the primary one is base on bpython and can
 be started like this:
 
-    mysterymachine --ui=Ui.cli.BPython
+    python mysterymachine --ui=Ui.cli.BPython
 
 Bpython support auto completion and help pop-up documentation. The
 down side of Bpython is that it requires a Unix (or unix-like) terminal
@@ -90,7 +143,7 @@ For windows , althought it shoulkd work anywhere that has python there is
 an alternative Ui based on the Idle development environment, this
 Ui can be started like this:-
 
-    mysterymachine --ui=Ui.cli.Idle
+    python mysterymachine --ui=Ui.cli.Idle
 
 Similiarily this supports auto-completion and pop-up documentation but
 where as Bpython will show the complete docstring, Idle tries to 
