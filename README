@@ -40,8 +40,18 @@ doing this
     3. From the MysteryMachine zip file run 
             python install -d c:\mysterymachine
 
-    4. Run c:\mysterymachine\scripts\activate
-    5. You ready to go - make sure you  
+    4. Find where your TCL scripts are stored , this will normally by c:\pythonXX\tcl\tclY.Y
+       then edit c:\mysterymachine\scripts\activate to add this following line at
+       the beginning:-
+            set TCL_LIBRARY=c:\pythonXX\tcl\tclY,Z
+        
+        where X,Y are version numbers in the file names, eg if you have a folder of yout
+        computer called c:\python26\tcl\tcl8.5 you woud add this line:=
+            set TCL_LIBRARY=c:\python26\tcl\tcl8.5
+
+    5. Run c:\mysterymachine\scripts\activate
+    6. You ready to go - make sure you  
+
 
 Libraries Required
 ------------------
@@ -123,6 +133,16 @@ PyYaml can be install easily using easy_install. Like so:
     easy_install pyyaml
 
 But it should pulled in with the installer.
+
+
+Tkinter & Tcl/Tk
+''''''''''''''''
+These are only require for the Idle based Ui, but currently the installer doesn't
+setup the tcl/tk environment correctly (see https://bitbucket.org/ianb/virtualenv/issue/40/tkinter-fails-in-a-virtual-env )
+to fix this you need ensure the TCL_LIBARRY environmenr variable point to the TCL script
+and srtart up files. The easiest way to do this is to add a line to your
+activate.bat which set this varaibell to pint to the tcl directories tghat ship with
+python.
 
 Running MysteryMachine
 ======================

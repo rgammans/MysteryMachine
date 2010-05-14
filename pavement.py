@@ -233,8 +233,14 @@ def src_environ(options):
     if sys.platform[:3] == 'win':
         #Bpython doesn't work under windows to remove it from the
         # deps list
-        options.virtualenv.packages_to_install.remove('bpython')
-        options.setup.install_requires.remove('bpython')
+        try:
+            options.virtualenv.packages_to_install.remove('bpython')
+        except ValueError:
+            pass
+        try:
+            options.setup.install_requires.remove('bpython')
+        except ValueError:
+            pass
       
     #Hope all is well
     print "importing paver virtual"
@@ -285,23 +291,23 @@ def install(options):
     os.chdir(options.install.installdir)
     #call Pre built install file , creates virtual environment etc..
     import subprocess
-    subprocess.call(sys.executable , os.path.join(here,"install.py") )
+    subprocess.call([sys.executable , os.path.join(here,"install.py")])
     os.chdir(here)
     #Relaunch paver to install ourself into the newly setup virtualenv.
     # -but first find our paver executable..
     paver =os.path.join(options.install.installdir,"bin","paver")
     try:
 	    os.stat(paver)
-    except WindowsError,OSError:
+    except (WindowsError,OSError):
 	    paver = os.path.join(options.install.installdir,"scripts","paver")
-    subprocess.call(paver,"-f",os.path.join(here,"pavement.py"),"install_here")
+    subprocess.call([paver,"-f",os.path.join(here,"pavement.py"),"install_here" ])
 
 
 setup(name ="MysteryMachine",
       packages = DIST_PACKAGES ,
       scripts  = SCRIPTS ,
       py_modules =PY_MODULES,
-      version  = "0.1.1",
+      version  = "0.1.2", # The peaky release
       install_requires = EZ_PACKAGES,
       url="http://trac.backslashat.org/MysteryMachine",
       author="Roger Gammans",
