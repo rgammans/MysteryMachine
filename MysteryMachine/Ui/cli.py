@@ -46,6 +46,7 @@ import mercurial
 import tempfile
 import os
 import sys
+import logging
 
 def closed(self):
     """A fixup function so mercurial and bpython play well together"""
@@ -55,6 +56,7 @@ class UiBase(object):
     def __init__(self,args = [] ):    
         self.args      = args
         self.in_curses = False 
+        self.logger = logging.getLogger("MysteryMachine.Ui.cli")
 
     def mercurial_ui(self):
         return mercurial.ui.ui()
@@ -80,13 +82,22 @@ class UiBase(object):
         Launches a text editor on a tempory file conatinaing string.
         Returns the contents of the file when the editor is closed.
         """
-        f = tempfile.NamedTemporaryFile(suffix=".attribute",mode="w+")
+        #NamedTemporary file works really well on Unix but 
+        #  is a complete blowout under windows - where there
+        #  is no way to unlock the file and *not* delete it
+        fd, fname  = tempfile.mkstemp(suffix=".attribute")
+        f = os.fdopen(fd,"w+")
         f.write(string)
-        f.flush()
-        self.launch_edit(f.name)
-        f.seek(0L)
+        f.close()
+        self.launch_edit(fname)
+        f = open(fname,"r")
         newval = f.readlines()
         f.close()
+        try:
+            os.remove(fname)
+        except (WindowsError,OSError), e:
+            self.logger.warn(str(e))
+            pass
         return "\n".join(newval)
 
     def launch_edit(self,filename):
