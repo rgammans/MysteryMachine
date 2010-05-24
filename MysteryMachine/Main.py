@@ -23,17 +23,33 @@ from __future__ import with_statement
 import MysteryMachine
 import sys
 import os
- 
-if sys.platform == 'win32':
-	cfgfile = os.path.join(os.getenv('HOMEDRIVE'),os.getenv('HOMEPATH'),'.mysterymachine.yaml')
-else:
-	cfgfile = os.path.join(os.getenv('HOME'),'.mysterymachine.yaml')
+    
 
-defaults = [ '--cfgengine=ConfigYaml' , '--cfgfile=%s' % cfgfile ]
+def process_args():
+    """
+    Add the currently recommended default args to args list.
 
-options = defaults + sys.argv[1:]
-with MysteryMachine.StartApp(options) as MyMM:
-    print MyMM
-    MyMM.Run()
+    The aim of theis is to merge sys.argv with a set of defaults to
+    generate a useful set of startup options for MysteryMachine
+    """ 
+    if sys.platform == 'win32':
+        cfgfile = os.path.join(os.getenv('HOMEDRIVE'),os.getenv('HOMEPATH'),'.mysterymachine.yaml')
+    else:
+        cfgfile = os.path.join(os.getenv('HOME'),'.mysterymachine.yaml')
+
+    defaults = [ '--cfgengine=ConfigYaml' , '--cfgfile=%s' % cfgfile ]
+
+    options = defaults + sys.argv[1:]
+
+    return options
+
+def main():
+    """
+    Run Mysterymachine
+    """
+    options = process_args()
+    with MysteryMachine.StartApp(options) as MyMM:
+        print MyMM
+        MyMM.Run()
 
 

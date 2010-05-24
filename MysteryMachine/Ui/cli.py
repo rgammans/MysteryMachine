@@ -179,13 +179,19 @@ if idle_installed:
 
             idlelib.PyShell.main()
 
-if __name__ == '__main__':
+def main():
+    from MysteryMachine.Main import process_args 
+
+    options = process_args()
     if bpython_installed:
-        ui = BPython(sys.argv[1:])
+        ui = BPython(options)
     elif idle_installed:
-        ui = Idle(sys.argv[1:])
+        ui = Idle(options)
     else:
         raise LogicError("Can't get here - should have raised ImportError during import")
         
 
     ui.Run() 
+
+if __name__ == '__main__':
+    main()

@@ -69,7 +69,7 @@ TESTSDIR = "tests"
 FILES = [ "AUTHORS", "CodingGuidelines", "OriginalDesign" ,"README",
           "paver-minilib.zip" ]
 DIRS  = ["docs" , "examples" ,"graphics", "scripts" ,"patches" , TESTSDIR]
-SCRIPTS = [ 'scripts/mysterymachine', 'setup.py' , 'ez_setup.py' ]
+SCRIPTS = [ 'setup.py' , 'ez_setup.py' ]
 
 VENVSCRIPT = 'install.py'
 
@@ -307,12 +307,16 @@ setup(name ="MysteryMachine",
       packages = DIST_PACKAGES ,
       scripts  = SCRIPTS ,
       py_modules =PY_MODULES,
-      version  = "0.1.2", # The peaky release
+      version  = "0.1.3pre", 
       install_requires = EZ_PACKAGES,
       url="http://trac.backslashat.org/MysteryMachine",
       author="Roger Gammans",
       author_email="rgammans@computer-surgery.co.uk",
       license = "GPLv2",
+      entry_points={ 'console_scripts': [
+                         "mysterymachine = MysteryMachine.Main:main",
+                         "mmcli          = MysteryMachine.Ui.cli:main"
+                   ]},
       package_data= paver.setuputils.find_package_data(".", package="paver",
                                             only_in_packages=False),
     )
