@@ -26,4 +26,5 @@ Exceptions used by the MysteryMachine APi
 import exceptions
 
 class ExtensionError(RuntimeError): pass
+class CoreError(RuntimeError): pass
 class DuplicateRegistration(RuntimeError): pass

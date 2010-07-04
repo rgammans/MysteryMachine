@@ -419,7 +419,7 @@ class _LibraryContext(object):
             ##FIXME: Test this code etc.
             # A stub of what the code should do is below, but
             # it turns out we've got issues with the extensions engine.
-            error("Version 1 suport not implemented")
+            raise Exceptions.CoreError("Version 1 suport not implemented")
             #Read store requirements
             store = file(os.path.join(workdir,".store"))
             storestr = store.readlines()

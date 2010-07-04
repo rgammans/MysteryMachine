@@ -39,7 +39,7 @@ if path == None:
 	path = "."
 else:
 	#FIXME: Needs to be ';' under windows
-	path = path+":."
+	path = ".:" + path
 
 os.putenv("PYTHONPATH",path)
 
