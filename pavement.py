@@ -192,7 +192,7 @@ def relaunch_self(extra_args):
 @task
 #should install mercurial
 def dst_environ(options):
-    """Install MysteryMachine dependencies that setuptools can't handle"""
+    """Install MysteryMachine dependencies that setuptools can't handle without help"""
     #Check  whether we need pyparsing...
     try:
         import pyparsing
@@ -229,24 +229,35 @@ def src_environ(options):
             sys.argv = old_args
         else:
             print "...giving up - can't install virtualenv"
-            
-    if sys.platform[:3] == 'win':
-        #Bpython doesn't work under windows to remove it from the
-        # deps list
-        try:
-            options.virtualenv.packages_to_install.remove('bpython')
-        except ValueError:
-            pass
-        try:
-            options.setup.install_requires.remove('bpython')
-        except ValueError:
-            pass
-      
+ 
     #Hope all is well
     print "importing paver virtual"
     import paver.virtual
     if not paver.virtual.has_virtualenv:
         relaunch_self(["--srcenv-loop","1"])
+        #**** NEVER GETS HERE - Relaunch DOES NOT RETURN****
+   
+    if sys.platform[:3] == 'win':
+        #Bpython doesn't work under windows to remove it from the
+        # deps list
+        if 'bpython' in  options.virtualenv.packages_to_install:
+            options.virtualenv.packages_to_install.remove('bpython')
+        if 'bpython' in options.setup.install_requires:
+            options.setup.install_requires.remove('bpython')
+      
+        try:
+            ##This is a workaround for issue 40 in virtualenv
+            import FixTk
+            #Fix Tk sets some useful envvars that the virtual env will need
+            tk=open("FixTk.py","w")
+            tk.write("import os\n")
+            tk.write("os.environ[\"TCL_LIBRARY\"]=\"%s\"\n" % os.environ["TCL_LIBRARY"])
+            tk.write("os.environ[\"TK_LIBRARY\"] =\"%s\"\n" % os.environ["TK_LIBRARY"])
+            tk.write("os.environ[\"TIX_LIBRARY\"]=\"%s\"\n" % os.environ["TIX_LIBRARY"])
+            tk.close()
+            options.setup.py_modules += ['FixTk']
+        except ImportError:
+            pass            
 
 @task
 @needs('dst_environ')
