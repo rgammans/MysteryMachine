@@ -24,8 +24,9 @@
 
 import types
 from copy import copy
+from MysteryMachine.utils.RichCompare import RichComparisonMixin
 
-class VersionNr(object):
+class VersionNr(RichComparisonMixin):
 
     """
      This simple class provide version number arithmetic.
@@ -61,9 +62,10 @@ class VersionNr(object):
 	cflist=copy(other.nrs)
         for level in self.nrs:
 		val=int(level)
+                if len(cflist) == 0: return False 
 		cfdig=int(cflist.pop(0))
 		#
-		if cfdig == None: return true
+		if cfdig == None: return False
 		if cfdig!=val:
 			return val<cfdig
 	#Other must be equal or larger, so
@@ -81,6 +83,7 @@ class VersionNr(object):
      	cflist=copy(other.nrs)
         for level in self.nrs:
 		val=int(level)
+                if len(cflist) == 0: return False 
 		cfdig=int(cflist.pop(0))
 		#
 		if cfdig == None: return False 
