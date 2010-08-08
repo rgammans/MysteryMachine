@@ -6,3 +6,7 @@ Module = First
 Author = Roger Gammans
 Version =0.1
 Description= A simple plugin for basic testing (first)
+
+
+[ExtensionPoints]
+Test=test_plugin
