@@ -24,6 +24,10 @@
 
 from yapsy.PluginManager import *
 from MysteryMachine.ExtensionSecureID import ExtensionSecureID
+import re
+
+
+EXTENSION_POINT_SECTION_NAME="ExtensionPoints"
  
 class ExtensionInfo (PluginInfo):
 
@@ -46,13 +50,23 @@ class ExtensionInfo (PluginInfo):
     Create a plugin info instance.
     """
     PluginInfo.__init__(self,plugin_name,plugin_path)
+    self.points = { }
+    if self.parser.has_section(EXTENSION_POINT_SECTION_NAME):
+        for opt in self.parser.options(EXTENSION_POINT_SECTION_NAME):
+            provides = self.parser.get(EXTENSION_POINT_SECTION_NAME,opt)
+            provides = re.split("\s*,\s*",provides)
+            if len(provides) > 0:
+                provides[0] = provides[0].strip()
+                provides[-1] = provides[-1].rstrip()
+                self.points[opt.lower()]=provides
+
     self.secureID= ExtensionSecureID.fromPathName(self.path+".py")
 
   def getName(self):
     """
     
     @return string : Name of the plugin.
-    @author
+    @authorx
     """
     return self.name
 
@@ -88,4 +102,10 @@ class ExtensionInfo (PluginInfo):
     Returns True if the plugin has been loaded into the interpreter
     """
     return self.plugin_object is None
+
+  def provides(self,point,feature):
+    point = point.lower()
+    if point in self.points:
+        return feature in  self.points[point]
+    return False
 

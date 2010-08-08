@@ -104,6 +104,13 @@ class ExtensionLibTest(unittest.TestCase):
 #       plugins = self.gettrustedlist()  
 #        self.assertEqual(len(plugins),0)
 
+ 
+    def testQueryExtensionPoint(self):
+        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])  as g:
+            self.extlib = g.GetExtLib()
+            plugins = list(self.extlib.findPluginByFeature("Test","test_plugin")  )
+            self.assertEquals(len(plugins),1)
+
 
 def getTestNames():
     return [ 'ExtLibTest.ExtensionLibTest' ] 

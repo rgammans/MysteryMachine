@@ -147,3 +147,14 @@ class ExtensionLib(object):
         # Return rejected plugins.
         for plugin in self.plugin_man.getRejectedPluginInfo():
             yield plugin
+
+
+    def findPluginByFeature(self,extension_point,featurecode, version = None ):
+        """
+        Finds the plugin which provides feature code 'featurecode'
+        in extension point 'extension_point'.
+        """
+
+        for plugin in self.plugin_man.getPluginCandidates():
+            if plugin.provides(extension_point,featurecode):
+                if version <= plugin.version: yield plugin
