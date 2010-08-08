@@ -17,6 +17,10 @@ class RichComparer(RichComparisonMixin):
             return self.value == other
         return self.value == other.value
 
+    def __hash__(self, other):
+        return hash(self.value)
+
+
     def __lt__(self, other):
         if not hasattr(other, 'value'):
             return self.value < other
