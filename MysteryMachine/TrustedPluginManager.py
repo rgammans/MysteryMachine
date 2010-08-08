@@ -24,6 +24,7 @@
 
 from yapsy.FilteredPluginManager import *
 from ExtensionInfo import *
+import types
 
 import types
 
@@ -93,7 +94,10 @@ class TrustedPluginManager (FilteredPluginManager):
     @author
     """
     self.trustlist[0][plugin.name]=str(plugin.secureID)
-    self.collectPlugins() 
+    for pluginTuple in self.getRejectedPlugins():
+        if pluginTuple is plugin:
+            self.unrejectPluginCandidate(pluginTuple)
+    #self.collectPlugins() 
 
   def untrustPlugin(self, plugin):
     """
@@ -115,8 +119,18 @@ class TrustedPluginManager (FilteredPluginManager):
          del data[plugin.name]
 
     #Update internal lists.
-    self.collectPlugins()
+    for pluginTuple in self.getPluginCandidates():
+        if pluginTuple is plugin:
+            self.rejectPluginCandidate(pluginTuple)
+    #self.collectPlugins()
 
+  def loadPlugin(self, plugin_info,callback =  None):
+    print "loading plugin %s\n" % plugin_info.name
+    super(TrustedPluginManager,self).loadplugin( plugin_info,callback)
+    if plugin_info not in self.loadedPlugins:
+        self.loadedPlugins.append(plugin_info)
 
   def getRejectedPluginInfo(self):
-    for p in self.getRejectedPlugins(): yield p[2]
+    for p in self.getRejectedPlugins(): yield p
+
+

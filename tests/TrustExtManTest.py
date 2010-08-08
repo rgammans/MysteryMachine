@@ -45,24 +45,17 @@ class TrustExtManTest(unittest.TestCase):
                 plugin_info_ext="mm-plugin",  
                 trustList=[ self.config ] )
 
-        self.myPluginManager.collectPlugins()
+        self.myPluginManager.locatePlugins()
         # Will be used later
         self.plugin_info = None
 
     def testTrusted(self):
-        # Check number of rejected + accepted plugis/
-
-        # check nb of categories
-        self.assertEqual(len(self.myPluginManager.getCategories()),1)
-        sole_category = self.myPluginManager.getCategories()[0]
-        # check the number of plugins
-        self.assertEqual(len(self.myPluginManager.getPluginsOfCategory(sole_category)),1)
-        plugins = self.myPluginManager.getPluginsOfCategory(sole_category)
+        plugins = self.myPluginManager.getPluginCandidates()
+        self.assertEqual(len(plugins),1)
         for plugin_info in plugins:
             self.plugin_info = plugin_info
             self.assert_(self.plugin_info)
             self.assertEqual(self.plugin_info.name,"FirstPlugin")
-            self.assertEqual(sole_category,self.plugin_info.category)
 
     def testRejected(self):
         #Check plugins accestp/reject are the ones we expect.
@@ -80,20 +73,18 @@ class TrustExtManTest(unittest.TestCase):
         for reject in self.myPluginManager.getRejectedPluginInfo():
             self.myPluginManager.trustPlugin(reject)
 
+        plugins = self.myPluginManager.getPluginCandidates()
+        self.assertEqual(len(plugins),2)
         self.assertEqual(len(self.config),2)
 
     def testUntrust(self):
-        # check nb of categories
-        self.assertEqual(len(self.myPluginManager.getCategories()),1)
-        sole_category = self.myPluginManager.getCategories()[0]
         # check the number of plugins
-        self.assertEqual(len(self.myPluginManager.getPluginsOfCategory(sole_category)),1)
-        plugins = self.myPluginManager.getPluginsOfCategory(sole_category)
+        plugins = self.myPluginManager.getPluginCandidates()
+        self.assertEqual(len(plugins),1)
         rejects = list( self.myPluginManager.getRejectedPluginInfo())
         self.assertEqual(len(rejects),1)
-        self.assertEqual(len(plugins),1)
         self.myPluginManager.untrustPlugin(plugins[0])
-        plugins = self.myPluginManager.getPluginsOfCategory(sole_category)
+        plugins = self.myPluginManager.getPluginCandidates()
         rejects = list( self.myPluginManager.getRejectedPluginInfo())
         self.assertEqual(len(rejects),2)
         self.assertEqual(len(plugins),0)

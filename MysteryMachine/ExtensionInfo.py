@@ -24,7 +24,7 @@
 
 from yapsy.PluginManager import *
 from MysteryMachine.ExtensionSecureID import ExtensionSecureID
-
+ 
 class ExtensionInfo (PluginInfo):
 
   """
@@ -46,7 +46,7 @@ class ExtensionInfo (PluginInfo):
     Create a plugin info instance.
     """
     PluginInfo.__init__(self,plugin_name,plugin_path)
-    self.secureID= ExtensionSecureID.fromPathName(plugin_path+".py")
+    self.secureID= ExtensionSecureID.fromPathName(self.path+".py")
 
   def getName(self):
     """
@@ -58,7 +58,7 @@ class ExtensionInfo (PluginInfo):
 
   def getSecureID(self):
     """
-    Return the secure hash of the plugins source files.  
+   Return the secure hash of the plugins source files.  
   
     @return ExtensionSecureID :
     @author
@@ -67,7 +67,7 @@ class ExtensionInfo (PluginInfo):
 
   def activate(self):
     """
-    Activates a truste plugin - no-op on untrusted plugin
+    Activates a trusted plugin - no-op on untrusted plugin
     """
     if self.plugin_object != None:
        self.plugin_object.activate()
@@ -75,10 +75,17 @@ class ExtensionInfo (PluginInfo):
 
   def deactivate(self):
     """
-    Deactivates a truste plugin - no-op on untrusted plugin
+    Deactivates a trusted plugin , this should be a no-op
+    on an untrusted plugin - although may be called on a plugin
+    when it's trust is removed.
     """
     if self.plugin_object != None:
        self.plugin_object.deactivate()
 
 
+  def isLoaded(self):
+    """
+    Returns True if the plugin has been loaded into the interpreter
+    """
+    return self.plugin_object is None
 

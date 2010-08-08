@@ -92,6 +92,7 @@ class ExtensionLibTest(unittest.TestCase):
         self.assertEqual(len(self.extlib.get_helpers_for("bar")),1)
         self.extlib.unregister_helper("bar",foo);
         self.assertEqual(len(self.extlib.get_helpers_for("bar")),0)
+
  
     def testUntrust(self):
         pass
@@ -102,6 +103,7 @@ class ExtensionLibTest(unittest.TestCase):
 
 #       plugins = self.gettrustedlist()  
 #        self.assertEqual(len(plugins),0)
+
 
 def getTestNames():
     return [ 'ExtLibTest.ExtensionLibTest' ] 
