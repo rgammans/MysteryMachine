@@ -372,20 +372,56 @@ class _LibraryContext(object):
         *** UNTESTED CODE ***
         """
         rv = []
+        line_nr=0
         for line in classspec:
+            line_nr+=1
             line = re.sub("^\s+","",line)
             line = re.sub("\s+$","",line)
             self.logger.debug("basespec line %s",line )
+            if len(line) == 0:
+                continue
             #TODO: Error reporting - this file is untrusted remember
-            lib,classname,req_version = re.split('\s+',line)
-            ext = self.GetExtLib().getExtension(lib,version  = req_version)
+            try:
+                schemename,req_version = re.split('\s+',line)
+            except ValueError, e:
+                raise Exceptions.CoreError("Invalid classspec at line %i (error:%s)"%(line_nr,e.message))
+                
+            ext = self.GetExtLib().findPluginByFeature("StoreScheme" , schemename ,version  = req_version)
             self.logger.debug( "MMI-GSB: ext = %s"%ext)
-            self.logger.debug( "MMI-GSB: extobj = %s"%ext.plugin_object)
             if ext is None:
                 raise Exceptions.ExtensionError("Can't find %s" % lib)
-            elif 'storeclass' not in ext.plugin_object.getInterfaces(): raise Exceptions.ExtensionError("storeclass interfaces not advertised")
-            rv +=  [ ext.plugin_object.getStoreMixin(classname,version) ]
+
+            self.getExtLib().loadPlugin(ext)
+            self.logger.debug( "MMI-GSB: extobj = %s"%ext.plugin_object)
+            rv +=  [ ext.plugin_object.getStoreMixin(classname,req_version) ]
         return rv
+
+
+    def LoadFormat0(self,workdir,formatfile):
+        formatfile.close()
+        return self.OpenVersion(workdir,"hgafile")
+        
+    def LoadFormat1(self,workdir,formatfile): 
+        ##FIXME: Test this code etc.
+        # A stub of what the code should do is below, but
+        # it turns out we've got issues with the extensions engine.
+        #raise Exceptions.CoreError("Version 1 suport not implemented")
+        #Read store requirements
+        formatDescriptors = formatfile.readlines()
+        #Load exts etc,
+        for desc in formatDescriptors:
+            desc = re.sub("^\s+","",desc)
+            desc = re.sub("\s+$","",desc)
+            self.logger.debug("spec line %s",desc )
+            if len(desc) == 0:
+                continue
+            desctype,line = re.split('\s+',desc)
+            self.handleType(desctype,line)
+
+        return self.OpenVersion(workdir,schema)
+    
+    formatLoaders = [ (VersionNr('0'),VersionNr('1'),LoadFormat0 ) , 
+                      (VersionNr('1'),VersionNr('2'),LoadFormat1 )  ]
 
     def OpenPackFile(self,filename):
         """
@@ -401,39 +437,27 @@ class _LibraryContext(object):
         pack = zipfile.ZipFile(filename,"r")
         utils.path.zunpack(pack,workdir)
         pack.close()
-        #Read format version requirements
-        ver = file(os.path.join(workdir,".formatver"))
-        version = ver.readlines()
-        ver.close()
-        return self.GetFormatHandler(version,workdir)
 
-    def GetFormatHandler(self,ver,workdir):
-        """
-        This function returns a loader for 
-        """
-        verno = VersionNr(ver[0])
-        if verno < VersionNr(1):
-            import MysteryMachine.store.hgfile_class
-            schema = "hgafile"
-        else: #Version 1 or later
-            ##FIXME: Test this code etc.
-            # A stub of what the code should do is below, but
-            # it turns out we've got issues with the extensions engine.
-            raise Exceptions.CoreError("Version 1 suport not implemented")
-            #Read store requirements
-            store = file(os.path.join(workdir,".store"))
-            storestr = store.readlines()
-            store.close()
-            #Load exts etc,
-            bases = GetStoreBases(storestr)
-            #Build store class.
-            #TODO: Check to see if store type already vivified
-            storetype = type(filename,bases, { 'uriScheme': schema} )
-            mmstore = store.GetStore(aname+":"+workdir)
-            log = list(mmstore.getChangLog())
-            #Unpack last rev into working dir and open MMsyste,
-            mmstore.revert(log[len(log)-1])
-        return self.OpenVersion(workdir,schema)
+        #Read format version requirements - very early versions used .formatver 
+        # but that has been deprecated in favour of a more complex .format file.
+        try:
+            formatfile = file(os.path.join(workdir,".format"))
+        except IOError , e:
+            try:
+                self.logger.debug("Loader cant find .format, falling back to .formatver")
+                formatfile = file(os.path.join(workdir,".formatver"))
+            except IOError, e2:
+                raise (e2 , e)
+
+        version = VersionNr(formatfile.readline())
+        
+        for lowestVer,highestVer,formatHandler in reversed(self.__class__.formatLoaders):
+            if ( version >= lowestVer ) and (version < highestVer) :
+                break
+
+        return formatHandler(self,workdir,formatfile)
+
+
 
     def OpenVersion(self,workdir,scheme):
         """

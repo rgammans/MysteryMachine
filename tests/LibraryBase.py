@@ -56,7 +56,7 @@ class LibBaseTest(unittest.TestCase):
             #Check returns a consistent instance
             self.assertTrue(el is g.GetExtLib())
 
-    def testLoadSave(self):
+    def testLoadSave0(self):
         with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) as g:
             #Load example pack file and test attributes
 
