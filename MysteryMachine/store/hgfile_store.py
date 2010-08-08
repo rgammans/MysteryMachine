@@ -49,19 +49,26 @@ class HgStoreMixin(object):
             self.ui = MMGlobals.GetMercurialUi()
             self.repo = hg.repository(self.ui,self.get_path(),create = (kwargs.get('create') or 0))
         
+    def _wdir_obj(self):
+        # Mask the differences between  hg1.5, and later
+        if hasattr(self.repo,"add"):
+            addobj = self.repo
+        else:
+            addobj = self.repo[None]
+        return addobj
 
     def Add_file(self,filename):
        if filename not in self.repo[None]:
-          self.repo.add( [ filename  ]) 
+          self._wdir_obj().add( [ filename  ]) 
 
     def Remove_file(self,filename):
        if filename in self.repo[None]:
           s = self.repo.status()
           #Is the file got the added status?
           if filename in s[1]:
-            self.repo.forget( [filename] )
+            self._wdir_obj().forget( [filename] )
           else:
-            self.repo.remove( [filename] )
+            self._wdir_obj().remove( [filename] )
 
     def commit(self,msg):
         self.lock()
