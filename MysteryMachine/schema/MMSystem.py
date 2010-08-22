@@ -299,3 +299,7 @@ class MMSystem (MMContainer):
     Release a lock granted by Lock()
     """
     self.store.unlock() 
+
+  def SaveAsPackFile(self,filename,**kwargs):
+    import MysteryMachine.Packfile
+    MysteryMachine.Packfile.SavePackFile(self,filename,**kwargs)

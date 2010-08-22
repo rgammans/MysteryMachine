@@ -29,6 +29,7 @@ import unittest
 
 import MysteryMachine.utils.path as path
 import tempfile
+import zipfile
 
 import mercurial
 import mercurial.verify 
@@ -69,7 +70,7 @@ class LibBaseTest(unittest.TestCase):
             self.assertEqual(len(list(test1.getChangeLog())),1)
         
             
-            g.SavePackFile(test1,"/tmp/test1.mmpack")
+            test1.SaveAsPackFile("/tmp/test1.mmpack")
 
             #Open new and old pack files up and compare.
             newpack = zipfile.ZipFile("/tmp/test1.mmpack","r")
