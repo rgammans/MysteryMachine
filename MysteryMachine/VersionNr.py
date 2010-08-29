@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#   			VersionNr.py - Copyright Roger Gammans
+#               VersionNr.py - Copyright Roger Gammans
 # 
 #
 #    This program is free software; you can redistribute it and/or modify
@@ -34,66 +34,64 @@ class VersionNr(RichComparisonMixin):
     :author: R G Gammans
     """
     def __init__(self,*args):
-	"""
-	Initialiser. Takes a string seperated by '.', a list or
-	another VersionNr.
-	"""
-	if type(args[0]) == type(self):
-		self.SetValue(args[0].nrs)
-	elif type(args[0]) == types.StringType:
-		self.SetValue(args[0].split("."))
-	#Assume list type.
-	else:
-		 self.SetValue(list(args))
-#	assert true "Cannot initialise version Nr"
+        """
+        Initialiser. Takes a string seperated by '.', a list or
+        another VersionNr.
+        """
+        if type(args[0]) == type(self):
+            self.SetValue(args[0].nrs)
+        elif type(args[0]) == types.StringType:
+            self.SetValue(args[0].split("."))
+        #Assume list type.
+        else:
+            self.SetValue(list(args))
+#    assert true "Cannot initialise version Nr"
     def SetValue(self,list):
-	self.nrs=list
+        self.nrs=list
     def __str__(self):
-	return ".".join(map(str,self.nrs))
+        return ".".join(map(str,self.nrs))
     def __repr__(self):
-	return "VersionNr"+"("+",".join(map(str,self.nrs))+")"
+        return "VersionNr"+"("+",".join(map(str,self.nrs))+")"
     def __lt__(self, other):
         """
-	Basec comparion function to provide an ordering relation.
+        Base comparion function to provide an ordering relation.
 
         @param VersionNr other : value to compare with 
         @return bool : True if other less than self.
         """
-	cflist=copy(other.nrs)
+        cflist=copy(other.nrs)
         for level in self.nrs:
-		val=int(level)
-                if len(cflist) == 0: return False 
-		cfdig=int(cflist.pop(0))
-		#
-		if cfdig == None: return False
-		if cfdig!=val:
-			return val<cfdig
-	#Other must be equal or larger, so
-	return len(cflist)>0
-	
+            val=int(level)
+
+            if len(cflist) == 0: return False 
+            cfdig=int(cflist.pop(0))
+            #
+            if cfdig == None: return False
+            if cfdig!=val: return val<cfdig
+        
+        #Other must be equal or larger, so
+        return len(cflist)>0
+    
     def __hash__(self):
-	return hash(self.__repr())
+        return hash(self.__repr())
+
     def __eq__(self, other):
         """
-	Equiavalence relation
+        Equiavalence relation
 
         @param VersionNr other : value to compare with
         @return bool : returns if bool version number are equivalent
         """
-     	cflist=copy(other.nrs)
+        cflist=copy(other.nrs)
         for level in self.nrs:
-		val=int(level)
-                if len(cflist) == 0: return False 
-		cfdig=int(cflist.pop(0))
-		#
-		if cfdig == None: return False 
-		if cfdig!=val:
-			return False
-	#Other will be the same length if equal
-	# so cf list will be empty now.
-	return (len(cflist) == 0)
-
-pass
-
-
+            val=int(level)
+            
+            if len(cflist) == 0: return False 
+            cfdig=int(cflist.pop(0))
+        #
+            if cfdig == None: return False 
+            if cfdig!=val: return False
+        #Other will be the same length if equal
+        # so cf list will be empty now.
+        return (len(cflist) == 0)
 
