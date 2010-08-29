@@ -37,22 +37,26 @@ class VernoTest(unittest.TestCase):
 		self.assert_( VersionNr(3)   < VersionNr(3,1))
 		self.assert_( VersionNr(1) < VersionNr(3) )
 		self.assert_( VersionNr(0) < VersionNr(3) )
+		self.assert_( VersionNr(None) < VersionNr(3) )
 	
 	def testGreaterThanOrEquals(self):
 		self.assert_( VersionNr(4,1) >= VersionNr(3,1) )
 		self.assert_( VersionNr(3,1) >= VersionNr(3) )
 		self.assert_( VersionNr(3) >= VersionNr(3) )
 		self.assert_( VersionNr(3,1) >= VersionNr("3.1") )
+		self.assert_( VersionNr(0) >=  VersionNr(None) )
 
 
 	def testGreaterThan(self):
 		self.assert_( VersionNr(4,1) > VersionNr(3,1) )
 		self.assert_( VersionNr(3,1) > VersionNr(3) )
+		self.assert_( VersionNr(0) > VersionNr(None) )
 
 	def testEquals(self):
 		self.assert_( VersionNr(3) == VersionNr(3) )
 		self.assert_( VersionNr(3,1) == VersionNr("3.1") )
 		self.assertFalse( VersionNr(3) == VersionNr("3.1") )
+		self.assertFalse( VersionNr(None) == VersionNr(None) )
 
 	def testCopy(self):
 		a=VersionNr(3,1)

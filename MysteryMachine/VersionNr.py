@@ -61,10 +61,15 @@ class VersionNr(RichComparisonMixin):
         """
         cflist=copy(other.nrs)
         for level in self.nrs:
+            if level is None: return True
             val=int(level)
 
             if len(cflist) == 0: return False 
-            cfdig=int(cflist.pop(0))
+            cfdig=cflist.pop(0)
+            if cfdig is None:
+                return False
+            else:
+                cfdig = int(cfdig)
             #
             if cfdig == None: return False
             if cfdig!=val: return val<cfdig
@@ -84,10 +89,16 @@ class VersionNr(RichComparisonMixin):
         """
         cflist=copy(other.nrs)
         for level in self.nrs:
+            #None;s compare non-equal..
+            if level is None: return False
             val=int(level)
             
             if len(cflist) == 0: return False 
-            cfdig=int(cflist.pop(0))
+            cfdig=cflist.pop(0)
+            if cfdig is None:
+                return False
+            else:
+                cfdig = int(cfdig)
         #
             if cfdig == None: return False 
             if cfdig!=val: return False
