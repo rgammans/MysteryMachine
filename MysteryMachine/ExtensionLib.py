@@ -22,7 +22,7 @@
 #
 #
 
-from Extension import Extension
+import Extension
 from ExtensionInfo import ExtensionInfo 
 from TrustedPluginManager import *
 from MysteryMachine import *
@@ -53,7 +53,7 @@ class ExtensionLib(object):
         self.plugin_man =TrustedPluginManager.TrustedPluginManager(
                       directories_list=cfg['extensions']['path'],
                       plugin_info_ext="mm-plugin",  
-         			  categories_filter={"Default":Extension}, 
+         			  categories_filter={"Default":Extension.Extension}, 
                       trustList=  cfg['extensions']['trusted']
                      )
 
@@ -158,3 +158,6 @@ class ExtensionLib(object):
         for plugin in self.plugin_man.getPluginCandidates():
             if plugin.provides(extension_point,featurecode):
                 if version <= plugin.version: yield plugin
+
+    def loadPlugin(self,plugin):
+        self.plugin_man.loadPlugin(plugin)
