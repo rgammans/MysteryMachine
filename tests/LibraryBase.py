@@ -50,7 +50,7 @@ class LibBaseTest(unittest.TestCase):
         pass
 
     def testExtLibFns(self):
-        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) as g:
+        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/libtest.yaml", "--testmode"]) as g:
             #Check correct type.
             el = g.GetExtLib()
             self.assertTrue(isinstance(el,ExtensionLib))
@@ -58,7 +58,7 @@ class LibBaseTest(unittest.TestCase):
             self.assertTrue(el is g.GetExtLib())
 
     def testLoadSave0(self):
-        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) as g:
+        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/libtest.yaml", "--testmode"]) as g:
             #Load example pack file and test attributes
 
             test1 = g.OpenPackFile("examples/test1.mmpack")
@@ -86,8 +86,7 @@ class LibBaseTest(unittest.TestCase):
             self.assertEquals(repo.heads(None)[0],head.node())
 
     def testCreate(self):
-        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) as g:
-            import MysteryMachine.store.dict_store
+        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/libtest.yaml", "--testmode"]) as g:
             system = g.CreateNew(scheme = "dict")
             self.assertFalse(system is None)
             import MysteryMachine.schema.MMSystem
@@ -96,7 +95,6 @@ class LibBaseTest(unittest.TestCase):
             system = g.CreateNew(scheme = "foo", uri="dict:uritest")
             self.assertFalse(system is None)
             self.assertEquals(system.getUri() , "dict:uritest")
-            import MysteryMachine.store.hgfile_class
             system = g.CreateNew(scheme = "hgafile")
             system = g.CreateNew(uri = "dict:foo")
 
@@ -105,7 +103,7 @@ class LibBaseTest(unittest.TestCase):
 
     def testUi(self):
         MysteryMachine.MyUi = MyUi
-        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode",
+        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/libtest.yaml", "--testmode",
                        "--ui=MyUi"]) as g:
             self.assertNotEquals(g.Ui,None)
             self.assertEquals(g.GetMercurialUi(),"MercurialUi")

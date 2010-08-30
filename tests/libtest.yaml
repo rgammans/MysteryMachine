@@ -1,8 +1,9 @@
 extensions:
-  path: [tests/Plugins]
+  path: [tests/Plugins, ./PlugIns]
   testsection: {test: 1}
   trusted:
   - {FirstPlugin: sha256|9808f0d4b7dc07901cca2715328106a8f1f984fc71a5beaf092ea44411c0b56c}
+  - {MMCore: sha256|e62dfe785e6c1a168bbb9f5465f5feeea920c6fb9d40cb83483c2cb142785bf3}
   value: 1
 testlist:
 - 1
