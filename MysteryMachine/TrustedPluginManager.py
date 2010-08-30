@@ -28,6 +28,7 @@ import types
 
 import types
 
+
 class TrustedPluginManager (FilteredPluginManager):
 
   """
@@ -123,12 +124,6 @@ class TrustedPluginManager (FilteredPluginManager):
         if pluginTuple is plugin:
             self.rejectPluginCandidate(pluginTuple)
     #self.collectPlugins()
-
-  def loadPlugin(self, plugin_info,callback =  None):
-    print "loading plugin %s\n" % plugin_info.name
-    super(TrustedPluginManager,self).loadplugin( plugin_info,callback)
-    if plugin_info not in self.loadedPlugins:
-        self.loadedPlugins.append(plugin_info)
 
   def getRejectedPluginInfo(self):
     for p in self.getRejectedPlugins(): yield p

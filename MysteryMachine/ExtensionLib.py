@@ -26,6 +26,7 @@ import Extension
 from ExtensionInfo import ExtensionInfo 
 from TrustedPluginManager import *
 from MysteryMachine import *
+from MysteryMachine.VersionNr import VersionNr
 
 class ExtensionLib(object):
     """
@@ -147,7 +148,10 @@ class ExtensionLib(object):
         # Return rejected plugins.
         for plugin in self.plugin_man.getRejectedPluginInfo():
             yield plugin
-
+    
+        #Return loaded plugins.
+        for plugin in self.plugin_man.getPluginsLoaded():
+            yield plugin
 
     def findPluginByFeature(self,extension_point,featurecode, version = None ):
         """
@@ -157,7 +161,7 @@ class ExtensionLib(object):
 
         for plugin in self.plugin_man.getPluginCandidates():
             if plugin.provides(extension_point,featurecode):
-                if version <= plugin.version: yield plugin
+                if VersionNr(None) and  VersionNr(version) <= VersionNr(plugin.version)  : yield plugin
 
     def loadPlugin(self,plugin):
         self.plugin_man.loadPlugin(plugin)
