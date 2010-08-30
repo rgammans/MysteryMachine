@@ -18,8 +18,10 @@
 #
 # 
 
+from __future__ import with_statement
 
 from MysteryMachine.VersionNr import VersionNr
+import MysteryMachine
 import MysteryMachine.utils as utils
 import MysteryMachine.utils.path 
 import MysteryMachine.store as store
@@ -65,44 +67,48 @@ atributes by a a store - but it is not required.
 #Redirect to LoaderMethod format.
 formatLoaders = [ ]
 
+PACKFORMAT_EXTPOINTNAME ="PackFileDescriptor"
 
-def GetStoreBases(classspec):
+def GetStoreBases(line,flags):
     """
-    This function finds a list of base classes used by a MMSystem.
+    This function finds a store scheme name. 
 
     It is intended for use by version 1.x and later of the Pack format.
     *** UNTESTED CODE ***
     """
     rv = []
-    line_nr=0
-    for line in classspec:
-        line_nr+=1
-        line = re.sub("^\s+","",line)
-        line = re.sub("\s+$","",line)
-        modlogger.debug("basespec line %s",line )
-        if len(line) == 0:
-            continue
-        #TODO: Error reporting - this file is untrusted remember
-        try:
-            schemename,req_version = re.split('\s+',line)
-        except ValueError, e:
-            raise Exceptions.CoreError("Invalid classspec at line %i (error:%s)"%(line_nr,e.message))
-            
-        ext = self.GetExtLib().findPluginByFeature("StoreScheme" , schemename ,version  = req_version)
-        modlogger.debug( "MMI-GSB: ext = %s"%ext)
-        if ext is None:
-            raise Exceptions.ExtensionError("Can't find %s" % lib)
-
-        self.getExtLib().loadPlugin(ext)
-        modlogger.debug( "MMI-GSB: extobj = %s"%ext.plugin_object)
-        rv +=  [ ext.plugin_object.getStoreMixin(classname,req_version) ]
-    return rv
+    line = re.sub("^\s+","",line)
+    line = re.sub("\s+$","",line)
+    modlogger.debug("basespec line %s",line )
+ 
+    #TODO: Error reporting - this command is untrusted remember
+    try:
+        print "L->",line
+        schemename,req_version = re.split('\s+',line)
+    except ValueError, e:
+        raise Exceptions.CoreError("Invalid schema spec at line %i (error:%s)"%(flags['line_nr'],e.message))
+        
+    flags["schema"] = schemename
+    flags["schema_version"] = req_version
+    flags["schemaclass"] = store.GetStoreClass(schemename , req_version)
 
 
 def LoadFormat0(workdir,formatfile):
     formatfile.close()
     return OpenVersion0(workdir,"hgafile")
 formatLoaders.append( (VersionNr('0'),VersionNr('1'),LoadFormat0 ) )
+
+
+
+def _processFormatLine(cmd,line,flags):
+    with MysteryMachine.StartApp() as ctx:
+        for plugin in ctx.GetExtLib().findPluginByFeature(PACKFORMAT_EXTPOINTNAME,cmd):
+            ctx.GetExtLib().loadPlugin(plugin)
+            plugin = plugin.plugin_object
+            if hasattr(plugin,PACKFORMAT_EXTPOINTNAME  + "Cmd_" + cmd):
+                getattr(plugin,PACKFORMAT_EXTPOINTNAME + "Cmd_" + cmd)(line,flags)
+            else:
+                raise Exceptions.CoreError("Can't process packfile directive %s(%s)" %(cmd,line))
 
 def LoadFormat1(workdir,formatfile): 
     ##FIXME: Test this code etc.
@@ -112,16 +118,21 @@ def LoadFormat1(workdir,formatfile):
     #Read store requirements
     formatDescriptors = formatfile.readlines()
     #Load exts etc,
+    startup_flags = { 'line_nr':0}
     for desc in formatDescriptors:
+        startup_flags['line_nr']+=1
         desc = re.sub("^\s+","",desc)
         desc = re.sub("\s+$","",desc)
         modlogger.debug("spec line %s",desc )
         if len(desc) == 0:
             continue
-        desctype,line = re.split('\s+',desc)
-        handleType(desctype,line)
+        desctype,line = re.split('\s+',desc,maxsplit=1)
+        _processFormatLine(desctype,line,startup_flags)
+        print startup_flags
+    
+    if "schema" not in startup_flags: raise Exceptions.CoreError("No schema specified in packfile")
+    return OpenVersion0(workdir,startup_flags["schema"])
 
-    return OpenVersion0(workdir,schema)
 formatLoaders.append((VersionNr('1'),VersionNr('2'),LoadFormat1 ) )
 
 def OpenPackFile(filename):

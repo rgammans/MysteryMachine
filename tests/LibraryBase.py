@@ -98,6 +98,34 @@ class LibBaseTest(unittest.TestCase):
             system = g.CreateNew(scheme = "hgafile")
             system = g.CreateNew(uri = "dict:foo")
 
+    def testLoad1(self):
+        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/libtest.yaml", "--testmode"]) as g:
+            #Load example pack file and test attributes
+
+            test1 = g.OpenPackFile("examples/format1.mmpack")
+            for rev in test1.getChangeLog():
+                head = rev
+
+            self.assertTrue(isinstance(test1,MMSystem))
+            self.assertEqual(len(list(test1.EnumObjects("Items"))),2)
+            self.assertEqual(len(list(test1.getChangeLog())),1)
+        
+            
+            test1.SaveAsPackFile("/tmp/format1.mmpack")
+
+            ##Open new and old pack files up and compare.
+            newpack = zipfile.ZipFile("/tmp/format1.mmpack","r")
+            dest = tempfile.mkdtemp()
+            path.zunpack(newpack,dest) 
+            # -  This following code assumes a mercurial scm based pack file.
+            #Unpack the new files...(0
+            repo = hg.repository(g.GetMercurialUi() , dest ) 
+            self.assertTrue(mercurial.verify.verify(repo) is None)
+            #This breaks if our example file has multiple heads! So it must not.
+            #If the repo verifies and the nodeid's are the same , the repo MUST
+            # contain the same data . (Guarantee here are as strong or as weak as SHA1).
+            self.assertEquals(repo.heads(None)[0],head.node())
+
     def testContxtMan(self):
         pass
 
