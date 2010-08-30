@@ -46,7 +46,6 @@ import os
 
 from MysteryMachine.ExtensionLib import ExtensionLib
 
-import MysteryMachine.store
 import MysteryMachine.Exceptions
 import MysteryMachine.utils.path
 
