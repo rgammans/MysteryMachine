@@ -21,7 +21,10 @@
 """
 """
 
+from __future__ import with_statement
+
 import weakref
+import MysteryMachine
 import MysteryMachine.Exceptions
 
 _store_registry = dict()
@@ -38,7 +41,7 @@ def CreateStore(uri):
     """
     scheme = GetScheme(uri)
     modlogger.debug( "Looking for store scheme %s " % scheme)
-    storeclass = _store_registry[scheme]
+    storeclass = GetStoreClass(scheme, None )
     return storeclass(uri, create=True)
 
 def GetStore(uri):
@@ -47,7 +50,7 @@ def GetStore(uri):
     MysteryMachine SYstem stored at uri. 
     """
     scheme = GetScheme(uri)
-    storeclass = _store_registry[scheme]
+    storeclass = GetStoreClass(scheme, None )
     return storeclass(uri, create=False)
 
 
@@ -56,8 +59,18 @@ def GetCanonicalUri(uri):
     Return uri in a canonical form.
     """
     scheme = GetScheme(uri)
-    storeclass = _store_registry[scheme]
+    storeclass = GetStoreClass (scheme, None)
     return scheme + ":" + storeclass.GetCanonicalUri(GetPath(uri))
+
+
+def GetStoreClass(schemename,version):
+    with MysteryMachine.StartApp() as ctx:
+        for ext in ctx.GetExtLib().findPluginByFeature("StoreScheme" , schemename ,version  = version):
+             modlogger.debug( "MMI-GSB: ext = %s"%ext)
+             ctx.GetExtLib().loadPlugin(ext)
+
+    return _store_registry[schemename]
+
 
 def RegisterStore(storename,storeclass):
     """
