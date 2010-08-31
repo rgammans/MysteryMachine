@@ -23,6 +23,7 @@ Tests for the MysteryMachine.Schema AttributeValue module
 import sys
 from MysteryMachine.schema.MMAttributeValue import MMAttributeValue
 from MysteryMachine.schema.MMAttribute import * 
+from MysteryMachine import StartApp 
 import unittest
 
 from types import NoneType

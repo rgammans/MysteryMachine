@@ -47,23 +47,10 @@ class bar(object):
 class BaseTest(unittest.TestCase):
     def testInit(self):
         with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml"]) as g:
-            if not bar in foo.__bases__: 
-                foo.__bases__ +=  ( bar, )
-            g.GetExtLib().register_helper(foo,bar)
-           
-            MMBase()
+            g=None
+            g=MMBase()
             #This tests __init__ completes.
-            self.assertTrue(True)
-
-    def testExtensions(self):
-         with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml"]) as g:
-            if not bar in foo.__bases__: 
-                foo.__bases__ +=  ( bar, )
-            g.GetExtLib().register_helper(foo,bar)
-           
-            f=foo()
-            self.assertTrue(bar in f.__class__.__bases__)
-            self.assertTrue(bar in map(lambda x:type(x) , f._helpers))
+            self.assertTrue(g is not None)
 
 
     def testCanicalise(self):
