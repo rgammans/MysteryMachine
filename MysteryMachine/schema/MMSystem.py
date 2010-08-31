@@ -22,7 +22,6 @@
 #
 #
 
-import MysteryMachine
 from Globals import DocsLoaded
 
 from MysteryMachine.schema.MMObject import *
