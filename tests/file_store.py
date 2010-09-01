@@ -50,7 +50,29 @@ class filestoreTests(storeTests,unittest.TestCase):
         self.store.unlock()
 #        os.rmdir(self.mpath)
 
-
+    def testCanonicalise(self):
+        import os
+        self.assertEqual(self.store.GetCanonicalUri("."),os.getcwd())
+        try:
+            import posix
+            #Skip test on non posix OS.
+            self.assertEqual(self.store.GetCanonicalUri("~"),os.getenv("HOME"))
+        except ImportError:
+            pass
+        path= tempfile.mkdtemp()
+        try:
+            os.remove("/tmp/mys-mac-test-symlink")
+        except OSError:
+            pass
+        os.symlink(path,"/tmp/mys-mac-test-symlink")
+        parentpath = os.path.realpath(path+os.sep+"..")
+        self.assertEqual(self.store.GetCanonicalUri("/tmp/mys-mac-test-symlink"),path)
+        self.assertEqual(self.store.GetCanonicalUri("/tmp/mys-mac-test-symlink/.."),parentpath)
+        newpath  = path+os.path.sep+"test"
+        os.mkdir(newpath)
+        self.assertEqual(self.store.GetCanonicalUri("/tmp/mys-mac-test-symlink/test"),newpath)
+        self.assertEqual(self.store.GetCanonicalUri("/tmp/mys-mac-test-symlink/test/.."),path)
+        self.assertEqual(self.store.GetCanonicalUri("/tmp/mys-mac-test-symlink/../test/.."),parentpath)
 def getTestNames():
     	return [ 'file_store.filestoreTests' ] 
 

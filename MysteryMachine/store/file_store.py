@@ -209,7 +209,7 @@ class filestore(Base):
     @staticmethod
     def GetCanonicalUri(uri):
         #Canonical filepath.
-        return os.path.normcase(os.path.realpath(os.path.normpath(uri)))
+        return os.path.normcase(os.path.normpath(os.path.realpath(os.path.expanduser(uri))))
 
     def __init__(self,*args,**kwargs):
         self.logger = logging.getLogger("MysteryMachine.Store.file_store")
