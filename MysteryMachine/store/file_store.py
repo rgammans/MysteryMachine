@@ -217,7 +217,7 @@ class filestore(Base):
         super(filestore,self).__init__(*args,**kwargs)
         uri = args[0]
         create = kwargs.setdefault('create',False)
-        self.path = GetPath(uri)
+        self.path = self.GetCanonicalUri(GetPath(uri))
         self._lock = RRwLock()
         if create:
           os.mkdir(self.path) 

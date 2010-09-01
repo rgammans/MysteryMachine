@@ -73,8 +73,38 @@ class filestoreTests(storeTests,unittest.TestCase):
         self.assertEqual(self.store.GetCanonicalUri("/tmp/mys-mac-test-symlink/test"),newpath)
         self.assertEqual(self.store.GetCanonicalUri("/tmp/mys-mac-test-symlink/test/.."),path)
         self.assertEqual(self.store.GetCanonicalUri("/tmp/mys-mac-test-symlink/../test/.."),parentpath)
+
+
+class test2(storeTests,unittest.TestCase):
+    def mySetUp(self):
+        StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])
+        prefix = ""
+        self.tmpexists = True
+        try:
+            import posix
+            #Under possix try the same thing in a home dir.
+            prefix = "~" 
+        except ImportError:
+            pass
+        self.mpath = prefix + tempfile.mkdtemp(prefix="mysmac")
+        self.parentpath = os.path.normpath(os.path.expanduser(self.mpath+os.path.sep+".."))
+        self.tmpexists = os.path.exists(self.parentpath)
+        os.makedirs(os.path.expanduser(self.mpath))
+       
+        self.store=filestore("attrfile:"+self.mpath,create = False)
+        self.store.set_owner(DummySystem)
+        self.has_scm = False
+    
+    def tearDown(self):
+        self.store.lock()
+        shutil.rmtree(os.path.expanduser(self.mpath))
+        self.store.unlock()
+        if not self.tmpexists: 
+            os.rmdir(self.parentpath)
+
+
 def getTestNames():
-    	return [ 'file_store.filestoreTests' ] 
+    	return [ 'file_store.filestoreTests' , 'file_store.tests2' ] 
 
 if __name__ == '__main__':
     unittest.main()
