@@ -236,6 +236,19 @@ class MMSystem (MMContainer):
     store = CreateStore(uri) 
     return MMSystem(store)
 
+  @staticmethod
+  def OpenUri(uri):
+    """
+    Create a backing store for a new blank MMSystem
+
+    @param string uri : 
+    @return MMSystem :
+    @author
+    """
+    store = GetStore(uri) 
+    return MMSystem(store)
+
+
   
   def DoValidate(self):
     """

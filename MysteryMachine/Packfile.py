@@ -26,6 +26,7 @@ import MysteryMachine.utils as utils
 import MysteryMachine.utils.path 
 import MysteryMachine.store as store
 import MysteryMachine.Exceptions as Exceptions
+from MysteryMachine.schema.MMSystem import MMSystem
 
 import tempfile
 import zipfile
@@ -179,14 +180,13 @@ def OpenVersion0(workdir,scheme):
     directory. It guarantees to use a hgfile_mixin and file_store.
 
     """
-    mmstore = store.GetStore(scheme+":"+workdir)
-    log = list(mmstore.getChangeLog())
+    system = MMSystem.OpenUri(scheme+":"+workdir)
+    log = list(system.getChangeLog())
     #Unpack last rev into working dir and open MMsystem
-    mmstore.revert(log[len(log)-1])
-    #Late import since MMSystem depends on this module - we only load 
-    # it at run time once we have been fully compiled.
-    from MysteryMachine.schema.MMSystem import MMSystem
-    return MMSystem(mmstore)   
+    system.Revert(log[-1])
+    return system
+
+
 
 def SavePackFile(system,filename,**kwargs):
     """

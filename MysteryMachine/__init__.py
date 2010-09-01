@@ -47,6 +47,7 @@ import os
 from MysteryMachine.ExtensionLib import ExtensionLib
 
 import MysteryMachine.Exceptions
+from MysteryMachine.schema.MMSystem import MMSystem
 import MysteryMachine.utils.path
 
 import types
@@ -365,6 +366,12 @@ class _LibraryContext(object):
         import MysteryMachine.Packfile as Packfile
         return Packfile.OpenPackFile(filename)
          
+    def OpenUri(self,url):
+        """
+        Opens a MMSystem by URL.
+        """
+        return MMSystem.OpenUri(url)
+
     def CreateNew(self,**kwargs):
         """
         Creates a new MMSytem.
@@ -386,9 +393,6 @@ class _LibraryContext(object):
         path   = kwargs.get("path", tempfile.mkdtemp("mm-working") )
         uri    = kwargs.get("uri", scheme+":"+path)
 
-        #Late import since MMSystem depends on this module - we only load 
-        # it at run time once we have been fully compiled.
-        from MysteryMachine.schema.MMSystem import MMSystem
         #The store manages the path so delete it and see.
         #  - this is horrid as create al the sort of problems
         #    mkdtemp, mkstemp where speced to avoid. Sigh.
