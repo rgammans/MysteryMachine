@@ -119,7 +119,11 @@ class storeTests(object):
         self.assertEqual(len(objs1),1)
         self.assertEqual(len(cat1),0)
         self.assertEqual(len(objs2),0)
-       
+
+        #Count objects to check that attributes aren't included
+        objs1=list(self.store.EnumObjects("One"))
+        self.assertEqual(len(objs1),2)      
+
        #Test presence
         self.assertTrue(self.store.HasAttribute("One:"+o12+":name"))
         self.assertTrue(self.store.HasAttribute("One:.dummyattr"))

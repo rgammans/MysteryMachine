@@ -238,7 +238,10 @@ class filestore(Base):
                 if dentry[0] != '.': yield dentry
 
     def EnumObjects(self,category):
-        for dentry in os.listdir(os.path.join(self.path,category)):
+        catpath = self.canonicalise(category)
+        for dentry in os.listdir(os.path.join(self.path,*catpath)):
+            objpath = catpath + [ dentry ]
+            if not os.path.isdir(os.path.join(self.path,*objpath)) : continue
             yield dentry
   
     def NewCategory(self,category):
