@@ -186,6 +186,7 @@ class MMSystem (MMContainer):
     """
     CategoryName = self.canonicalise(CategoryName)
     self.store.NewCategory(CategoryName)
+    self[CategoryName][".parent"] = defaultobjref
 
   def NewObject(self, category, parent = None , formathelper = None):
     """
@@ -306,7 +307,6 @@ class MMSystem (MMContainer):
     raise KeyError(fullid)
 
   def __delitem__(self,obj):
-      print "deleteing %s" % obj
       path = obj.split(":")
       if len(path) !=  2: raise KeyError(obj)       
       self.DeleteObject(obj)
@@ -332,9 +332,9 @@ class MMSystem (MMContainer):
 
 class MMCategory(MMAttributeContainer):
         
-    def __init__(self,system,name):
-        super(MMCategory,self).__init__(self,system,name)
-        self.system = system
+    def __init__(self,owner,name):
+        super(MMCategory,self).__init__(self,owner,name)
+        self.owner = owner
         self.name   = name
 
     def __getitem__(self,item):
@@ -342,7 +342,7 @@ class MMCategory(MMAttributeContainer):
             itemname = "." + self.canonicalise(item[1:])
             return self._get_item(itemname,self._getAttribute,itemname)
         else:
-            return self.system.get_object(self.name,item)
+            return self.owner.get_object(self.name,item)
        
     def __setitem__(self,item,value):
         if item[0] ==".":
@@ -353,7 +353,7 @@ class MMCategory(MMAttributeContainer):
                 return
             
             val = self._set_item(itemname,value).get_value()
-            self.system.store.SetAttribute(self.name + ":"  +itemname,
+            self.owner.store.SetAttribute(self.name + ":"  +itemname,
                                     val.get_type(),val.get_parts())    
 
         else: raise LookupError("Cannot directly set objects")
@@ -365,14 +365,14 @@ class MMCategory(MMAttributeContainer):
             #Remove from cache 
             self._invalidate_item(attrname)
             #Remove from backing store. 
-            if self.system.store.HasAttribute(self.name+":"+attrname):
-                 self.system.store.DelAttribute(self.name+":"+attrname)    
-        else: del self.system[self.name + ":" + attrname]
+            if self.owner.store.HasAttribute(self.name+":"+attrname):
+                 self.owner.store.DelAttribute(self.name+":"+attrname)    
+        else: del self.owner[self.name + ":" + attrname]
 
     def _getAttribute(self,name):
-      if not self.system.store.HasAttribute(self.name+":"+name):
+      if not self.owner.store.HasAttribute(self.name+":"+name):
             raise KeyError(name)
-      attrval = self.system.store.GetAttribute(self.name+":"+name)
+      attrval = self.owner.store.GetAttribute(self.name+":"+name)
       t,p = attrval
       a = MMAttribute(name,MakeAttributeValue(t,p),self,copy = False )
       return a 
