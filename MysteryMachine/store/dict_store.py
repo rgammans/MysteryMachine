@@ -1,5 +1,6 @@
 
 import re
+import operator
 from MysteryMachine.policies.SequentialId import NewId
 from MysteryMachine.store import *
 from MysteryMachine.store.Base import Base 
@@ -31,65 +32,89 @@ class dict_store(Base):
 
         self.catdict = _dict_stores[path]
 
+    def _walkPath(self,dbpath):
+        head = self.catdict
+        for ele in dbpath:
+            head = head[ele]
+        return head
+
     def EnumCategories(self):
         for k in self.catdict.keys():
+            if not operator.isMappingType(self.catdict[k]): continue 
             if k[0] != '.': yield k
 
     def EnumObjects(self,cat):
-        for o in self.catdict[cat].keys():
+        dbpath = self.canonicalise(cat)
+        d = self._walkPath(dbpath)
+        for o in d.keys():
             if re.match(self.invalidobj,o) is None: yield o
 
     def NewCategory(self,cat):
-        if cat in self.catdict: return
-        self.catdict[cat] = {}
+        dbpath = self.canonicalise(cat)
+        d = self._walkPath(dbpath[:-1])
+        if dbpath[-1] in d: return
+        self.catdict[dbpath[-1]] = {}
   
 
     def HasCategory(self,cat):
-        return cat in self.catdict
+        dbpath = self.canonicalise(cat)
+        d = self._walkPath(dbpath[:-1])
+        return dbpath[-1] in d
   
     def NewObject(self,cat):
+        dbpath = self.canonicalise(cat)
+        d = self._walkPath(dbpath)
         objs = list(self.EnumObjects(cat))
         newid = NewId(objs)
-        self.catdict[cat][newid] = { }
+        d[newid] = { }
         return newid
 
     def DeleteCategory(self,cat):
-        del self.catdict[cat]
+        dbpath = self.canonicalise(cat)
+        d = self._walkPath(dbpath[:-1])
+        del d[dbpath[-1]]
 
     def DeleteObject(self,object):
         dbpath = object.split(":")
-        del self.catdict[dbpath[0]][dbpath[1]]
+        d = self._walkPath(dbpath[:-1])
+        del d[dbpath[-1]]
 
     def HasObject(self,obj):
-        path = self.canonicalise(obj)
-        return path[1] in self.catdict[path[0]]       
+        dbpath = self.canonicalise(obj)
+        d = self._walkPath(dbpath[:-1])
+        return dbpath[-1] in d       
 
     def EnumAttributes(self,object):
+        dbpath = self.canonicalise(object)
+        d = self._walkPath(dbpath)
         path = self.canonicalise(object)
-        for a in self.catdict[path[0]][path[1]].keys():
+        for a in d:
+            #Skip Objs/Categories at this level
+            if operator.isMappingType(d[a]): continue
             if a[0] != '.': yield a
 
     def HasAttribute(self,attr):
-        path = self.canonicalise(attr)
-        self.logger.debug( "CHECKPATH = %s " % path)
-        val = path[2] in self.catdict[path[0]][path[1]]        
-        #self.logger.debug(  "%s is %s" % (path ,val))
-        return val
+        dbpath = self.canonicalise(attr)
+        d = self._walkPath(dbpath[:-1])
+        self.logger.debug( "CHECKPATH = %s " % dbpath)
+        return dbpath[-1] in d       
 
     def SetAttribute(self,attr,type,parts):
+        dbpath = self.canonicalise(attr)
+        d = self._walkPath(dbpath[:-1])
         #self.logger.debug( "setting %s" % attr)
-        path = self.canonicalise(attr)
-        self.catdict[path[0]][path[1]][path[2]]=(type,parts)
+        d[dbpath[-1]]=(type,parts)
 
     def DelAttribute(self,attr):
-        path = self.canonicalise(attr)
-        del self.catdict[path[0]][path[1]][path[2]]
-  
+        dbpath = attr.split(":")
+        d = self._walkPath(dbpath[:-1])
+        del d[dbpath[-1]]
 
     def GetAttribute(self,attr):
-        path = self.canonicalise(attr)
-        self.logger.debug( "GETPATH = %s " % path)
-        return self.catdict[path[0]][path[1]][path[2]]
+        dbpath = attr.split(":")
+        d = self._walkPath(dbpath[:-1])
+        self.logger.debug( "GETPATH = %s " % dbpath)
+        return d[dbpath[-1]]
 
 
     def lock(self):

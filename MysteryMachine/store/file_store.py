@@ -280,16 +280,19 @@ class filestore(Base):
             #Filename has a leading space fixup the elements
             if len(items[0]) > 0 and items[0] not in found:
                 found += [ items[0] ]
+                #Skip any Obj/Categories at this level
+                filepath = objpath + [ candidate ]
+                if os.path.isdir(os.path.join(self.path,*filepath)) : continue
                 yield items[0]
     
     def HasAttribute(self,attr):
         attrele = self.canonicalise(attr) 
-        for candidate in os.listdir(os.path.join(self.path,*attrele[:2])):
+        for candidate in os.listdir(os.path.join(self.path,*attrele[:-1])):
             items = candidate.split(".")
             if items[0] == "":
                 items = items[1:]
                 items[0] = "."+items[0]
-            if items[0] == attrele[2]: return True
+            if items[0] == attrele[-1]: return True
 
         return False
 
@@ -316,7 +319,7 @@ class filestore(Base):
 
     def DelAttribute(self,attr):
         attrele = self.canonicalise(attr)
-        workuri= os.path.join(self.path,*(attrele[:3]))
+        workuri= os.path.join(self.path,*(attrele))
         for f in glob.glob(workuri + ".*" ):
                 #TODO Ensure python can't reorder 
                 #     these two calls.
@@ -327,7 +330,7 @@ class filestore(Base):
 
     def GetAttribute(self,attr):
         attrele = self.canonicalise(attr)
-        workuri = os.path.join(self.path,*(attrele[:2]))
+        workuri = os.path.join(self.path,*(attrele[:-1]))
         files = {}
         attrtype = None
         for candidate in os.listdir(workuri):
@@ -336,7 +339,7 @@ class filestore(Base):
                 items = items[1:]
                 items[0] = "."+items[0]
             self.logger.debug( "GA:Candiate-items:%s" %items)
-            if items[0] == attrele[2]:
+            if items[0] == attrele[-1]:
                 if attrtype == None:
                     attrtype = items[1]
                 if attrtype != items[1]:

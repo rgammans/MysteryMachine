@@ -109,31 +109,41 @@ class storeTests(object):
         attrtupled = ( "simple",{ "":"tom cobbley" }  )
         self.store.SetAttribute("One"+":"+o12+":.dotfile",*attrtupled)
 
+        #Set Attribute in a category
+        self.store.SetAttribute("One"+":"+".dummyattr",*attrtuple)
 
         #Count attributes.
         objs1=list(self.store.EnumAttributes("One:"+o12))
+        cat1=list(self.store.EnumAttributes("One"))
         objs2=list(self.store.EnumAttributes(".Two:"+o21))
         self.assertEqual(len(objs1),1)
+        self.assertEqual(len(cat1),0)
         self.assertEqual(len(objs2),0)
        
        #Test presence
         self.assertTrue(self.store.HasAttribute("One:"+o12+":name"))
+        self.assertTrue(self.store.HasAttribute("One:.dummyattr"))
+        self.assertFalse(self.store.HasAttribute("One:.foo"))
         self.assertFalse(self.store.HasAttribute("One:"+o11+":name"))
         self.assertFalse(self.store.HasAttribute("One:"+o12+":notname"))
 
         #Retrieve attribute.
         self.assertEquals(self.store.GetAttribute("One:"+o12+":name"),attrtuple)
         self.assertEquals(self.store.GetAttribute("One:"+o12+":.dotfile"),attrtupled)
+        self.assertEquals(self.store.GetAttribute("One:.dummyattr"),attrtuple)
         
         #Delete it.
         self.store.DelAttribute("One:"+o12+":name")
         self.store.DelAttribute("One:"+o12+":.dotfile")
+        self.store.DelAttribute("One:.dummyattr")
  
         #Count attributes.
         objs1=list(self.store.EnumAttributes("One:"+o12))
         objs2=list(self.store.EnumAttributes(".Two:"+o21))
+        cat1=list(self.store.EnumAttributes("One"))
         self.assertEqual(len(objs1),0)
         self.assertEqual(len(objs2),0)
+        self.assertEqual(len(cat1),0)
         
         #Set an attribute - leave attribut set for SCM Interagtion tests
         attrtuple = ( "simple",{ "":"fred" }  )
