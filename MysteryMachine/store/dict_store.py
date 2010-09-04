@@ -27,7 +27,7 @@ class dict_store(Base):
         Base.__init__(self,uri,create)
         self.logger = logging.getLogger("MysteryMachine.store.dict_store")
         path = GetPath(uri)
-        if path not in _dict_stores:
+        if create:
             _dict_stores[path] = { }
 
         self.catdict = _dict_stores[path]

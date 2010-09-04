@@ -39,6 +39,17 @@ class storeTests(object):
     def setUp(self):  
         self.mySetUp()
 
+    def testCreate(self):
+        myclass = type(self.store)
+        self.store.NewCategory("Test")
+        from MysteryMachine.store import CreateStore
+        try:
+            #This must create an empty store or raise an exception
+            differentStore = CreateStore(self.store.getUri())
+            self.assertEquals(list(differentStore.EnumCategories()),[])
+        except:
+            pass
+
     def testCategories(self):
         cats=list(self.store.EnumCategories())
         self.assertEqual(len(cats),0)

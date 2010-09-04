@@ -45,7 +45,7 @@ class dictstoreTests(storeTests,unittest.TestCase):
         StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
         #Ensure each new time this starts we use a new system
         testscount = testscount + 1
-        self.store=dict_store("dict:test"+str(testscount))
+        self.store=dict_store("dict:test"+str(testscount),True)
         self.store.set_owner(DummySystem)
         self.has_scm = False   
     
