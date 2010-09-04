@@ -135,9 +135,7 @@ class MMSystem (MMContainer):
     @author
     """
 
-    cat = self.canonicalise(cat)
-    fullid = cat + ":" + id
-    return self._get_item(fullid,MMObject,fullid,self,self.store.GetObjStore(fullid))
+    return self[cat + ":" + id]
 
   def Commit(self, msg):
     """
@@ -287,13 +285,28 @@ class MMSystem (MMContainer):
     for k in self.EnumContents():
         yield (k , self[k] )
 
-  def __getitem__(self,obj):
-      path = obj.split(":")
-      if len(path) !=  2: raise KeyError(obj)       
-      return self.get_object(*path)
+  def __getitem__(self,obj): 
+    fullid = ""
+    len = 0
+    for element in  obj.split(":"):
+        fullid += ":" + self.canonicalise(element)
+        len += 1
+        if len > 2:  raise KeyError(obj)       
     
+    #Snip off leadinfg  ':'
+    fullid = fullid[1:]
+
+    if len == 1:
+        if self.store.HasCategory(fullid):
+            return self._get_item(fullid,MMCategory,self,fullid)
+    else:
+        if self.store.HasObject(fullid): 
+            return self._get_item(fullid,MMObject,fullid,self,self.store.GetObjStore(fullid))
+    
+    raise KeyError(fullid)
 
   def __delitem__(self,obj):
+      print "deleteing %s" % obj
       path = obj.split(":")
       if len(path) !=  2: raise KeyError(obj)       
       self.DeleteObject(obj)
@@ -315,3 +328,51 @@ class MMSystem (MMContainer):
   def SaveAsPackFile(self,filename,**kwargs):
     import MysteryMachine.Packfile
     MysteryMachine.Packfile.SavePackFile(self,filename,**kwargs)
+
+
+class MMCategory(MMAttributeContainer):
+        
+    def __init__(self,system,name):
+        super(MMCategory,self).__init__(self,system,name)
+        self.system = system
+        self.name   = name
+
+    def __getitem__(self,item):
+        if item[0] == ".":
+            itemname = "." + self.canonicalise(item[1:])
+            return self._get_item(itemname,self._getAttribute,itemname)
+        else:
+            return self.system.get_object(self.name,item)
+       
+    def __setitem__(self,item,value):
+        if item[0] ==".":
+            itemname =  self.canonicalise(item)
+            #Process set to None.
+            if value is None:
+                del self[item] 
+                return
+            
+            val = self._set_item(itemname,value).get_value()
+            self.system.store.SetAttribute(self.name + ":"  +itemname,
+                                    val.get_type(),val.get_parts())    
+
+        else: raise LookupError("Cannot directly set objects")
+
+
+    def __delitem__(self, attrname):
+        if attrname[0] ==".":
+            attrname = self.canonicalise(attrname) 
+            #Remove from cache 
+            self._invalidate_item(attrname)
+            #Remove from backing store. 
+            if self.system.store.HasAttribute(self.name+":"+attrname):
+                 self.system.store.DelAttribute(self.name+":"+attrname)    
+        else: del self.system[self.name + ":" + attrname]
+
+    def _getAttribute(self,name):
+      if not self.system.store.HasAttribute(self.name+":"+name):
+            raise KeyError(name)
+      attrval = self.system.store.GetAttribute(self.name+":"+name)
+      t,p = attrval
+      a = MMAttribute(name,MakeAttributeValue(t,p),self,copy = False )
+      return a 

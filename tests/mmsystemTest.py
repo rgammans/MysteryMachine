@@ -45,6 +45,29 @@ class sysTests(unittest.TestCase):
         cats=list(self.sys.EnumCategories())
         self.assertEqual(len(cats),1)
 
+    def testCatObject(self):
+        self.sys.NewCategory("One",None)
+        self.sys.NewCategory("Two",None)
+        self.assertEqual(type(self.sys["One"]),MMCategory)
+        cat = self.sys["One"]
+        def setObj(cat):
+            cat["obj"] = ""
+        self.assertRaises(LookupError,setObj,cat) 
+        cat[".dummy"] = "data"
+        self.assertEqual(type(cat[".dummy"]) , MMAttribute)
+        self.assertEqual(str(cat[".dummy"]),"data")
+        o12=self.sys.NewObject("One",None)
+        o12id = repr(o12).split(":")[-1]
+        self.assertEquals(cat[o12id],o12)
+        del cat[".dummy"]
+        self.assertRaises(KeyError,cat.__getitem__,".dummy")
+        self.assertRaises(KeyError,self.sys["One"].__getitem__,".dummy")
+        print repr(o12),o12id
+        del cat[o12id]
+        self.assertRaises(KeyError,cat.__getitem__,o12id)
+        self.assertRaises(KeyError,self.sys["One"].__getitem__,o12id)
+        self.assertRaises(KeyError,self.sys.get_object,"One",o12id)
+
     def testObjects(self):
         #Check empty categories are..
         self.sys.NewCategory("One",None)
