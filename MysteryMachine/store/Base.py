@@ -44,7 +44,8 @@ class Base(object):
 
     def canonicalise(self,name):
         """Splits a object or attribute name into it's component parts"""
-        return name.split(":")
+        if len(name) == 0: return  []
+        else: return name.split(":")
 
     def __init__(self,uri,*args,**kwargs):
         self.uri   = GetCanonicalUri(uri)

@@ -37,17 +37,22 @@ class dict_store(Base):
         for ele in dbpath:
             head = head[ele]
         return head
+    
+    def _GenericEnum(self,path,predicate):
+        dbpath = self.canonicalise(path)
+        root = self._walkPath(dbpath)
+        for potential in root.keys():
+            if predicate(root,potential): yield potential
 
     def EnumCategories(self):
-        for k in self.catdict.keys():
-            if not operator.isMappingType(self.catdict[k]): continue 
-            if k[0] != '.': yield k
+        #Forward the iterator object
+        return self._GenericEnum("", lambda d,k:  operator.isMappingType(d[k]) and k[0] !="." )
 
+    def _testObject(self,container,name):
+        return re.match(self.invalidobj,name) is None
+    
     def EnumObjects(self,cat):
-        dbpath = self.canonicalise(cat)
-        d = self._walkPath(dbpath)
-        for o in d.keys():
-            if re.match(self.invalidobj,o) is None: yield o
+        return self._GenericEnum(cat, self._testObject ) 
 
     def NewCategory(self,cat):
         dbpath = self.canonicalise(cat)
@@ -55,12 +60,13 @@ class dict_store(Base):
         if dbpath[-1] in d: return
         self.catdict[dbpath[-1]] = {}
   
-
-    def HasCategory(self,cat):
-        dbpath = self.canonicalise(cat)
+    def _GenericHas(self,name):
+        dbpath = self.canonicalise(name)
         d = self._walkPath(dbpath[:-1])
         return dbpath[-1] in d
   
+    HasCategory = _GenericHas
+
     def NewObject(self,cat):
         dbpath = self.canonicalise(cat)
         d = self._walkPath(dbpath)
@@ -69,35 +75,20 @@ class dict_store(Base):
         d[newid] = { }
         return newid
 
-    def DeleteCategory(self,cat):
-        dbpath = self.canonicalise(cat)
+    def _GenericDelete(self,name):
+        dbpath = self.canonicalise(name)
         d = self._walkPath(dbpath[:-1])
         del d[dbpath[-1]]
 
-    def DeleteObject(self,object):
-        dbpath = object.split(":")
-        d = self._walkPath(dbpath[:-1])
-        del d[dbpath[-1]]
+    DeleteCategory= _GenericDelete
+    DeleteObject =  _GenericDelete
+      
+    HasObject = _GenericHas
 
-    def HasObject(self,obj):
-        dbpath = self.canonicalise(obj)
-        d = self._walkPath(dbpath[:-1])
-        return dbpath[-1] in d       
+    def EnumAttributes(self,obj):
+       return self._GenericEnum(obj, lambda d,a: (not operator.isMappingType(d[a])) and  a[0] != '.')
 
-    def EnumAttributes(self,object):
-        dbpath = self.canonicalise(object)
-        d = self._walkPath(dbpath)
-        path = self.canonicalise(object)
-        for a in d:
-            #Skip Objs/Categories at this level
-            if operator.isMappingType(d[a]): continue
-            if a[0] != '.': yield a
-
-    def HasAttribute(self,attr):
-        dbpath = self.canonicalise(attr)
-        d = self._walkPath(dbpath[:-1])
-        self.logger.debug( "CHECKPATH = %s " % dbpath)
-        return dbpath[-1] in d       
+    HasAttribute = _GenericHas
 
     def SetAttribute(self,attr,type,parts):
         dbpath = self.canonicalise(attr)
@@ -105,10 +96,7 @@ class dict_store(Base):
         #self.logger.debug( "setting %s" % attr)
         d[dbpath[-1]]=(type,parts)
 
-    def DelAttribute(self,attr):
-        dbpath = attr.split(":")
-        d = self._walkPath(dbpath[:-1])
-        del d[dbpath[-1]]
+    DelAttribute = _GenericDelete
 
     def GetAttribute(self,attr):
         dbpath = attr.split(":")
