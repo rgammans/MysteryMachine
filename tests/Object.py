@@ -45,7 +45,7 @@ class ObjectTests(unittest.TestCase):
         self.parent                  = self.system.NewObject( "Template" )
         self.parent[".defname"]      =":mm:`:name`"
         
-        self.system.NewCategory( "Dummy" )
+        self.system.NewCategory( "Dummy" ,defaultparent =self.dummyparent)
         self.object                  = self.system.NewObject("Dummy") 
         self.object.set_parent(self.parent)       
 
@@ -57,6 +57,8 @@ class ObjectTests(unittest.TestCase):
         self.logger.debug( "----starting getparent test------")
         self.assertTrue(self.parent is self.object.get_parent())
         self.logger.debug( "----completed getparent test------")
+
+
  
     def testdefname(self):
         self.logger.debug( "----starting defname test------")
@@ -105,7 +107,14 @@ class ObjectTests(unittest.TestCase):
         self.assertEquals(str(self.object), "object")
         self.assertEquals(str(p), "parent")
 
-
+    def testDefaultParent(self):
+        obj2 = self.system.NewObject("Dummy")
+        self.assertEquals(str(obj2[".defname"]),"name") 
+        #Test parent de-ref
+        obj2[".defname"]= "object" 
+        self.assertEquals(str(obj2), "object")
+        self.assertEquals(str(self.dummyparent), "name")
+ 
     def testInheritedEval(self):
         p=self.object.get_parent()
         p["test"] = "test"

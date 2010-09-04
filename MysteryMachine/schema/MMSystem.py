@@ -175,7 +175,7 @@ class MMSystem (MMContainer):
     """
     return self.store.getChangeLog()
 
-  def NewCategory(self, CategoryName, formathelper = None , defaultobjref = None):
+  def NewCategory(self, CategoryName, formathelper = None , defaultparent = None):
     """
      Creates a new category
 
@@ -186,7 +186,7 @@ class MMSystem (MMContainer):
     """
     CategoryName = self.canonicalise(CategoryName)
     self.store.NewCategory(CategoryName)
-    self[CategoryName][".parent"] = defaultobjref
+    self[CategoryName][".parent"] = defaultparent
 
   def NewObject(self, category, parent = None , formathelper = None):
     """

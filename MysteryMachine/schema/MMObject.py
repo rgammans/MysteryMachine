@@ -180,7 +180,10 @@ class MMObject (MMAttributeContainer):
     #Bypass inheritance lookup.
     if self.store.HasAttribute(".parent"):
         parent = self._get_item(".parent",self._make_attr,".parent") 
-    else: raise KeyError(".parent")
+    else: #TODO Get parent from object's category 
+        idpath = self.id.split(":")[:-1]
+        category = self.owner[idpath[-1]]
+        parent = category[".parent"]
     self.logger.debug( "parent type is %s " %type(parent))
     self.logger.debug( "Parent = %r" % parent)
     if parent != None:
