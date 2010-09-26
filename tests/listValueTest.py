@@ -115,6 +115,21 @@ class ListValTest(unittest.TestCase):
         attr["0"] = valo
         self.assertEquals(attr[0].get_value(),valo) 
  
+        
+        #Test Stable key behaviour.
+        skey = repr(attr[0]).split(":")[-1]
+        self.assertNotEquals(skey,"0")
+        self.assertNotEquals(skey,0)
+        self.assertEquals(attr[0],attr["0"])
+        self.assertEquals(attr[skey],attr[0],msg=("attr[\"%s\"] != attr[0]" % skey))
+        skey = repr(attr["1"]).split(":")[-1]
+        self.assertNotEquals(skey,"1")
+        self.assertNotEquals(skey,1)
+        self.assertEquals(attr[skey],attr[1])
+
+
+        
+        
         #Clear dict so can check writeback again
         del obj["test"]
         attr[1]="second"

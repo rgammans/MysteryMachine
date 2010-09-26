@@ -52,22 +52,26 @@ class MMListAttribute(MMAttributeValue):
             for item in self.value:
                 self.append(item)
 
-        self.exports+= [ "__iter__" , "__contains__","__getitem__","__setitem__","__delitem__","count","extend","insert","append" ]
+        self.exports+= ["GetStableIndex", "__iter__" , "__contains__","__getitem__","__setitem__","__delitem__","count","extend","insert","append" ]
 
     def __contains__(self,val , obj = None ):
         val = self._convert_to_str(None,val,obj)
         return val in self.parts.values()
 
 
-    def _get_key(self,index,obj = None):
-        return sorted(self.parts.keys())[int(index)]
+    def GetStableIndex(self,index,obj = None):
+        try:
+            index=int(index)
+        except ValueError:
+            return index
+        return sorted(self.parts.keys())[index]
 
     def __delitem__(self,index ,obj = None):
-        key = self._get_key(index,obj)
+        key = self.GetStableIndex(index,obj)
         del self.parts[key]
 
     def __getitem__(self,index , obj = None):
-        key = self._get_key(index,obj)
+        key = self.GetStableIndex(index,obj)
         return self._convert_to_val(key,self.parts[key],obj)        
 
     def __iter__(self, obj = None):
@@ -75,7 +79,7 @@ class MMListAttribute(MMAttributeValue):
             yield key 
 
     def __setitem__(self,index,value , obj = None):
-        key = self._get_key(index,obj)
+        key = self.GetStableIndex(index,obj)
         self._write(key,value,obj)
 
     def count(self,obj = None):
