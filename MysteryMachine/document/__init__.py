@@ -58,3 +58,15 @@ def generate_doctree(pattern,home):
            section_stack = section_stack[:-1]        
 
     return doc
+
+
+def expand_attribute(obj,home):
+    """
+    Expand an attribute in context of a foreign object.
+
+    This is useful to get non document information which is related
+    to a document. Such as getting a emailaddress from the pattern
+    object while doing a mail-merge.
+
+    """
+    return home.get_parser().GetString(obj.get_raw_rst(),repr(home))
