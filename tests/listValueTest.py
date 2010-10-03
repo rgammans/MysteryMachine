@@ -25,9 +25,12 @@ from MysteryMachine.schema.MMListAttribute import *
 from MysteryMachine.schema.MMListAttribute import _Key as ListKey 
 from MysteryMachine.schema.MMAttributeValue import * 
 from MysteryMachine.schema.MMAttribute import * 
+from MysteryMachine.schema.MMAttribute import * 
+from MysteryMachine.schema.MMBase import * 
 import unittest
 from MysteryMachine import * 
 from itertools import izip
+import copy
 
 class SystemProxy: 
     def get_object(self,cat,id):
@@ -39,10 +42,24 @@ class DummyParser:
     def GetString(self,string,node):
         return string
 
-class ObjectProxy(dict):
+class ObjectProxy(MMAttributeContainer):
+    def __init__(self):
+        super(ObjectProxy,self).__init__(self)
+        self.d = {}
     def get_parser(self):
        return DummyParser() 
+    def __setitem__(self,k,v):
+        attr = self._set_item(k,v)
+        val = attr.get_value()
+        self.d[k] = (val.get_type(), val.get_parts())
 
+    def __getitem__(self,k):
+        return self._get_item(k,self.__getitem,k)
+    def __getitem(self,k):
+        return MMAttribute(k,MakeAttributeValue(self.d[k][0],self.d[k][1]),self)
+    def __delitem__(self,k):
+        del self.d[k]
+        self._invalidate_item(k)
 
     
 class ListValTest(unittest.TestCase):
@@ -98,21 +115,31 @@ class ListValTest(unittest.TestCase):
         val  = MMListAttribute(value =  [ "first" , "second" , "third" ] )
         obj  = ObjectProxy()
         attr = MMAttribute("test",val,obj)
+        #Check values from initialisation
         self.assertEquals(attr.count() ,3 )        
         self.assertEquals(str(attr.__getitem__(1)) , "second" )        
         self.assertEquals(str(attr[1]) ,"second" )        
         self.assertEquals(str(attr["1"]) ,"second" )        
         self.assertTrue("second" in attr )
-        self.assertEquals(str(attr["-1"]) ,"third" )        
+        self.assertEquals(str(attr["-1"]) ,"third" )
+        #Delete and item.
         del attr["1"]
+        #Check whats moved.
+        # - array should be  ["first", "third"].
         self.assertEquals(attr.count() ,2 )        
         self.assertEquals(len(list(iter(attr))),2)
         self.assertFalse("second" in attr )
-        self.assertEquals(str(attr["1"]) ,"third" )        
+        self.assertEquals(str(attr["1"]) ,"third" )
         #Check writeback occurred.
-        self.assertEquals(obj["test"],val)
+        val = attr.get_value()
+        attr = None
+        self.assertEquals(obj["test"].get_value(),val)
+        attr = obj["test"]
         valo = CreateAttributeValue("primary")
         attr["0"] = valo
+        
+        # - array should be  ["primary", "third"].
+        self.assertEquals(attr.count() ,2 )        
         self.assertEquals(attr[0].get_value(),valo) 
  
         
@@ -131,21 +158,31 @@ class ListValTest(unittest.TestCase):
         
         
         #Clear dict so can check writeback again
+        # - array should be  ["primary", "third"].
+        val = copy.copy(obj["test"].get_value())
         del obj["test"]
+        # - array should be  ["primary", "second"].
         attr[1]="second"
+        val[1]="second"
         self.assertEquals(str(attr["1"]) ,"second" )        
-        self.assertEquals(obj["test"],val)
+        self.assertEquals(obj["test"].get_value(),val)
         #Check walk back thru and find a parser
         self.assertEquals(attr[1].GetFullExpansion(),"second")
 
+        val = copy.copy( obj["test"].get_value())
         del obj["test"]
+        # - array should be  ["primary", "second" , "some fate"].
         attr.append("some fate")
-        self.assertEquals(obj["test"],val)
+        val.append("some fate")
+        self.assertEquals(obj["test"].get_value(),val)
         self.assertEquals(str(attr["2"]) ,"some fate" )        
 
+        val = obj["test"].get_value()
         del obj["test"]
         attr.insert(2,"some date")
-        self.assertEquals(obj["test"],val)
+        val.insert(2,"some date")
+        # - array should be  ["primary", "second" ,"some date" ,"some fate"].
+        self.assertEquals(obj["test"].get_value(),val)
         self.assertEquals(str(attr["2"]) ,"some date" )        
         self.assertEquals(str(attr["3"]) ,"some fate" )        
 

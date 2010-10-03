@@ -241,7 +241,7 @@ class MMAttributeValue (MMBase ):
     
   def __copy__(self):
      self.logger.debug( "AV_c:Entered")
-     return self.__class__(parts = self.parts)
+     return self.__class__(parts = _copy.copy(self.parts))
 
 
   def __eq__(self,other):
