@@ -23,16 +23,17 @@
 #
 
 from MMBase import *
-from MMAttributeValue import CreateAttributeValue , MMAttributeValue_MMRef
+from MMAttributeValue import MMAttributeValue , CreateAttributeValue , MMAttributeValue_MMRef , ShadowAttributeValue
 
 import operator
 import functools
 import sys
  
 import logging
+import copy as _copy
  
 
-
+recurse_count = 0
 
 class MMAttributeContainer(MMContainer):
     """
@@ -47,31 +48,99 @@ class MMAttributeContainer(MMContainer):
         This needs to see if there is an existing attribute, and set it value
         or create a new Attribute object.
         """
+        global recurse_count
+
+        ## Get current status so we can rollback in case of an exeception
+        attrobj  = None
+        oldvalue = None
+        overwrite = False
+
+        if attrvalue is None: raise ValueError("Cannot store none")
+        objname = "unknown" 
+
+        try:
+            attrobj = self[attrname]
+        except KeyError:
+            pass
+        else:
+            overwrite = True
+            objname = repr(attrobj)
+            avobj = attrobj.get_value()
+            #Don't take a copy of ShadowAttributes, as just deleting their
+            # local instance has the correct effect.
+            if not isinstance(avobj,ShadowAttributeValue):
+                oldvalue = _copy.copy(avobj)
+     
         #Deal only with any value part of an existing attribute.
         #  to create a reference caller should use getRef()
         if isinstance(attrvalue,MMAttribute):
             attrvalue=attrvalue.get_value()
-       
-        overwrite = False
-        attrobj   = None
-        #Fetch exists attribute if any to preserve value type.
-        try:
-            attrobj = self[attrname]
-            overwrite = True
-        except KeyError:
-            pass
-        
-        #Check the attribute didn't come from a parent.
-        if  ( attrobj  is None ) or ( attrobj.get_owner() is not self ):
-            attrobj  = MMAttribute(attrname,attrvalue,self)
-        
-        #Update Attribute if necessary
-        if overwrite: attrobj.set_value(attrvalue )
-        
-        #Write back to the cache
-        super(MMAttributeContainer,self)._set_item(attrname,attrobj) 
-        return attrobj
 
+        #dispvalue is only used for debugging - but the early exit is important        
+        dispvalue = repr(attrvalue)
+        if isinstance(attrvalue ,MMAttributeValue):
+            dispvalue = "parts-%r" % attrvalue.get_parts() 
+            if attrvalue == oldvalue:
+                 #It's all ok, but we need to ensure compose is called.
+                 # (I'm pretty sure the only way this can be a no-op and raise is
+                 #  if we are a sub-call from inside ourselves)
+                 self.logger.debug("compose_only(%i) %s" % (recurse_count+1, dispvalue ))
+                 attrobj._compose()
+                 return attrobj 
+
+
+        #Recurse count is only used to make the debug tracking more readable
+        recurse_count = recurse_count+1
+        self.logger.debug( "setting(%i) %s  from %r to %s" % (recurse_count, objname , oldvalue and oldvalue.get_parts()  ,dispvalue ))
+       
+ 
+        try:
+          
+            #Check the attribute didn't come from a parent.
+            if  ( attrobj  is None ) or ( attrobj.get_owner() is not self ):
+                attrobj  = MMAttribute(attrname,attrvalue,self)
+            
+            #Update Attribute if necessary
+            if overwrite: attrobj.set_value(attrvalue )
+            
+            #Write back to the cache
+            super(MMAttributeContainer,self)._set_item(attrname,attrobj) 
+            
+            #Now the value is in the cache it (and referenced here)
+            #so it won't expire - we can do any final fixup that the 
+            #value object might require - most value objects probably don't
+            #need this but DLink very much does!. This fixup should then occur
+            #before anythini is written to the store.
+            attrobj._compose()
+            
+            return attrobj
+        except:
+            #Roll back any have complete changes
+            (t1, e1, tb1 ) =sys.exc_info()
+            self.logger.warn("Exception - rollingback %s"%e1)
+            try: 
+                if oldvalue is None:
+                    del self[attrname]
+                else:
+                    #self._invalidate_item(attrname)
+                    if attrobj is not None:
+                        if attrobj.get_value() != oldvalue:
+                            self._set_item(attrname,oldvalue)
+                        else: self.logger.warn( "rollback skipped! - nothing to do")
+            except:
+                 (t2, e2, tb2 ) =sys.exc_info()
+                 self.logger.warn("Exception during rollback %s"%e2)
+            finally:
+                #Re raise orginally exceptions.
+                raise t1,e1,tb1
+        finally:
+            self.logger.debug( "completing (%i)"%recurse_count)
+            recurse_count = recurse_count-1
+            
+    def _get_item(self,key,func,*args):
+        item = super(MMAttributeContainer,self)._get_item(key,func,*args)
+        item._compose()
+        return item
 
 class MMAttribute (MMAttributeContainer):
 
@@ -136,6 +205,22 @@ class MMAttribute (MMAttributeContainer):
      """
      return self.get_parser().GetString(self.get_raw_rst(),repr(self))
 
+  def _compose(self):
+    """
+    Do the second initialisation phase for the associated value object.
+
+    Value object support a two phase initialisation, for those values
+    which have a referential integrity requirement which is dependent
+    on their location within the schema. 
+
+    _compose is called on the value object with the attribute object as
+    an argument - in the same manner that exports are called.    
+
+    Calls _compose(self) on the value object.
+    """
+    if hasattr(self.valueobj,"_compose"):
+        self.valueobj._compose(self)
+
   #Special case to override the definiton in Base.
   def _validate(self):
      """
@@ -150,11 +235,13 @@ class MMAttribute (MMAttributeContainer):
 
   def set_value(self,val, copy = True):
      #Quit early in case of No-Op - triggered by _writeback.
-     if val is self.valueobj: return
+     if val is self.valueobj: 
+        return
 
      try:
         self.valueobj.assign(val)
-     except:
+     except Exception, e:
+        self.logger.warn(e)
         self.valueobj = CreateAttributeValue(val,copy)
      self._writeback()
 
