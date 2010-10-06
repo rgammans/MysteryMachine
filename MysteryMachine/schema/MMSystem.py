@@ -282,9 +282,16 @@ class MMSystem (MMContainer):
             yield cat + ":" + obj
 
 
-  def __iter__(self):
+  iterkeys = EnumContents
+  def iteritems(self):
     for k in self.EnumContents():
         yield (k , self[k] )
+
+  def __iter__(self):
+    for k in self.EnumContents():
+        yield  self[k]
+
+  itervalues = __iter__
 
   def __getitem__(self,obj): 
     fullid = ""
@@ -376,3 +383,17 @@ class MMCategory(MMAttributeContainer):
       t,p = attrval
       a = MMAttribute(name,MakeAttributeValue(t,p),self,copy = False )
       return a 
+
+    def __iter__(self):
+        for objkey in self.owner.EnumObjects(self.name):
+            yield  self[objkey] 
+
+    itervalues = __iter__
+
+    def iteritems(self):
+       for objkey in self.owner.EnumObjects(self.name):
+            yield  objkey , self[objkey] 
+
+    def iterkeys(self):
+       for objkey in self.owner.EnumObjects(self.name):
+           yield objkey 

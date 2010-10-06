@@ -27,7 +27,7 @@ from MysteryMachine.schema.MMSystem import *
 import MysteryMachine.store.dict_store
 
 import unittest
-
+import itertools
 
 class sysTests(unittest.TestCase):
     def setUp(self):
@@ -62,7 +62,17 @@ class sysTests(unittest.TestCase):
         del cat[".dummy"]
         self.assertRaises(KeyError,cat.__getitem__,".dummy")
         self.assertRaises(KeyError,self.sys["One"].__getitem__,".dummy")
-        print repr(o12),o12id
+
+        objs=list(cat.__iter__())
+        self.assertEqual(len(objs),1)
+        objkeys=list(cat.iterkeys())
+        self.assertEqual(len(objkeys),1)
+        for k,v in itertools.izip(objkeys,objs):
+            self.assertEquals(cat[k],v)
+
+
+
+
         del cat[o12id]
         self.assertRaises(KeyError,cat.__getitem__,o12id)
         self.assertRaises(KeyError,self.sys["One"].__getitem__,o12id)
@@ -113,12 +123,31 @@ class sysTests(unittest.TestCase):
     
         names = list(self.sys.EnumContents()) 
         fndNames= []
-        for k,v in self.sys:
+        for k,v in self.sys.iteritems():
             self.assertTrue(k in names)
             self.assertFalse(k in fndNames)
             fndNames += [ k ]
             self.assertTrue(isinstance( v, MMObject))
             self.assertEquals(v,self.sys[k])  
+
+        objs=list(self.sys.__iter__())
+        self.assertEqual(len(objs),2)
+        objkeys=list(self.sys.iterkeys())
+        self.assertEqual(len(objkeys),2)
+        for k,v in itertools.izip(objkeys,objs):
+            self.assertEquals(self.sys[k],v)
+
+        cat = self.sys["one"]
+        objs=list(cat.__iter__())
+        self.assertEqual(len(objs),1)
+        objkeys=list(cat.iterkeys())
+        self.assertEqual(len(objkeys),1)
+        for k,v in itertools.izip(objkeys,objs):
+            self.assertEqual(cat[k],v)
+
+
+
+
 
     def testLoaded(self):
 
