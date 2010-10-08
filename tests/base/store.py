@@ -164,7 +164,16 @@ class storeTests(object):
         attrtuple = ( "simple",{ "":"fred" }  )
         self.store.SetAttribute("One"+":"+o12+":name",*attrtuple)
         self.attrnames =  { "One:"+o12+":name": attrtuple }
-                
+           
+        #Check that removed parts get removed from the store
+        self.store.SetAttribute("One"+":"+o12+":overwrite", "test1", { 'first':"this should dissappear" })
+        self.store.SetAttribute("One"+":"+o12+":overwrite", "test1", { 'second':"this should be all thats left"})
+        self.assertEquals(len(self.store.GetAttribute("One:"+o12+":overwrite")[1]),1)
+
+        self.store.SetAttribute("One"+":"+o12+":overwrite", "test2", { 'third':"this should be all thats left"})
+        self.assertEquals(self.store.GetAttribute("One:"+o12+":overwrite")[0],"test2")
+        self.assertEquals(len(self.store.GetAttribute("One:"+o12+":overwrite")[1]),1)
+     
     def testProxyObjAttr(self):
         """
         Test the Object proxy used in MMObjects.

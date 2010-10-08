@@ -308,6 +308,8 @@ class filestore(Base):
         """
 
         pathparts = list(self.canonicalise(attr))
+        #Remove existing objects
+        self.DelAttribute(attr)
         for partname,value in parts.items():
             filename = os.path.join(self.path,*pathparts)
             filename = "%s.%s.%s" % (filename,type,partname)
