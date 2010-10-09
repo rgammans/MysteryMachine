@@ -344,6 +344,10 @@ class MMCategory(MMAttributeContainer):
         self.owner = owner
         self.name   = name
 
+
+    def __repr__(self):
+        return self.name
+
     def __getitem__(self,item):
         if item[0] == ".":
             itemname = "." + self.canonicalise(item[1:])
