@@ -27,6 +27,7 @@ import unittest
 from MysteryMachine import * 
 from functools import partial
 
+
 class ObjectProxy(MMObject):
     def __init__(self,*args,**kwargs):
         l = [ "" ,"" ]
@@ -39,15 +40,16 @@ class ObjectProxy(MMObject):
             l[0] =args[0]
             l[1] =args[1]
         super(ObjectProxy,self).__init__(l[0] + ":" + l[1] , SystemProxy() ,None )
+        self.items = {}
         for key in kwargs:
-           self.__dict__[key] = kwargs[key] 
+           self.items[key] = kwargs[key] 
     def __str__(self):
-        return self.id
+        return self.name
     def get_root(self):
         return SystemProxy()
     def __eq__(self,other):
         #Fake - equals as required for this test.
-        return self.id
+        return self.name
 
 
 class SystemProxy: 
@@ -135,5 +137,8 @@ def getTestNames():
 	return [ 'attribValueTest.attribValTest' ] 
 
 if __name__ == '__main__':
+    if "--debug" in sys.argv:
+        sys.argv.remove("--debug")
+        logging.getLogger("MysteryMachine.schema.MMAttributeValue").setLevel(logging.DEBUG)
     unittest.main()
 

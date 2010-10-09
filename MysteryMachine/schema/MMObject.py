@@ -65,7 +65,7 @@ class MMObject (MMAttributeContainer):
     """
     super(MMObject,self).__init__(self)
 #    self.logger.debug( "Creating %s" % id)
-    self.id = id
+    self.name = id
     #Ensure strong ref to owner.
     self.owner = owner.getSelf()
     self.store = store
@@ -181,7 +181,7 @@ class MMObject (MMAttributeContainer):
     if self.store.HasAttribute(".parent"):
         parent = self._get_item(".parent",self._make_attr,".parent") 
     else: #TODO Get parent from object's category 
-        idpath = self.id.split(":")[:-1]
+        idpath = self.name.split(":")[:-1]
         category = self.owner[idpath[-1]]
         parent = category[".parent"]
     self.logger.debug( "parent type is %s " %type(parent))
@@ -205,7 +205,7 @@ class MMObject (MMAttributeContainer):
     """
     Return the internal object name
     """
-    return self.id
+    return self.name
 
    
   def get_parser(self):

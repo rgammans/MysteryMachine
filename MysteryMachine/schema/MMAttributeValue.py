@@ -286,6 +286,7 @@ class MMAttributeValue_MMRef(MMAttributeValue):
             #TODO Store object here so it cached.
             self.parts['obj'] = repr(self.value)
             
+            self.logger.debug( "MMA-O:init->%s<--" % self.parts['obj'])
         if not self._validate(): raise Error()    
         #All ok.
         self.exports += [ "get_object" ]
