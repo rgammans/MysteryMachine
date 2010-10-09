@@ -63,9 +63,9 @@ class MMAttributeContainer(MMContainer):
         except KeyError:
             pass
         else:
-            overwrite = True
             objname = repr(attrobj)
             avobj = attrobj.get_value()
+            self.logger.debug("Staring with %r",avobj.get_parts())
             #Don't take a copy of ShadowAttributes, as just deleting their
             # local instance has the correct effect.
             if not isinstance(avobj,ShadowAttributeValue):
@@ -96,12 +96,18 @@ class MMAttributeContainer(MMContainer):
  
         try:
           
-            #Check the attribute didn't come from a parent.
-            if  ( attrobj  is None ) or ( attrobj.get_owner() is not self ):
-                attrobj  = MMAttribute(attrname,attrvalue,self)
-            
-            #Update Attribute if necessary
-            if overwrite: attrobj.set_value(attrvalue )
+            if  attrobj  is None:
+                self.logger.debug("Creating new value object")
+                attrobj = MMAttribute(attrname,attrvalue,self)
+            elif isinstance(avobj,ShadowAttributeValue):
+            #elif attrobj.get_owner() is not self:
+                #Check the attribute didn't come from a parent.
+                self.logger.debug("Creating copy of shadow value object")
+                attrobj  = MMAttribute(attrname,avobj._get_target(),self, copy = True ) 
+                attrobj.set_value(attrvalue ,writeback = False )
+            else:
+                self.logger.debug("basic set_value")
+                attrobj.set_value(attrvalue )
             
             #Write back to the cache
             super(MMAttributeContainer,self)._set_item(attrname,attrobj) 
@@ -233,7 +239,7 @@ class MMAttribute (MMAttributeContainer):
   def get_value(self):
      return self.valueobj
 
-  def set_value(self,val, copy = True):
+  def set_value(self,val, copy = True , writeback = True ):
      #Quit early in case of No-Op - triggered by _writeback.
      if val is self.valueobj: 
         return
@@ -243,7 +249,7 @@ class MMAttribute (MMAttributeContainer):
      except Exception, e:
         self.logger.warn(e)
         self.valueobj = CreateAttributeValue(val,copy)
-     self._writeback()
+     if writeback: self._writeback()
 
   #This is intend for method lookup
   def __getattr__(self,name):

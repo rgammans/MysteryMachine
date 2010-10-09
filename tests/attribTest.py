@@ -47,17 +47,31 @@ class fakeParent:
 
 
 class container(MMAttributeContainer):
+    def __init__(self,*args,**kwargs):
+        super(MMAttributeContainer,self).__init__(*args,**kwargs)
+        self.parent = kwargs.get('parent',None)
+        self.items  = { }
     def __getitem__(self,i):
-        if i not in self.cache: raise KeyError(i)
+        if i not in self.cache: 
+            if self.parent:
+                pattr = self.parent[i]
+                return  MMAttribute(i,ShadowAttributeValue(self,attrname=i,object=self),
+                                self,copy = False) 
+            else: raise KeyError(i)
         return self._get_item(i,NoneType)
     def __setitem__(self,k,v):
-        return self._set_item(k,v)
+        self.items[k] = self._set_item(k,v)
+        return self.items[k]
+
     def __delitem__(self,i):
+        del self.items[i]
         return self._invaldate_item(i)
 
     def __iter__(self):
         for k in self.cache.keys():
             yield k
+    def get_parent(self):
+        return self.parent
 
 class attribTest(unittest.TestCase):
     def setUp(self):
@@ -108,9 +122,20 @@ class attribTest(unittest.TestCase):
         self.assertNotEquals(b,c)
         b = m._set_item("name",c)
         self.assertEquals(str(a),"foo")
+    
+    def testInheritance(self):
+        parentobj = container()
+        childobj  = container(parent = parentobj )
 
+        parentobj["foo"] = "test"
+        self.assertEquals(parentobj["foo"].get_raw(),"test")
+        self.assertEquals(childobj["foo"].get_raw(),"test")
         
-
+        childobj["foo"] = "different"
+        self.assertEquals(parentobj["foo"].get_raw(),"test")
+        self.assertEquals(childobj["foo"].get_raw(),"different")
+        
+ 
 def getTestNames():
     return [ 'attribTest.attribTest' ] 
 
