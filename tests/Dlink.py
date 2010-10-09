@@ -33,11 +33,15 @@ import MysteryMachine.schema.MMDLinkValue as dlk
 import unittest
 import logging
 
+import sys
+
+#logging.basicConfig(level=logging.DEBUG)
 
 class ObjectTests(unittest.TestCase):
     def setUp(self):
         StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
-        self.logger = logging.getLogger("")
+
+
         self.system=MMSystem.Create("dict:ObjectTests")
         self.system.NewCategory( "Template" )
         self.dummyparent             = self.system.NewObject( "Template" )
@@ -51,10 +55,10 @@ class ObjectTests(unittest.TestCase):
         self.object2                  = self.system.NewObject("Dummy") 
         self.object1.set_parent(self.parent)       
 
-        self.logger.debug( "dummy => " ,repr(self.dummyparent))
-        self.logger.debug( "parent => " ,repr(self.parent))
-        self.logger.debug( "object1 => " , repr(self.object1))
-        self.logger.debug( "object2 => " , repr(self.object2))
+        #self.logger.debug( "dummy => " ,repr(self.dummyparent))
+        #self.logger.debug( "parent => " ,repr(self.parent))
+        #self.logger.debug( "object1 => " , repr(self.object1))
+        #self.logger.debug( "object2 => " , repr(self.object2))
 
 
     def testLink(self):
@@ -87,22 +91,35 @@ class ObjectTests(unittest.TestCase):
         def raiseerror(obj,attrname):
             obj[attrname]=self.object2["link"] 
         #Try invalid move toan anchorpoint and check it hasn't changed  src or created the object
-        self.assertRaises(dlk.BiDiLinkTargetMismatch,raiseerror,self.object1,"newlink")
-        self.assertEquals(self.object2["link"].get_object(),None)        
-        self.assertEquals(self.object2["link"].get_anchor(),self.object2)        
-        self.assertRaises(KeyError,self.object1.__getitem__,"newlink")    
         
+        #New code does something different here!
+        #self.assertRaises(dlk.BiDiLinkTargetMismatch,raiseerror,self.object1,"newlink")
+        #self.assertRaises(KeyError,self.object1.__getitem__,"newlink")    
+        
+        self.object1["newlink"] = self.object2["link"]
+        self.assertEquals(self.object2["link"].get_object(),None)        
+        self.assertEquals(self.object2["link"].get_anchor(),self.object2)  
+        #Anchordist is preserved when copying anchors..      
+        self.assertEquals(self.object1["newlink"].get_anchor(),self.object1)        
+           
+ 
         #Try valid copy of an anchor point
         self.object2["newlink"]=self.object2["link"] 
         self.assertEquals(self.object2["newlink"].get_partner(),None)        
         self.assertEquals(self.object2["newlink"].get_anchor(),self.object2) 
         
         #Try invalid move toan anchorpoint and check it hasn't changed  src or dest object
-        self.assertRaises(dlk.BiDiLinkTargetMismatch,raiseerror,self.object1,"link")
-        self.assertEquals(self.object1["link"].get_partner(),object3["newlink"])        
+        #again code has chnaged here.
+        #self.assertRaises(dlk.BiDiLinkTargetMismatch,raiseerror,self.object1,"link")
+        #self.assertEquals(self.object1["link"].get_partner(),object3["newlink"])        
+        #self.assertEquals(self.object1["link"].get_anchor(),self.object1)        
+        #self.assertEquals(self.object1["link"].get_object(),object3)        
+
+        self.object1["link"] = self.object2["link"]
+        self.assertEquals(self.object1["link"].get_partner(),None)        
         self.assertEquals(self.object1["link"].get_anchor(),self.object1)        
 
-        self.assertEquals(self.object1["link"].get_object(),object3)        
+
         #self.object1["link"]=self.object2["link"] 
 
         #FIXME:(reinstate test) Just breaking a link...
@@ -149,7 +166,18 @@ class ObjectTests(unittest.TestCase):
         self.assertEquals(self.object2["2link"].get_partner(),None)        
         self.assertEquals(self.object2["2link"].get_object(),None)
 
- 
+
+    def testShadowing(self):
+        self.dummyparent["objlink1"] = dlk.CreateAnchorPoint(self.dummyparent)
+        self.object1["link2"] = dlk.CreateAnchorPoint(self.object1)
+        self.object2["objlink1"] = dlk.ConnectTo( self.object1["link2"])
+        self.assertEquals(self.object1["link2"].get_object(),self.object2)
+        self.assertEquals(self.object2["objlink1"].get_object(),self.object1)
+        self.assertEquals(self.dummyparent["objlink1"].get_object(),None)
+        self.assertEquals(self.dummyparent["objlink1"].get_anchor(),self.dummyparent)
+        pass
+
+
 def getTestNames():
 	return [ 'Object.ObjectTests' ] 
 
@@ -157,4 +185,11 @@ if __name__ == '__main__':
 #    loader = unittest.TestLoader()
 #    suite = loader.loadTestsFromTestCase(ObjectTests)
 #    suite.debug()
-    unittest.main()
+     import sys
+     if "--debug" in sys.argv:
+        sys.argv.remove("--debug")
+        logging.getLogger("MysteryMachine.schema.MMDLinkValue").setLevel(1)
+        logging.getLogger("MysteryMachine.schema.MMObject").setLevel(1)
+    
+     unittest.main()
+
