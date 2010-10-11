@@ -249,7 +249,7 @@ class MMAttributeValue (MMBase ):
      return self.get_type() == other.get_type() and self.get_parts() == other.get_parts()
 
   def __hash__(self):
-     #Simple hash
+     #FIXME: Identical valued but distict obj return the same hash
      return hash(["MMAttributeVal" , self.get_type() , self.get_parts()])
 
 class MMAttributeValue_BasicText(MMAttributeValue):
@@ -351,7 +351,7 @@ class ShadowAttributeValue(MMAttributeValue):
 
     def __getattr__(self,attrname):
         self.logger.debug(attrname)
-        fwd_to = self._get_target().__getattr__(attrname)
+        fwd_to = getattr(self._get_target(),attrname)
         return fwd_to
 
     def _get_target(self):
@@ -364,6 +364,11 @@ class ShadowAttributeValue(MMAttributeValue):
         return p 
         
 
+    def __copy__(self):
+        #return a copy of the object we are proxying - it want you really want 
+        #anyway
+        return _copy.copy(self._get_target())
+
     def __str__(self):
         return self._get_target().__str__()
         
@@ -375,4 +380,8 @@ class ShadowAttributeValue(MMAttributeValue):
     def get_raw(self, obj = None):
         return self._get_target().get_raw(obj)
 
-  
+    def get_parts(self):
+        return self._get_target().get_parts()
+
+    def get_type(self):
+        return self._get_target().get_type()
