@@ -98,7 +98,7 @@ class UiBase(object):
         except (WindowsError,OSError), e:
             self.logger.warn(str(e))
             pass
-        return "\n".join(newval)
+        return "".join(newval)
 
     def launch_edit(self,filename):
         """
