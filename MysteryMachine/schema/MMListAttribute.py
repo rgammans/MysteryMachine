@@ -124,7 +124,7 @@ class MMListAttribute(MMAttributeValue):
         #Force value Into an MMAttributeValue Object
         v = CreateAttributeValue(v,copy = False)
         if len(v.get_parts()) != 1:
-            raise TypeError("MMListAttribute only supports single part values")
+            raise TypeError("MMListAttribute only supports single part values %s",v.get_parts().keys())
         
         value = v.get_parts().iteritems().next()
         #We can safely use ':' as a seperator as it isn't
