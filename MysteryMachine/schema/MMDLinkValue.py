@@ -156,6 +156,7 @@ def _process_obj_and_attr(obj,attr):
 
 
 def _container_walk(root,path):
+    logging.getLogger("MysteryMachine.schema.MMDLinkValue").debug("walking from %r to %s ",root,path)
     node = root
     for element in path:
         if element != "":
@@ -165,10 +166,8 @@ def _container_walk(root,path):
 
 
 def _walk_back(obj,dist):
-    objname = repr(obj)
-    objpath = objname.split(":")
-    if dist >= len(objpath): return None
-    return _container_walk(obj.get_root(),objpath[:-dist])
+    for i in range(dist): obj = obj.owner
+    return obj 
 
 def CreateBiDiLink(obj1,attrname1,obj2,attrname2):
     """
@@ -182,10 +181,9 @@ def CreateBiDiLink(obj1,attrname1,obj2,attrname2):
     baseref1,basepath1_elements = _process_obj_and_attr(obj1,attrname1)
     baseref2,basepath2_elements = _process_obj_and_attr(obj2,attrname2)
 
-    baseref2[basepath2_elements[-1]] = MMDLinkValue(target = obj1 , foreign = attrname1)
-    baseref1[basepath1_elements[-1]] = MMDLinkValue(target = obj2 , foreign = attrname2, compose = True)
-    #baseref2[basepath2_elements[-1]].get_value().compose() 
-
+    baseref2[basepath2_elements[-1]] = CreateAnchorPoint(obj2)
+    baseref1[basepath1_elements[-1]] = CreateAnchorPoint(obj1)
+    baseref1[basepath1_elements[-1]] = ConnectTo( baseref2[basepath2_elements[-1]] )
 
 def ConnectTo(attribute):
     """
@@ -221,10 +219,9 @@ class MMDLinkValue(MMAttributeValue):
         super(MMDLinkValue,self).__init__(*args,**kwargs)
         self.logger    = logging.getLogger("MysteryMachine.schema.MMDLinkValue")
         self.obj            = kwargs.get("target",None)
-        self.partner_name   = kwargs.get("foreign",None)
+        partner_name        = kwargs.get("foreign",None)
         self.anchorp        = kwargs.get("anchor",None)
-        self.obj_name       = None
-        self.anchordist   = None
+        self.anchordist     = None
         if len(self.parts) == 0:
             #Validate we have enough data..
             # Handle anchopoint init first...
@@ -233,18 +230,18 @@ class MMDLinkValue(MMAttributeValue):
             else:
                 if self.obj is None:
                     raise ValueError("BiDilink needs an object")
-                else: self.obj_name = repr(self.obj).split(":")
-                if self.partner_name is None:
+                if partner_name is None:
                     raise ValueError("BiDiLink needs a foreign target")
                 #Create member variables we can use..
-                self.partner_name =  self.partner_name.split(":")
-                self.parts["target"] =  repr(self.obj)+":" + ":".join(self.partner_name) +"," +str(len(self.partner_name))
+                self.partner_path =  repr(self.obj).split(":") + partner_name.split(":")
+                self.parts["target"] =  repr(self.obj)+":" + partner_name +", 0"
         else:
              self._process_parts()
-   
+
         self.exports += [ "get_object", "get_partner" , "get_anchor"]
         self.valid = False 
         self.in_assignment = False
+
 
     def assign(self,other):
       """Called by MMAttribute when an value assignment occurs - not exported"""
@@ -258,14 +255,14 @@ class MMDLinkValue(MMAttributeValue):
             if oldpartner:
                 oldpanchor = oldpartner.get_anchor()
             self.logger.debug( "oldp>%r"%oldpartner )
-            
+
             self.parts =  copy.copy(other.parts)
             oldattr    =  other.get_partner()
             self.logger.debug( "othp>%r"%oldattr )
             self.logger.debug( "myap>%r"%self.anchorp )
 
             self._process_parts()
-            
+
 
             #Update partner if exists to break the link, iff it isn't inside 
             # assign further up the stack. 
@@ -297,89 +294,95 @@ class MMDLinkValue(MMAttributeValue):
        if "target" in self.parts:
             attributename,sniplen = self.parts["target"].rsplit(",",1)
             attributename = attributename.split(":")
-            sniplen=int(sniplen)
-            self.obj_name= attributename[:-sniplen]
-            self.partner_name=attributename[-sniplen:]
+            if int(sniplen) > 0:
+                self.anchordist = int(sniplen)
+            self.partner_path=attributename
        else:
-            self.obj_name     = None 
-            self.partner_name = None
+            self.partner_path = None
             if "anchordist" in self.parts:
                 self.anchordist   = int(self.parts["anchordist"])
 
     def _compose(self,obj = None ):
+        if self.valid: return
         if obj is None: raise BidiCantCreate("Cannot compose as owned by None") 
         self.logger.debug( "%s _compose (%r,%s)" % (object.__repr__(self) ,obj, self.parts))
         #Now we have a handle on the system find our objects etc,
-        if self.obj_name is None:
-            if self.anchordist is None:
-                ##Legacy code handles if we were inited from an anchor part 
-                #This should just be an anchor_point - find and write back canonical name.
-                self.logger.debug( "walking for anchor %s , %r"%(self.parts["anchor"],obj))
-                oldanchor    =  self.anchorp
-                anchorpath   = self.parts["anchor"].split(":")
-                self.anchorp = _container_walk(obj.get_root(), anchorpath )
-                self.logger.debug( "Moved anchor %r -> %r" %(oldanchor, self.anchorp ))
-                #Verify anchor is an direct owner fo obj - we can do this via it MMpath.
-                if repr(obj)[:len(self.parts["anchor"])] != self.parts["anchor"]:
-                    raise BiDiLinkTargetMismatch("Anchor not in line owner %s,%s"%(repr(obj),repr(self.anchorp)))
-                objpath = repr(obj).split(":")
-                self.anchordist = len(objpath) - len(anchorpath) 
-                self.parts["anchordist"]=str(self.anchordist)
-                if "anchor" in self.parts: del self.parts["anchor"]
+
+        #Check our anchor.
+        self.logger.debug( "anchordist-> %r" % self.anchordist)
+        self.logger.debug( "anchor-> %r" % self.anchorp)
+        if "anchor" in self.parts: self.logger.debug( "anchorpart-> %s" % self.parts["anchor"])
+        
+        anchor = self.get_anchor(obj)
+        if anchor is None:
+            #Out anchor point does not exist - this is a raw move which has problems.
+            raise BiDiLinkTargetMismatch("No anchor point defined")
+
+        #Ifind anchordist from obj and anchorpoint is not already set
+        # then ensure anchorp is validated.
+        if not self.anchordist:
+            if self.anchorp is None:
+                self.anchorp = self.get_anchor(obj)
+            self.logger.debug( "fixing up  anchor-> %r" % self.anchorp)
+            anchorpath   = repr(self.anchorp).split(":")
+            #Verify anchor is an direct owner of obj - we can do this via it MMpath.
+            if repr(obj)[:len(repr(self.anchorp))] != repr(self.anchorp):
+                raise BiDiLinkTargetMismatch("Anchor not in line owner %s,%s"%(repr(obj),repr(self.anchorp)))
+            objpath = repr(obj).split(":")
+            self.anchordist = len(objpath) - len(anchorpath) 
+            self.parts["anchordist"]=str(self.anchordist)
+            if "anchor" in self.parts: del self.parts["anchor"]
             self.anchorp  = self.get_anchor(obj)
+            self.logger.debug("new anchordist-> %s" % self.anchordist)
+
+        #If only and anchor point  nothing more is required.
+        if self.partner_path is None:
             self.logger.debug("Completing ap with anchordist %i", self.anchordist)
             return
-        
+        elif "target" in self.parts:
+            #If supposedly connected fixup target part - in case of a dummy anchordist.
+            target_str,oldanchordist =  self.parts["target"].rsplit(",",1)
+            self.parts["target"]     =  target_str + "," + str( int (self.anchordist))
+            if "anchordist" in self.parts: del self.parts["anchordist"]
+
+
+        ##At this point all our get methods can return something useful so we say we're valid.
+        self.valid = True
+        self.logger.debug("getting partner")
         #Ok this is a full link do the real work here..
-        self.obj = _container_walk(obj.get_root(),self.obj_name)
         try:
-            partner = self.get_partner()
+            partner  = _container_walk(obj.get_root(),self.partner_path)
         except KeyError:
             #Our partner is not instantiated yet, it's compose will invoke
-            #us again so lets just wait.
+            #us again so lets just wait 
             self.logger.debug("Early escape - no partner")
             return 
-        
+
+        self.logger.debug("composing connected links")
+
+        self.obj = partner.get_anchor()
         if partner.get_value().get_type() == self.get_type():
             pv = partner.get_value()
             self.logger.debug( "A> %r %r %r" % ( self.anchorp , self.obj , pv.obj))
-            if pv.obj is None:
-                #The other object hasn't composed properly itself,
+
+            #if pv.obj is None:
+                #The other object hasn't composed properly itself,(or is an anchor)
                 #(probably because we hadn't been created at that point)
                 #we should do that then to the do we need moved check.
-                pv._compose(partner)
-            
-            if pv.obj is not obj.get_owner():
+                #pv._compose(partner)
+
+
+            if pv.obj is not self.get_anchor(obj):
                 #This is where we handle a moved link from an existing destination,
                 # we need to  move the link back to use and back the old destination
-                # dangle.
-                self.logger.debug( "objs> %r %s "% (partner.get_owner() , self.obj_name))
-                self.logger.debug( "partner-> %s %r %r"% (pv.obj ,partner.get_owner() , obj.get_owner()))
-                self.logger.debug( "anchor-> %r" % self.anchorp)
-                self.logger.debug( "parts-> %r" % self.parts)
-                self.logger.debug( "p_parts-> %r" % pv.get_parts())
-                self.logger.debug( "anchordist-> %r" % self.anchordist)
-                if (self.anchorp is None) and (self.anchordist is None):
-                    #Out anchor point does not exist - this is a raw move which has problems.
-                    raise BiDiLinkTargetMismatch("No anchor point defined")
-
-                #Do Fixup
+                #Do partner Fixup
                 ptarget_str = repr(obj)
-                pobj_str    = repr(self.anchorp)
-                if self.anchordist is None:
-                    self.anchordist  = len(ptarget_str.split(":")) - len(pobj_str.split(":")) 
-
-                pval = MMDLinkValue( parts = {'target': ptarget_str +","+str(self.anchordist)} )  
-                self.logger.debug( "pval> %r "%pval.obj_name)
-                partner.set_value( pval )             
+                pval = MMDLinkValue( parts = {'target': ptarget_str +","+str(pv.anchordist)} )  
+                self.logger.debug( "pval> %s "%pval.parts)
+                partner.set_value( pval )
             else:
                 self.logger.debug( "B> %r %r"%(pv.obj , self.obj))
-            #Keep a record of our anchor object we need this
             # if our partner moves..
-            self.anchorp = pv.obj
-            objpath    = repr(obj).split(":")
-            anchorpath = repr(pv.obj).split(":")
-            self.anchordist = len(objpath) - len(anchorpath) 
         else:
             self.logger.debug("Error detected: %s %s" % ( partner.get_value().get_type() ,self.get_type()))
             raise BiDiCantCreate("type mismatch with partner %s != %s" % ( partner.get_value().get_type() ,self.get_type()))
@@ -402,7 +405,11 @@ class MMDLinkValue(MMAttributeValue):
 
         Returns None if disconnected.
         """
+        if not self.obj:
+            self.obj = self.get_partner(obj)
+            if self.obj: self.obj =self.obj.get_anchor()
         return self.obj
+            
 
     def get_raw(self,obj = None):
         """Get a simple text represantion of the link"""
@@ -417,9 +424,10 @@ class MMDLinkValue(MMAttributeValue):
 
     def get_partner(self, obj = None):
         """Get the attribute which forms the other half of this link"""
-        if self.obj is None: return None
-        if self.partner_name is None: return None
-        return _container_walk(self.obj,self.partner_name)
+        obj = obj or self.obj
+        if obj is None: return None
+        if self.partner_path is None: return None
+        return _container_walk(obj.get_root(),self.partner_path)
 
 
     def get_anchor(self, obj = None):
@@ -427,7 +435,9 @@ class MMDLinkValue(MMAttributeValue):
         (if we have one) should point. If not the item to which we refer out partner
         to when we connect."""
         if obj is None: raise ValueError("Anchor is now relative - must pass home object")
-        if self.anchordist is None: return self.anchorp
+        if not self.anchordist:
+            if self.anchorp is not None: return self.anchorp
+            else: return _container_walk(obj.get_root(),self.parts["anchor"].split(":"))
         return _walk_back(obj,self.anchordist)
 
     def _validate(self, attr = None):

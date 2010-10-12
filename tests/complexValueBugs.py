@@ -56,6 +56,7 @@ class complexValTest(unittest.TestCase):
         self.object                  = self.system.NewObject("Dummy") 
         self.object.set_parent(self.parent)       
 
+        self.object2                  = self.system.NewObject("Dummy") 
   
     def testListInheirtance(self):
         self.parent["a_list"]  = [ "" ]
@@ -75,11 +76,27 @@ class complexValTest(unittest.TestCase):
         self.assertEquals(self.parent["a_list"][0].get_raw(), "data")
         self.assertEquals(self.object["a_list"][0].get_raw(), "differentdata")
 
+
+    def testListAndDlink(self):
+        self.object["linklist"]  = [dlk.CreateAnchorPoint(self.object)] * 2 
+        self.assertEquals(self.object["linklist"][0].get_value().get_type(), "bidilink")
+        self.assertEquals(self.object["linklist"][0].get_anchor(), self.object)
+        self.assertEquals(self.object["linklist"][1].get_value().get_type(), "bidilink")
+        self.assertEquals(self.object["linklist"][1].get_anchor(), self.object)
+        self.object2["link"] = dlk.CreateAnchorPoint(self.object2)
+        self.object2["link2"] = dlk.CreateAnchorPoint(self.object2)
+        self.object["linklist"][0] = dlk.ConnectTo(self.object2["link"]) 
+        print self.object["linklist"][0].get_value().get_parts()
+        self.assertEquals(self.object["linklist"][0].get_anchor(), self.object)
+        self.assertEquals(self.object["linklist"][0].get_object(), self.object2)
 def getTestNames():
     return [ 'complexValueBugs.complexValTest' ]
 
 if __name__ == '__main__':
     if "--debug" in sys.argv:
-        sys.argv.remove("--debug")
-        logging.getLogger("").setLevel(logging.DEBUG)
+        lognr = sys.argv.index("--debug")+1
+        log = sys.argv[lognr]
+        myargs = sys.argv
+        sys.argv = myargs[:lognr-1] + myargs[lognr+1:]
+        logging.getLogger(log).setLevel(logging.DEBUG)
     unittest.main()
