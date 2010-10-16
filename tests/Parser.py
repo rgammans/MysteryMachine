@@ -68,6 +68,14 @@ class ParsersTests(unittest.TestCase):
         self.assertEquals(str(self.i['bike'].GetFullExpansion()),"hovercraft")
         self.c['test']=":mm:`:carries:bike`"
         self.assertEquals(str(self.c['test'].GetFullExpansion()),"hovercraft")
+        #Test mm roel state after recursion - eg state is restored on stack pop.
+        self.c['test2']=":mm:`:carries:bike` :mm:`:name`" 
+        self.assertEquals( str(self.c['test2'].GetFullExpansion()),"hovercraft Frodo")
+        #test literal values are handled
+        self.c['test3']=":mm:`\"A Literal value\"`" 
+        self.assertEquals( str(self.c['test3'].GetFullExpansion()),"A Literal value")
+
+
         
 
     def testCycle(self):

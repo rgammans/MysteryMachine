@@ -28,7 +28,7 @@ import docutils.nodes
 
 from grammar import Grammar
 
-from MysteryMachine.schema import GetLoadedSystemByName
+from MysteryMachine.schema.MMBase import  MMBase
 
 import re
 from exceptions import *    
@@ -36,6 +36,20 @@ from exceptions import *
 import logging
 modlogger   = logging.getLogger("MysteryMachine.parsetools.MMParser")
 
+import threading
+class _stack(threading.local):
+	def __init__(self):
+		self.stack = [ ]
+	def pop(self):
+		value = self.stack[0]
+		self.stack = self.stack[1:]
+	def push(self,value):
+		self.stack = [ value ] + self.stack
+
+	def peek(self):
+		return self.stack[0]
+
+docutils_stack = _stack()
 
 class MMParser (object):
 
@@ -79,20 +93,21 @@ class MMParser (object):
     # First - prepent system details to src..
     if src is None:
         src =repr(self.myobject)+":unknown"
-    src = repr(self.myobject.owner)+":"+src
-    role_def = ".. role:: mm(mmbase)\n :systemcntxt: %s\n\n" % src
-    role_def+= "\n".join(map(lambda x: " "+x,src_stack))
-    role_def+= "\n\n"
+
+    #Disabled to make source paths more readable now we
+    # don't need to find the global system..
+    #src = repr(self.myobject.owner)+":"+src
+   
     self.logger.debug( "processed src-> %s" % src)
     self.logger.debug( "raw+IN->%s<-" % rst_string)
-    self.logger.debug( "\n--Parsing--\n%s\n---\n" % (role_def+rst_string))
 
-    result =   publish_doctree(role_def+rst_string,source_path=src,
+    docutils_stack.push( [ self.myobject ,  src_stack ] )
+    result =   publish_doctree(rst_string,source_path=src,
                                settings_overrides=MMParser.du_defaults
                
                 )
 
-    self.logger.debug( "raw+IN->%s<-" % rst_string)
+    docutils_stack.pop() 
     self.logger.debug( "pnodelist-->%s<-" % result)
     
     try:
@@ -101,9 +116,10 @@ class MMParser (object):
     except:
         self.logger.info("Can't resolve docutils to find source, using src") 
         source = src
-
     self.logger.debug( "source[ => %s" % source)
+    
     #Strip  document header and main containing paragraph.
+    # so we get a simple result.
     result =   result.children 
     #self.logger.debug( "nodelist-->%s<-" % result)
     if len(result) ==1:
@@ -141,17 +157,27 @@ def role_handler(role, rawtext, text, lineno, inliner,
     modlogger.debug( "role-options:%s"%str(options))
     modlogger.debug( "role-content:%s"%str(content))
 
-    mainobj = None
-    if 'systemcntxt' in options:
-        mainobj = options['systemcntxt']
+    sframe = docutils_stack.peek()
+    mainobj = sframe[0]
+    content = sframe[1]
+
     if mainobj == None:
-        msg += [inliner.reporter.error("Parser cannot find context for role") ]
+        msg += [ inliner.reporter.error("Parser cannot find context for role") ]
     else:
         #Check for cycles in expansion
         if not text in content:
              try:
-                rst    = mainobj.parser.evaluate(text)
-                nodes += mainobj.parser.ProcessRawRst(str(rst),src = repr(rst) ,
+                current_parser = mainobj.parser
+                rst    = current_parser.evaluate(text)
+
+                #rst can be a string if text eval's to a literal value
+                # but if it's a schema object need to use it's context
+                # not our own.
+                if isinstance(rst,MMBase):
+                    current_parser = _findParser(rst)
+                
+                #Return to docutils to get docutils node representation.
+                nodes += current_parser.ProcessRawRst(str(rst),src = repr(rst) ,
                                                       src_stack=content + [ text ] )
              except:
                 import traceback
@@ -165,22 +191,12 @@ def role_handler(role, rawtext, text, lineno, inliner,
     #modlogger.debug("%s %s",  str(nodes),str(msg))
     return nodes ,msg
 
+def _findParser(obj):
+	while not hasattr(obj,"parser"):
+		obj = obj.owner
+	return obj.parser
 
-#Convert Full object name into actual object.
-def ObjectOptionHandler(argument):
-    items = argument.split(":")
-    modlogger.debug( "--SysCntxt:role<-%s" % argument)
-    sys=GetLoadedSystemByName(items[0])
-    modlogger.debug( repr(sys))
-    if sys != None:
-        modlogger.debug( "--Fetching item (%s,%s)" % (items[1] , items[2]))
-        sys = sys.get_object(items[1],items[2])     
-    return sys
 
-role_handler.options = { 'systemcntxt' : ObjectOptionHandler,
-                        }
-
-role_handler.content = True
-roles.register_canonical_role('mmbase',role_handler)
-roles.register_local_role('mmbase',role_handler)
+roles.register_canonical_role('mm',role_handler)
+roles.register_local_role('mm',role_handler)
 
