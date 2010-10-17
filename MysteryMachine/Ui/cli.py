@@ -125,15 +125,22 @@ if bpython_installed:
         def DoPatches(self):
             super(BPython,self).DoPatches()
             #Mercurial 1.4 calls sys.stdout.closed() - this ensures that call exists
-            if not hasattr(bpython.cli.Repl,"closed"):
-                bpython.cli.Repl.closed = closed
+            repl = None
+            try:
+                repl = bpython.cli.Repl
+            except AttributeError:
+                pass
+            if not repl:
+                repl = bpython.cli.CLIRepl
+            if not hasattr(repl,"closed"):
+                 repl.closed = closed
             
         def Run(self):
             self.DoPatches()           
      
             with MysteryMachine.StartApp(self.args) as ctx:
                 self.in_curses = True
-                bpython.cli.main(args=("--quiet",) ,locals_ = { 'ctx': ctx })
+                bpython.cli.main(args=["--quiet",] ,locals_ = { 'ctx': ctx })
 
 
 
