@@ -32,6 +32,15 @@ from MysteryMachine import *
 from itertools import izip
 import copy
 
+#Get izip longest from itertools, or make it up with map
+# if too early a python
+try:
+    izip_longest = itertools.izip_longest
+except AttributeError:
+    izip_longest = functools.partial(map,None)
+
+
+
 class SystemProxy: 
     def get_object(self,cat,id):
         return ObjectProxy(cat , id)
@@ -198,14 +207,27 @@ class ListValTest(unittest.TestCase):
         self.assertRaises(TypeError,test,attr)
 
         ###Test itertation..
+        # - note we get back the long term stable keys - not the
+        #   numeric indices - so our test needs be different
+        # - note we also test return order s correct here,
         names = [ 0,1,2,3 ]
         fndNames= []
-        for k,v in attr:
-            self.assertTrue(k in names)
+        for i,(k,v) in izip_longest(names,attr.iteritems()):
+            self.assertEquals(attr[i] , attr[k])
+            self.assertEquals(attr[i] ,  v)
             self.assertFalse(k in fndNames)
             fndNames += [ k ]
             self.assertTrue(isinstance( v, MMAttribute))
             self.assertEquals(v,attr[k])
+
+        attrv = list(attr.__iter__())
+        self.assertEqual(len(attrv),4)
+        attrk = list(attr.iterkeys())
+        self.assertEqual(len(attrk),4)
+
+        for k,v in itertools.izip(attrk,attrv):
+            self.assertEquals(attr[k],v)
+
 
 
 

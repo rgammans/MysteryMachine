@@ -325,5 +325,20 @@ class MMAttribute (MMAttributeContainer):
        raise TypeError("%s is not iterable (MM)" % self.valueobj.__class__)
      
      for name in self.valueobj.__iter__(obj = self):
-       yield (name , self._get_item(self._keymap(name),self._makeattr,self._keymap(name)) )
+       yield self._get_item(self._keymap(name),self._makeattr,self._keymap(name)) 
+
+  def iteritems(self):
+     if '__iter__' not in self.valueobj.exports:
+       raise TypeError("%s is not iterable (MM)" % self.valueobj.__class__)
+     
+     for name in self.valueobj.__iter__(obj = self):
+       yield (self._keymap(name) , self._get_item(self._keymap(name),self._makeattr,self._keymap(name)) )
   
+  def iterkeys(self):
+     if '__iter__' not in self.valueobj.exports:
+       raise TypeError("%s is not iterable (MM)" % self.valueobj.__class__)
+     
+     for name in self.valueobj.__iter__(obj = self):
+       yield self._keymap(name) 
+  
+  itervalues = __iter__ 

@@ -42,7 +42,7 @@ def generate_doctree(pattern,home):
     doc = docutils.utils.new_document(repr(home),settings)    
 
     section_stack = [ doc ]
-    for pos , attrib in order:
+    for  attrib in order:
         element = attrib.getSelf()
         #We have a problem here - 
         #  an element can impose a section push/pop
