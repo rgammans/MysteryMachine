@@ -152,10 +152,20 @@ class MMObject (MMAttributeContainer):
     #Remove from backing store. 
     if self.store.HasAttribute(attrname):
         self.store.DelAttribute(attrname)    
-  
+ 
+  def iteritems(self):
+        for a in self.store.EnumAttributes():
+            if a[0] != '.': yield (a ,self[a])  
+
+  def iterkeys(self):
+        for a in self.store.EnumAttributes():
+            if a[0] != '.': yield a  
+
   def __iter__(self):
         for a in self.store.EnumAttributes():
-            if a[0] != '.': yield ( a,  self[a] )
+            if a[0] != '.': yield self[a]
+
+  itervalues = __iter__
 
   def __contains__(self,name):
        a = self.store.HasAttribute(name) 

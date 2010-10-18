@@ -31,7 +31,7 @@ from MysteryMachine.store.dict_store import *
 import MysteryMachine.schema.MMAttributeValue
 import unittest
 import logging
-
+import itertools
 
 class ObjectTests(unittest.TestCase):
     def setUp(self):
@@ -134,12 +134,24 @@ class ObjectTests(unittest.TestCase):
         self.assertEquals(len(list(iter(self.object))),2)
         names = [ "attr1" , "name" ]
         fndNames= []
-        for k,v in self.object:
+        for k,v in self.object.iteritems():
             self.assertTrue(k in names)
             self.assertFalse(k in fndNames)
             fndNames += [ k ]
             self.assertTrue(isinstance( v, MMAttribute))
             self.assertEquals(v,self.object[k])
+
+        attrv = list(self.object.__iter__())
+        self.assertEqual(len(attrv),2)
+        attrk = list(self.object.iterkeys())
+        self.assertEqual(len(attrk),2)
+
+        for k,v in itertools.izip(attrk,attrv):
+            self.assertEquals(self.object[k],v)
+
+        for a in attrk:
+            self.assertTrue(a in names)
+
 
 def getTestNames():
 	return [ 'Object.ObjectTests' ] 
