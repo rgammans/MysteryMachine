@@ -96,10 +96,9 @@ class MMObject (MMAttributeContainer):
     if self.store.HasAttribute(attrname):
         return self._get_item(attrname,self._make_attr,attrname) 
     else:
-        try:
-            parent = self.get_parent()
-        except KeyError:
-            #No Parent so reraise as no attrname.
+        parent = self.get_parent()
+        if not parent:
+           #No Parent so raise no attrname.
            raise KeyError(attrname)
         
         #Ensure the attribute can be fetched - if not parent will
@@ -193,7 +192,10 @@ class MMObject (MMAttributeContainer):
     else: #TODO Get parent from object's category 
         idpath = self.name.split(":")[:-1]
         category = self.owner[idpath[-1]]
-        parent = category[".parent"]
+        try:
+            parent = category[".parent"]
+        except KeyError:
+            parent = None
     self.logger.debug( "parent type is %s " %type(parent))
     self.logger.debug( "Parent = %r" % parent)
     if parent != None:

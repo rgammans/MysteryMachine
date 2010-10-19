@@ -146,8 +146,10 @@ class sysTests(unittest.TestCase):
             self.assertEqual(cat[k],v)
 
 
-
-
+        #Test parent.
+        self.assertEquals(o11.get_parent(),None)
+        cat[".parent"] = o21
+        self.assertEquals(o11.get_parent(),o21)
 
     def testLoaded(self):
 
