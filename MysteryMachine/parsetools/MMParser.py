@@ -184,7 +184,11 @@ def role_handler(role, rawtext, text, lineno, inliner,
                 import sys
                 e_info = sys.exc_info()
                 modlogger.debug( traceback.format_exc() )
-                msg +=  docutils.nodes.error(traceback.format_exception_only(e_info[0],e_info[1]))
+                error_string = traceback.format_exception_only(e_info[0],e_info[1])
+                error_string = ("".join(error_string)).rstrip()
+                error_string += " at line %i" % lineno
+                msg.append(inliner.reporter.error(error_string))
+                nodes +=  [ docutils.nodes.error(error_string) ]
         else:
             msg.append(inliner.reporter.error("Cycle detected in macro expansion '%s' via:-%s\n" % 
                       (text,"\n".join(content))))

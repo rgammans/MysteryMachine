@@ -26,6 +26,7 @@ from MysteryMachine.store.dict_store import *
 from MysteryMachine.schema.MMSystem import MMSystem
 import unittest
 import pyparsing
+import re
 
 class ParsersTests(unittest.TestCase):
     def setUp(self):
@@ -56,14 +57,16 @@ class ParsersTests(unittest.TestCase):
         self.assertEquals(self.c["carries"].GetFullExpansion(),"The one ring")
         self.assertEquals(str(self.c),"Frodo")
         self.p['.defname'] =  ":mm:`:name` :mm:`:lname`"
-        #self.p['lname'] = ""
+        self.p['lname'] = ""
         self.c['lname'] = "Baggins"
         self.assertEquals(str(self.c),"Frodo Baggins")
         self.assertEquals(str(self.i),"The one ring ")
         #Test Invalid syntax
         self.c['foo'] = ':mm:`not_a_macro`'
-        #There will be and error message as well
-        self.assertEquals(str(self.c['foo'].GetFullExpansion()),"")
+        #We shouldn't raise but will have docutils XML reporting a ParseException
+        foo_str = self.c['foo'].GetFullExpansion()
+        self.assertTrue(re.search("<error",foo_str))
+        self.assertTrue(re.search("ParseException",foo_str))
         #Test settings
         self.assertEquals(str(self.i['bike'].GetFullExpansion()),"hovercraft")
         self.c['test']=":mm:`:carries:bike`"
