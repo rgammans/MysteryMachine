@@ -28,3 +28,5 @@ import exceptions
 class ExtensionError(RuntimeError): pass
 class CoreError(RuntimeError): pass
 class DuplicateRegistration(RuntimeError): pass
+class NullReference(LookupError): pass
+class NoAttribute(LookupError): pass #Specifically no MMAttribute.

@@ -5,6 +5,7 @@ from pyparsing import Forward, OneOrMore, QuotedString , Literal, Word, alphas ,
 
 import logging
 import sys
+from MysteryMachine.Exceptions import NullReference,NoAttribute
 
 modlogger = logging.getLogger("MysteryMachine.parsetools.grammar")
 
@@ -73,13 +74,19 @@ def Grammar(home):
         
         #Walk along the attributes
         field = origin
+        canonpath = repr(origin)
         for ele in path:
             if ele != ":": #Skip ':' as grammar noise.
-                field = field[ele]
+                if field is None:
+                    raise NullReference(canonpath)
+                canonpath ="%r:%s"%(field,ele)
                 try:
+                    field = field[ele]
+                except KeyError:
+                    raise NoAttribute("%r has no attribute `%s'"%(field,ele))
+
+                if hasattr(field,"getSelf"):
                     field = field.getSelf()
-                except:
-                    pass
         return field
     
     ## Bind functions to parse actions

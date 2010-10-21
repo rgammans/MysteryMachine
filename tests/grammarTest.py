@@ -22,6 +22,7 @@ Tests for the MysteryMachine.parsetools.gramar file
 """
 
 from MysteryMachine.parsetools.grammar import Grammar
+from MysteryMachine.Exceptions import NullReference,NoAttribute
  
 import unittest
 import logging
@@ -61,10 +62,13 @@ def helper(parser,input):
         rv += item 
     return rv
 
+class DummyAttribute(object):
+    def getSelf(self): return None
+
 class GraamarTest(unittest.TestCase):
     def setUp(self):
         self.C = ( ObjectProxy( name="AnotherName",  test=self, title="A Title", yes="YEAH!", no="Nope") )
-        self.A = ( ObjectProxy( name="TestName",    test=self, obj=self.C, title="A Title", yes="YEAH!", no="Nope") )
+        self.A = ( ObjectProxy( name="TestName",    test=self, nullRef = None, nullAttr=DummyAttribute() , obj=self.C, title="A Title", yes="YEAH!", no="Nope") )
         self.parserA=Grammar( self.A )
         self.parserB=Grammar( ObjectProxy( test=self, name="WrongName", title="A Title", a=self.A) )
 
@@ -88,12 +92,14 @@ class GraamarTest(unittest.TestCase):
         self.assertEqual("AnotherName", helper(self.parserB,"Test:C:name") )
         self.assertEqual("TestName", helper(self.parserB,"Test:A:name") )
         self.assertEqual("AnotherName", helper(self.parserB,"Test:A:obj:name") )
-
-    
+   
     def testInvalidSyntax(self):
         import pyparsing
         self.assertRaises(pyparsing.ParseException,helper,self.parserA,"NothingMeaningfull")    
-
+        self.assertRaises(NoAttribute,self.parserA.parseString,":not_here")
+        self.assertRaises(NullReference,self.parserA.parseString,":nullRef:foo")
+        self.assertRaises(NullReference,self.parserA.parseString,":nullAttr:foo")
+ 
     def testObjectFetch(self):
         self.assertEqual(helper(self.parserA,"Object:1").__class__ ,    MMObject)
         self.assertEqual(repr(helper(self.parserA,"Object:1")) , "Object:1" )
