@@ -22,6 +22,7 @@ Tests for the MysteryMachine dictstore  module
 """
 
 from MysteryMachine import * 
+from MysteryMachine.Exceptions import * 
 
 import sys
 
@@ -173,7 +174,10 @@ class storeTests(object):
         self.store.SetAttribute("One"+":"+o12+":overwrite", "test2", { 'third':"this should be all thats left"})
         self.assertEquals(self.store.GetAttribute("One:"+o12+":overwrite")[0],"test2")
         self.assertEquals(len(self.store.GetAttribute("One:"+o12+":overwrite")[1]),1)
-     
+    
+        ##Check that type not realted to a string raise an Api Violation.
+        self.assertRaises(StoreApiViolation,self.store.SetAttribute,"One:"+o12+":broked", "test3", {'integer':1})
+ 
     def testProxyObjAttr(self):
         """
         Test the Object proxy used in MMObjects.

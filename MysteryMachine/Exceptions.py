@@ -30,3 +30,14 @@ class CoreError(RuntimeError): pass
 class DuplicateRegistration(RuntimeError): pass
 class NullReference(LookupError): pass
 class NoAttribute(LookupError): pass #Specifically no MMAttribute.
+
+class StoreApiViolation(TypeError):
+    """Incorrect types have been base to the StoreApi
+     
+    The store api requires character buffers for almost all of
+    it methods. As these are what is safe to write to a file like
+    object.
+
+    You should use a custom value object to do any special transcoding
+    """
+    pass

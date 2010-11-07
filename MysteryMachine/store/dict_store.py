@@ -4,6 +4,7 @@ import operator
 from MysteryMachine.policies.SequentialId import NewId
 from MysteryMachine.store import *
 from MysteryMachine.store.Base import Base 
+from MysteryMachine.Exceptions import *
 
 import logging
 
@@ -90,11 +91,15 @@ class dict_store(Base):
 
     HasAttribute = _GenericHas
 
-    def SetAttribute(self,attr,type,parts):
+    def SetAttribute(self,attr,attrtype,parts):
         dbpath = self.canonicalise(attr)
         d = self._walkPath(dbpath[:-1])
-        #self.logger.debug( "setting %s" % attr)
-        d[dbpath[-1]]=(type,parts)
+        #Verify the StoreApi is being adhered too
+        #  this will pick up issues in tests where we use dict_store.
+        for p,v in parts.iteritems():
+            if not isinstance(v,basestring): 
+                raise StoreApiViolation("%s has part %s of type %s"%(attr,p,type(v)))
+        d[dbpath[-1]]=(attrtype,parts)
 
     DelAttribute = _GenericDelete
 

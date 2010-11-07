@@ -23,6 +23,7 @@ from __future__ import with_statement
 import re
 import MysteryMachine.policies
 from MysteryMachine.store import *
+from MysteryMachine.Exceptions import *
 from MysteryMachine.store.Base import Base
 from MysteryMachine.utils.locks import RRwLock
 from MysteryMachine.utils.path import make_rel 
@@ -299,7 +300,7 @@ class filestore(Base):
 
         return False
 
-    def SetAttribute(self,attr,type,parts):
+    def SetAttribute(self,attr,attrtype,parts):
         """
 
         @param string attribute : 
@@ -311,8 +312,10 @@ class filestore(Base):
         #Remove existing objects
         self.DelAttribute(attr)
         for partname,value in parts.items():
+            if not isinstance(value,basestring): 
+                raise StoreApiViolation("%s has part %s of type %s"%(attr,partname,type(value)))
             filename = os.path.join(self.path,*pathparts)
-            filename = "%s.%s.%s" % (filename,type,partname)
+            filename = "%s.%s.%s" % (filename,attrtype,partname)
             self._lock.acquire_read()
             file =SafeFile(filename,"w",lock = self._lock)
             file.write(value)

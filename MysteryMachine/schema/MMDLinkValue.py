@@ -276,7 +276,7 @@ class MMDLinkValue(MMAttributeValue):
                 self.logger.debug( "my-p>%r"%oldattr)
                 #Turn other into an anchorpoint.
                 if other.anchordist is not None:
-                    other.parts = { 'anchordist' : other.anchordist }
+                    other.parts = { 'anchordist' : str(other.anchordist) }
                     other._process_parts()
 
                 #Write the changes to the new anchorpoint back, now our state is sane.
