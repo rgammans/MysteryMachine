@@ -33,6 +33,8 @@ import sys
 import thread
 import threading
 import glob
+from contextlib import closing
+ 
 
 policy = MysteryMachine.policies
 
@@ -188,11 +190,11 @@ def FileStoreAttributePart(filename,partname):
     """
     Create a MMAttributePart from a filename
     """
-    infile = SafeFile.open_read(filename)
-    data = infile.read()
-    infile.close()
-    logging.getLogger("MysteryMachine.Store.file_store").debug("APi:data:%s",data)
-    return {partname: data }
+    with closing(SafeFile.open_read(filename)) as infile:
+        data = infile.read()
+        infile.close()
+        logging.getLogger("MysteryMachine.Store.file_store").debug("APi:data:%s",data)
+        return {partname: data }
 
 class filestore(Base):
     """
@@ -317,9 +319,9 @@ class filestore(Base):
             filename = os.path.join(self.path,*pathparts)
             filename = "%s.%s.%s" % (filename,attrtype,partname)
             self._lock.acquire_read()
-            file =SafeFile(filename,"w",lock = self._lock)
-            file.write(value)
-            file.close()
+            with closing(SafeFile(filename,"w",lock = self._lock)) as file:
+                file.write(value)
+
             #Ensure any RCS knows about the file.
             file , = make_rel(self.path,filename)
             self.Add_file(file)
