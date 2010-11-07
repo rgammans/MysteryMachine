@@ -79,6 +79,7 @@ if True:
                 self.dictlock  = self.__class__.dictlock
                 self.locksync  = threading.Semaphore(0)
                 
+                self.logger = logging.getLogger("MysteryMachine.Store.file_store.SafeFile")
                 #FS Consistency.       
                 try:
                     os.stat(self.finalname)
@@ -148,7 +149,16 @@ if True:
                 with cls.dictlock:
                     if filename in cls.active:
                         if cls.active[filename] == "unlink": raise IOError("File deleted")
-                        return open(cls.active[filename].realname)
+                        try:
+                            #There is a chance of a race here between testing
+                            # if this file is still active and opening it's
+                            # working file. - If Opening it working file fails
+                            # we fail back to the mainfile.
+                            rfile = open(cls.active[filename].realname)
+                        except IOError, e:
+                            self.logger.debug("%s - Failling back to main file %s"%(e,filename))
+                            rfile = open(filename)
+                        return rfile
                     else:
                         return open(filename)
 
