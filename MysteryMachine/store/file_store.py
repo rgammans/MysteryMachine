@@ -38,6 +38,10 @@ from contextlib import closing
 
 policy = MysteryMachine.policies
 
+CATEGORY_SENTINEL_NAME="..attrfile_category"
+OBJECT_SENTINEL_NAME="..attrfile_object"
+
+
 if True:
         #
         # We don't use this class as it creates more problems than
@@ -248,27 +252,45 @@ class filestore(Base):
             # system if multiple stores are used.
             if os.path.isdir(os.path.join(self.path , dentry )):
                 #Ignore hidden directories
-                if dentry[0] != '.': yield dentry
+                if dentry[0] != '.':
+                    if os.path.isfile(os.path.join(self.path,dentry,CATEGORY_SENTINEL_NAME)):
+                        yield dentry
+                
 
     def EnumObjects(self,category):
         catpath = self.canonicalise(category)
         for dentry in os.listdir(os.path.join(self.path,*catpath)):
             objpath = catpath + [ dentry ]
             if not os.path.isdir(os.path.join(self.path,*objpath)) : continue
+            sentinelpath = objpath + [ OBJECT_SENTINEL_NAME ]
+            if not os.path.isfile(os.path.join(self.path,*sentinelpath)): continue
             yield dentry
   
     def NewCategory(self,category):
-        catpath = os.path.join(self.path , category)
+        catpath = self.canonicalise(category)
+        catpath = os.path.join(self.path , *catpath)
         try:
             os.mkdir(catpath)
         except OSError:
+            ##FIXME Only discard file exist, still raise perm errors.
             pass #Eat file exists becuase we it can happen
+        else:
+            sentinel = os.path.join(catpath ,CATEGORY_SENTINEL_NAME )
+            #Don't bother with safe file for this - a journalled FS
+            # should be enough, since there is no data. 
+            f=file(sentinel,"w")
+            self.Add_file(sentinel)
 
     def NewObject(self,category):
         objs = list(self.EnumObjects(category))
         Id = policy.NewId(objs)
         catpath = os.path.join(self.path , category , Id)
         os.mkdir(catpath)
+        sentinel = os.path.join(catpath ,OBJECT_SENTINEL_NAME )
+        #Don't bother with safe file for this - a journalled FS
+        # should be enough, since there is no data. 
+        f=file(sentinel,"w")
+        self.Add_file(sentinel)
         return Id
 
     def HasCategory(self,cat):
@@ -282,10 +304,16 @@ class filestore(Base):
     
     def DeleteObject(self,object):
         dir = os.path.join(self.path,self._getpath(object))
+        sentinel = os.path.join(dir ,OBJECT_SENTINEL_NAME )
+        os.unlink(sentinel)
+        self.Remove_file(sentinel)
         os.rmdir(dir)
 
     def DeleteCategory(self,cat):
         catpath = os.path.join(self.path , cat)
+        sentinel = os.path.join(catpath ,CATEGORY_SENTINEL_NAME )
+        os.unlink(sentinel)
+        self.Remove_file(sentinel)
         os.rmdir(catpath)
 
     def EnumAttributes(self,object):

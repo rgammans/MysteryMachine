@@ -75,7 +75,68 @@ class filestoreTests(storeTests,unittest.TestCase):
         self.assertEqual(self.store.GetCanonicalUri("/tmp/mys-mac-test-symlink/../test/.."),parentpath)
 
 
-class test2(storeTests,unittest.TestCase):
+    def test_should_tell_the_difference_between_categories_and_random_dirs(self):
+        cats=list(self.store.EnumCategories())
+        self.assertEqual(len(cats),0)
+        self.store.NewCategory("One")
+        self.store.NewCategory("Two")
+        self.store.NewCategory(".Three")
+        cats=list(self.store.EnumCategories())
+        os.mkdir(os.path.expanduser(self.mpath) + os.path.sep + "Four")
+        self.assertEqual(len(cats),2)
+        self.store.DeleteCategory("One")
+        cats=list(self.store.EnumCategories())
+        self.assertEqual(len(cats),1)
+ 
+    def test_should_be_able_tell_the_difference_between_objects_categories_and_random_dirs(self):
+        #Check empty categories are..
+        self.store.NewCategory("One")
+        self.store.NewCategory("Two")
+        self.store.NewCategory("Two:Three")
+        os.mkdir(os.path.expanduser(self.mpath) + os.path.sep + "Four")
+        objs1=list(self.store.EnumObjects("One"))
+        objs2=list(self.store.EnumObjects("Two"))
+        self.assertEqual(len(objs1),0)
+        self.assertEqual(len(objs2),0)
+        
+        o11=self.store.NewObject("One")
+        o12=self.store.NewObject("One")
+        o21=self.store.NewObject("Two")
+        os.mkdir(os.path.join(os.path.expanduser(self.mpath),"One","FakeObject"))
+
+        objs1=list(self.store.EnumObjects("One"))
+        objs2=list(self.store.EnumObjects("Two"))
+        self.assertEqual(len(objs1),2)
+        self.assertEqual(len(objs2),1)
+   
+        #Recreate cateogory - should have no effect.
+        self.store.NewCategory("Two")
+        objs2=list(self.store.EnumObjects("Two"))
+        self.assertEqual(len(objs2),1)
+       
+        #Test deletion 
+        self.store.DeleteObject("One"+":"+o12)
+
+        # - Commented out next 4 lines as currently we don't
+        #   require this to work.
+        ##Test deletion if an attribute is applied.
+        ##Set an attribute.
+        #attrtuple = ( "simple",{ "":"fred" }  )
+        #self.store.SetAttribute("Two"+":"+o21+":name",*attrtuple)
+
+        self.store.DeleteObject("Two"+":"+o21)
+
+        objs1=list(self.store.EnumObjects("One"))
+        objs2=list(self.store.EnumObjects("Two"))
+        self.assertEqual(len(objs1),1)
+        self.assertEqual(len(objs2),0)
+
+
+
+class test2(filestoreTests):
+    """Try the filestore tests in a non-temporayr directory in case it behaves differently,
+       and that posix symbols like '~' are handled.
+    """
     def mySetUp(self):
         StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])
         prefix = ""
