@@ -29,6 +29,7 @@ import MysteryMachine.store.Base
 
 import sys
 import os 
+import itertools
 
 class HgStoreMixin(object):
     """
@@ -75,6 +76,7 @@ class HgStoreMixin(object):
         rv = self.repo.commit(msg, None, None , cmdutil.match(self.repo),
                          editor=cmdutil.commiteditor, extra= { })
         self.unlock()
+        return rv
 
     def rollback(self):
         
@@ -100,13 +102,19 @@ class HgStoreMixin(object):
         """
         Returns true is repo is uptodate.
 
+            Add Argurment deleted=True to include deleted files
+
         Up to date - is the equivalent of an empty result from 'hg status'
         """
-        changed = []
-        for list in self.repo.status():
-            changed += list
+        modified, added, removed, deleted, unknown, ignored, clean = self.repo.status()
+        if not kwargs.get("deleted"):
+            deleted = []
 
-        return len(changed) == 0
+        for list in itertools.chain(modified,added,removed):
+            #We're not interested in deleted
+            return False
+
+        return True 
 
     def clean(self,*args,**kwargs):
         """
@@ -120,7 +128,7 @@ class HgStoreMixin(object):
         if hasattr(mysuper,"clean"):
             mysuper.clean(*args,**kwargs)
         if not self.uptodate():
-            self.ui.warn("%slean requested in non-up-todate repo" % (
+            self.ui.warn("%slean requested in non-up-todate repo." % (
                          "Forced c" if kwargs.get('force') else "C"  
                         ))
 
