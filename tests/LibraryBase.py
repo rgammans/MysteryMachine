@@ -140,5 +140,11 @@ def getTestNames():
 	return [ 'LibraryBase.LibBaseTest' ] 
 
 if __name__ == '__main__':
+    import sys
+    if "--debug" in sys.argv:
+        import logging
+
+        logging.getLogger("MysteryMachine").setLevel(logging.DEBUG)
+        sys.argv.remove("--debug")
     unittest.main()
 
