@@ -252,7 +252,7 @@ class MMDLinkValue(MMAttributeValue):
             self.logger.debug( "got inassign lock")
             oldpartner =  self.get_partner()
             #Keep hold of old partner data, so we can delink it later.
-            if oldpartner:
+            if oldpartner is not None:
                 oldpanchor = oldpartner.get_anchor()
             self.logger.debug( "oldp>%r"%oldpartner )
 
@@ -267,8 +267,8 @@ class MMDLinkValue(MMAttributeValue):
             #Update partner if exists to break the link, iff it isn't inside 
             # assign further up the stack. 
             not_opassign = True
-            if oldpartner: not_opassign = not assign_guard.test(oldpartner.get_value())
-            if oldpartner and  not_opassign:
+            if oldpartner is not None: not_opassign = not assign_guard.test(oldpartner.get_value())
+            if oldpartner is not None and  not_opassign:
                oldpartner.set_value(MMDLinkValue(anchor = oldpanchor))
 
             if hasattr(oldattr,"get_partner"): 
@@ -280,7 +280,7 @@ class MMDLinkValue(MMAttributeValue):
                     other._process_parts()
 
                 #Write the changes to the new anchorpoint back, now our state is sane.
-                if oldattr and oldattr.get_value() is other:
+                if oldattr is not None and oldattr.get_value() is other:
                     oldattr._writeback()
                 else:
                     self.logger.debug( "writeback skipped")
@@ -424,7 +424,7 @@ class MMDLinkValue(MMAttributeValue):
 
     def get_partner(self, obj = None):
         """Get the attribute which forms the other half of this link"""
-        obj = obj or self.obj
+        if obj is None: obj = self.obj
         if obj is None: return None
         if self.partner_path is None: return None
         return _container_walk(obj.get_root(),self.partner_path)

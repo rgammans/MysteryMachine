@@ -148,6 +148,10 @@ class MMAttributeContainer(MMContainer):
         item._compose()
         return item
 
+
+
+
+
 class MMAttribute (MMAttributeContainer):
 
   """
@@ -287,6 +291,7 @@ class MMAttribute (MMAttributeContainer):
   def _makeattr(self,name):
      return MMAttribute(name,self.valueobj.__getitem__(name,obj= self),self,False)
 
+
   def __getitem__(self,name):
      if '__getitem__' not in self.valueobj.exports:
         raise TypeError("%s is not indexable (MM)" % self.valueobj.__class__)
@@ -308,17 +313,17 @@ class MMAttribute (MMAttributeContainer):
      self._invalidate_item(name)
      self.valueobj.__delitem__(name,obj = self )
      self._writeback()
-
   def __contains__(self,name):
      if '__contains__' not in self.valueobj.exports:
        raise TypeError("%s is not iterable (MM)" % self.valueobj.__class__)
      
      return self.valueobj.__contains__(name,obj = self)
 
-  def _keymap(self,key):
-    if hasattr(self.valueobj,"GetStableIndex"):
-        return self.valueobj.GetStableIndex(key)
-    else: return key
+  def __len__(self):
+     if '__len__' not in self.valueobj.exports:
+       raise TypeError("object of type %s has no len (MM)" % self.valueobj.__class__.__name__)
+     
+     return self.valueobj.__len__(obj = self)
 
   def __iter__(self):
      if '__iter__' not in self.valueobj.exports:
@@ -326,6 +331,12 @@ class MMAttribute (MMAttributeContainer):
      
      for name in self.valueobj.__iter__(obj = self):
        yield self._get_item(self._keymap(name),self._makeattr,self._keymap(name)) 
+
+  def _keymap(self,key):
+    if hasattr(self.valueobj,"GetStableIndex"):
+        return self.valueobj.GetStableIndex(key)
+    else: return key
+
 
   def iteritems(self):
      if '__iter__' not in self.valueobj.exports:

@@ -52,12 +52,14 @@ class MMListAttribute(MMAttributeValue):
             for item in self.value:
                 self.append(item)
 
-        self.exports+= ["GetStableIndex", "__iter__" , "__contains__","__getitem__","__setitem__","__delitem__","count","extend","insert","append" ]
+        self.exports+= ["GetStableIndex", "__iter__" , "__contains__", "__len__", "__getitem__","__setitem__","__delitem__","count","extend","insert","append" ]
 
     def __contains__(self,val , obj = None ):
         val = self._convert_to_str(None,val,obj)
         return val in self.parts.values()
 
+    def __len__(self, obj = None ):
+        return len(self.parts)
 
     def GetStableIndex(self,index,obj = None):
         try:

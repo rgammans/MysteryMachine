@@ -92,6 +92,7 @@ class ListValTest(unittest.TestCase):
         self.assertEquals(val.count(),5)
         self.assertTrue("third" in val)
         self.assertEquals(len(list(iter(val))),5)
+        self.assertEquals(len(val),5)
         val.insert(0,"zeroth")
         self.assertEquals(str(val[0] )  , "zeroth")      
         self.assertEquals(str(val[1] )  , "first")      
@@ -137,6 +138,7 @@ class ListValTest(unittest.TestCase):
         # - array should be  ["first", "third"].
         self.assertEquals(attr.count() ,2 )        
         self.assertEquals(len(list(iter(attr))),2)
+        self.assertEquals(len(attr),2)
         self.assertFalse("second" in attr )
         self.assertEquals(str(attr["1"]) ,"third" )
         #Check writeback occurred.
