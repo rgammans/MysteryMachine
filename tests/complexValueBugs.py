@@ -32,7 +32,10 @@ from MysteryMachine.schema.MMAttributeValue import *
 from MysteryMachine.schema.MMAttribute import * 
 from MysteryMachine.schema.MMObject import * 
 from MysteryMachine.schema.MMBase import * 
+import MysteryMachine.store.file_store
 import unittest
+import tempfile
+import shutil
 from MysteryMachine import * 
 from itertools import izip
 import copy
@@ -86,9 +89,27 @@ class complexValTest(unittest.TestCase):
         self.object2["link"] = dlk.CreateAnchorPoint(self.object2)
         self.object2["link2"] = dlk.CreateAnchorPoint(self.object2)
         self.object["linklist"][0] = dlk.ConnectTo(self.object2["link"]) 
-        print self.object["linklist"][0].get_value().get_parts()
         self.assertEquals(self.object["linklist"][0].get_anchor(), self.object)
         self.assertEquals(self.object["linklist"][0].get_object(), self.object2)
+
+    def test_should_remember_an_empty_list(self):
+        self.parent["a_list"]  = [  ]
+        self.assertEquals(len(self.parent["a_list"]),0)
+        self.assertEquals(len(self.object["a_list"]),0)
+        path=tempfile.mkdtemp()
+        os.rmdir(path)
+        self.system=MMSystem.Create("attrfile:" + path)
+        self.system.NewCategory("Test")
+        obj = self.system.NewObject("Test")
+        objname = repr(obj).split(":")[-1]
+        obj["a_list"]  = [  ]
+        self.assertEquals(len(obj["a_list"]),0)
+        self.assertEquals(len(obj["a_list"]),0)
+        obj = None
+        self.system =None
+        shutil.rmtree(path)
+ 
+
 def getTestNames():
     return [ 'complexValueBugs.complexValTest' ]
 

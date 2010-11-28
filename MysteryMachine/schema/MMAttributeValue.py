@@ -126,6 +126,9 @@ class MMAttributeValue (MMBase ):
    should have it's own speciallisation of this class. It is through this object
    that values are directly manipulated.
 
+   An attribute value must consist of one or more string parts, each part should
+   have a unique name in the MysteryMachine namespace.
+
   :version:
   :author:
   """
