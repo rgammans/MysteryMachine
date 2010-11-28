@@ -46,25 +46,42 @@ class MMListAttribute(MMAttributeValue):
 
     def __init__(self,*args,**kwargs):
         super(MMListAttribute,self).__init__(self,*args,**kwargs)
+        self.special = ["0element"]
         if self.value is not None:
-            #Value overrides parts..
-            self.parts = { }
+            #Value overrides parts, but create a dummy part for emptylists
+            self.parts = { "0element" : "" }
             for item in self.value:
                 self.append(item)
 
-        self.exports+= ["GetStableIndex", "__iter__" , "__contains__","__getitem__","__setitem__","__delitem__","count","extend","insert","append" ]
+        self.exports+= ["GetStableIndex", "__iter__" , "__contains__", "__len__", "__getitem__","__setitem__","__delitem__","count","extend","insert","append" ]
+
+    def _elementkeys(self):
+        ##Returns the elements of the array - remove any special parts
+        for k,v in self.parts.iteritems():
+            if k not in self.special:
+                    yield k         
+
+    def _elementvalues(self):
+        ##Returns the elements of the array - remove any special parts
+        for k,v in self.parts.iteritems():
+            if k not in self.special:
+                    yield v         
+
 
     def __contains__(self,val , obj = None ):
         val = self._convert_to_str(None,val,obj)
-        return val in self.parts.values()
+        return val in self._elementvalues()
 
+    def __len__(self, obj = None ):
+        return len(list(self._elementkeys()))
 
+    count = __len__
     def GetStableIndex(self,index,obj = None):
         try:
             index=int(index)
         except ValueError:
             return index
-        return sorted(self.parts.keys())[index]
+        return sorted(self._elementkeys())[index]
 
     def __delitem__(self,index ,obj = None):
         key = self.GetStableIndex(index,obj)
@@ -75,22 +92,19 @@ class MMListAttribute(MMAttributeValue):
         return self._convert_to_val(key,self.parts[key],obj)        
 
     def __iter__(self, obj = None):
-        for key in xrange(len(self.parts)):
+        for key in xrange(len(self)):
             yield key 
 
     def __setitem__(self,index,value , obj = None):
         key = self.GetStableIndex(index,obj)
         self._write(key,value,obj)
 
-    def count(self,obj = None):
-        return len(self.parts)
-
     def extend(self, iter , obj = None):
         for i in iter:
             self.append(i)
 
     def insert(self,index,item , obj = None):
-        klist = sorted(self.parts.keys())
+        klist = sorted(self._elementkeys())
         if index >0:
             key_a = klist[index-1]
         else:
@@ -106,7 +120,7 @@ class MMListAttribute(MMAttributeValue):
     def _key_append(self):
         lastkey = None
         try:
-            lastkey = sorted(self.parts.keys(),reverse=True)[0]
+            lastkey = sorted(self._elementkeys(),reverse=True)[0]
         except:
             pass
  

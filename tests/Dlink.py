@@ -37,7 +37,7 @@ import sys
 
 #logging.basicConfig(level=logging.DEBUG)
 
-class ObjectTests(unittest.TestCase):
+class DlinkTests(unittest.TestCase):
     def setUp(self):
         StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
 
@@ -179,7 +179,7 @@ class ObjectTests(unittest.TestCase):
 
 
 def getTestNames():
-	return [ 'Object.ObjectTests' ] 
+	return [ 'Dlink.DlinkTests' ] 
 
 if __name__ == '__main__':
 #    loader = unittest.TestLoader()
