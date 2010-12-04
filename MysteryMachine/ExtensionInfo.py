@@ -23,9 +23,8 @@
 #
 
 from yapsy.PluginManager import *
-from MysteryMachine.ExtensionSecureID import ExtensionSecureID
+from ExtensionSecureID import ExtensionSecureID
 import re
-
 
 EXTENSION_POINT_SECTION_NAME="ExtensionPoints"
  

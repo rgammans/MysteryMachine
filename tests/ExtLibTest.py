@@ -45,7 +45,16 @@ class ExtensionLibTest(unittest.TestCase):
         self.extlib = g.GetExtLib()
         plugins = []
         for p in self.extlib.get_extension_list():
-            if self.extlib.IsTrusted(p):
+            if self.extlib.IsTrusted(p) and not self.extlib.IsSystemPlugin(p):
+                plugins +=  [ p ]
+        return plugins
+          
+    def getsystemlist(self):
+      with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])  as g:
+        self.extlib = g.GetExtLib()
+        plugins = []
+        for p in self.extlib.get_extension_list():
+            if self.extlib.IsSystemPlugin(p):
                 plugins +=  [ p ]
         return plugins
           
@@ -64,7 +73,7 @@ class ExtensionLibTest(unittest.TestCase):
         #Check plugins accestp/reject are the ones we expect.
         rejects = []
         for r in self.extlib.get_extension_list():
-            if not self.extlib.IsTrusted(r):
+            if not (self.extlib.IsTrusted(r) or self.extlib.IsSystemPlugin(r)):
                 rejects.append(r)
         #Check correct number of rejects
         self.assertEqual(len(rejects) , 1)
@@ -95,15 +104,15 @@ class ExtensionLibTest(unittest.TestCase):
 
  
     def testUntrust(self):
-        pass
-       # REemove all from trustlist.
-#        for reject in self.extlib.get_extension_list():
-#            print reject
-#            self.extlib.SetTrust(reject,False)
+         with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])  as g:
+            self.extlib = g.GetExtLib()
+            # Remove all from trustlist.
+            for reject in self.extlib.get_extension_list():
+                self.extlib.SetTrust(reject,False)
 
-#       plugins = self.gettrustedlist()  
-#        self.assertEqual(len(plugins),0)
-
+            plugins = self.gettrustedlist()  
+            self.assertEqual(len(plugins),0)
+ 
  
     def testQueryExtensionPoint(self):
         with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])  as g:
@@ -111,6 +120,11 @@ class ExtensionLibTest(unittest.TestCase):
             plugins = list(self.extlib.findPluginByFeature("Test","test_plugin")  )
             self.assertEquals(len(plugins),1)
 
+    def test_should_treat_all_plugins_as_trusted_in_trusteddir(self):
+        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])  as g:
+             extlib = g.GetExtLib()
+             self.assertEquals(len(self.getsystemlist()),1)
+             
 
 def getTestNames():
     return [ 'ExtLibTest.ExtensionLibTest' ] 

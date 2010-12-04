@@ -16,7 +16,7 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#
+# d
 
 
 #
@@ -53,7 +53,7 @@ except ImportError:
 DIST_PACKAGES = [ "yapsy" , "MysteryMachine","MysteryMachine.schema",
                  "MysteryMachine.store","MysteryMachine.parsetools",
                  "MysteryMachine.Ui","MysteryMachine.utils",
-                 "MysteryMachine.policies" , "MysteryMachine.document"]
+                 "MysteryMachine.policies" , "MysteryMachine.document"  ]
 
 PY_MODULES  = [ 'pyparsing' ]
 
@@ -68,7 +68,8 @@ EZ_PACKAGES   = ["docutils" ,
 TESTSDIR = "tests"
 FILES = [ "AUTHORS", "CodingGuidelines", "OriginalDesign" ,"README",
           "paver-minilib.zip" ]
-DIRS  = ["docs" , "examples" ,"graphics", "scripts" ,"patches" , TESTSDIR]
+DIRS  = ["docs" , "examples" ,"graphics", "scripts" ,"patches" ,
+         "MysteryMachine/TrustedPlugIns", TESTSDIR ]
 SCRIPTS = [ 'setup.py' , 'ez_setup.py' ]
 
 VENVSCRIPT = 'install.py'

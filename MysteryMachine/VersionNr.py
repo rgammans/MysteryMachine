@@ -24,7 +24,7 @@
 
 import types
 from copy import copy
-from MysteryMachine.utils.RichCompare import RichComparisonMixin
+from utils.RichCompare import RichComparisonMixin
 
 class VersionNr(RichComparisonMixin):
 

@@ -24,9 +24,15 @@
 
 import Extension
 from ExtensionInfo import ExtensionInfo 
-from TrustedPluginManager import *
-from MysteryMachine import *
-from MysteryMachine.VersionNr import VersionNr
+import TrustedPluginManager
+from CorePluginManager import   CorePluginManager 
+from VersionNr import VersionNr
+
+import os
+import itertools
+
+DEFAULT_TRUSTEDPLUGIN_PATH = os.path.realpath(os.path.join(__file__,".." + os.path.sep + "TrustedPlugIns"))
+
 
 class ExtensionLib(object):
     """
@@ -58,6 +64,18 @@ class ExtensionLib(object):
                       trustList=  cfg['extensions']['trusted']
                      )
 
+        ##Allow the trusted path to be overridden
+        self.trusteddirs = cfg['extensions'].get('trustedpath')
+        if not self.trusteddirs:
+            self.trusteddirs = [ DEFAULT_TRUSTEDPLUGIN_PATH ]
+        self.trusted_man = CorePluginManager(
+                      directories_list = self.trusteddirs,
+                      plugin_info_ext="mm-plugin",  
+         			  categories_filter={"Default":Extension.Extension}, 
+                     )
+
+        self.trusted_man.setPluginInfoClass(ExtensionInfo)
+        self.trusted_man.locatePlugins()
         self.plugin_man.locatePlugins()
     #    self.known_extentions = cfg['extensions']['known']
         self.helpers=dict()
@@ -110,7 +128,8 @@ class ExtensionLib(object):
         @param Extension extension : 
         @return  : true - if the extension is trusted
         """
-        return self.plugin_man.isPluginOk(extension)
+        if extension in self.trusted_man.getAllPlugins(): return True
+        else: return self.plugin_man.isPluginOk(extension)
 
     def SetTrust(self, ext, trusted):
         """
@@ -119,6 +138,9 @@ class ExtensionLib(object):
         @param Extension ext : 
         @param bool trusted : 
         """
+        if ext in self.trusted_man.getAllPlugins():
+            raise TrustError("Cannot change the trust status of system Plugins")
+
         if trusted:
             self.plugin_man.trustPlugin(ext)
         else:
@@ -134,13 +156,21 @@ class ExtensionLib(object):
         @param string version: Reserved for later use. Must be None.
         @return Extension :
         """
-        return self.plugin_man.getPluginByName(name, category)
+        plugin = self.trusted_man.getPluginByName(name, category)
+        return plugin or self.plugin_man.getPluginByName(name, category)
 
 
     def get_extension_list(self):
         """
         Generates the list of extension names known about.
         """
+        # Iterate through system plugins
+        for plugin in self.trusted_man.getPluginCandidates():
+             yield plugin
+        for plugin in self.trusted_man.getPluginsLoaded():
+            yield plugin
+
+
         #Do trusted plugins
         for plugin in self.plugin_man.getPluginCandidates():
              yield plugin
@@ -159,9 +189,17 @@ class ExtensionLib(object):
         in extension point 'extension_point'.
         """
 
-        for plugin in self.plugin_man.getPluginCandidates():
+        for plugin in itertools.chain(self.plugin_man.getPluginCandidates(),self.trusted_man.getPluginCandidates()):
             if plugin.provides(extension_point,featurecode):
                 if VersionNr(None) and  VersionNr(version) <= VersionNr(plugin.version)  : yield plugin
 
     def loadPlugin(self,plugin):
-        self.plugin_man.loadPlugin(plugin)
+        if plugin in  self.plugin_man.getPluginCandidates():
+            self.plugin_man.loadPlugin(plugin)
+        elif plugin in  self.trusted_man.getPluginCandidates():
+            self.trusted_man.loadPlugin(plugin)
+        else: raise RuntimeError("Cant load foriegn plugin")    
+
+    def IsSystemPlugin(self,plugin):
+        return ((plugin in self.trusted_man.getAllPlugins() ) or 
+               (plugin in  self.trusted_man.getPluginCandidates() ) )

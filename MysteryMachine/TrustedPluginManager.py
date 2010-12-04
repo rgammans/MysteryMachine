@@ -21,18 +21,27 @@
 # The original location of this file is /home/roger/sources/MysteryMachine/generated/TrustedPluginManager.py
 #
 #
+"""
+This module is a bit of a mis-nomer as this is the Plugin manager, which
+mananges plugins which may not be Trusted.
 
+It also manages the trust for it's plugins and works with the config
+engine to store those decisions in a persistent manner.
+
+So the is the TrustedPluginManger as it Manages plugins and their
+trust, and can distinguish between them. (cf. CorePluginManager)
+
+"""
 from yapsy.FilteredPluginManager import *
 from ExtensionInfo import *
-import types
-
 import types
 
 
 class TrustedPluginManager (FilteredPluginManager):
 
   """
-  Manage the trust policies for Mystery Machine plugins.
+  Manage the trust policies , and the loading of plugins
+  only plugins which are marked as trusted.
 
   :version:
   :author:
@@ -84,7 +93,7 @@ class TrustedPluginManager (FilteredPluginManager):
             #Create secure Id from alternative representation
             secureid=ExtensionSecureID(plugin_info.path,secureid)
         return plugin_info.getSecureID() == data[plugin_info.name]
-    return False;
+    return False
 
   def trustPlugin(self, plugin):
     """
