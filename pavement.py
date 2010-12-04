@@ -159,16 +159,28 @@ def sdist():
 
 import re
 STRIP   = re.compile('\.py$')
+
 @task
 def test():
-    """Run MysteryMachine unit test on the default python"""
+    """Run MysteryMachine units tests from the source distribution
+        with the default python"""
+    _do_test( [ os.curdir ] )
+
+@task
+def test_installed():
+    """Run MysteryMachine units tests on the Install MysteryMachine distribution
+        with the default python"""
+    _do_test()
+
+def _do_test(path_prefix=[]):
     path=os.getenv("PYTHONPATH")
+    add_path = os.pathsep.join(path_prefix)
     if path == None:
-    	path = os.curdir 
+        path = add_path
     else:
-    	path = path+os.pathsep+os.curdir
+    	path = path+os.pathsep+add_path
     
-    os.putenv("PYTHONPATH",path)
+    if path: os.putenv("PYTHONPATH",path)
 
     for python in PYTHONS:
 	sys.stderr.write( "Testing under %s:\n" % python )
@@ -204,6 +216,7 @@ def dst_environ(options):
         options.setup.py_modules.remove('pyparsing') 
     except ImportError:
         #We need the shipping version of pyparsing with mysterymachine
+        # So the standard options are ok.
         pass
 
     #TODO Install mercurial
@@ -272,6 +285,21 @@ def install_here():
     this /might/ be want you want.    
     """
     call_task('setuptools.command.install')
+    #Check the plugins (TrustedPlugins directory has been installed.
+
+    ##We do this here since the MysteryMachine directory should have been
+    ## created by now, and by using the import we can hopefully, ensure
+    ## consistency.
+    oldpath  = sys.path
+    if sys.path[0] == "paver-minilib.zip":
+        sys.path = sys.path[2:]   
+    from MysteryMachine.ExtensionLib import DEFAULT_TRUSTEDPLUGIN_PATH
+    print DEFAULT_TRUSTEDPLUGIN_PATH
+    shutil.copytree("MysteryMachine/TrustedPlugIns", DEFAULT_TRUSTEDPLUGIN_PATH)
+    sys.path = oldpath
+ 
+    #Do a final test of the installation.
+    call_task('test_installed')
 
 
 @task
