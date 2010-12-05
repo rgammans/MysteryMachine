@@ -1,0 +1,12 @@
+[Core]
+Name = mmlist 
+Module = ListTypePlugin
+
+[Documentation]
+Author = Roger Gammans
+Version = 0.1
+Description= A plugin which provides the plugin interface to core list type. Which allows demand loading.
+
+[ExtensionPoints]
+AttributeValueMMType = list
+AttributeValuePyType = list

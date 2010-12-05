@@ -1,0 +1,11 @@
+[Core]
+Name = MMBidi 
+Module = BidiPlugin
+
+[Documentation]
+Author = Roger Gammans
+Version =0.1
+Description= A plugin which provides tdynamic loading for the Bidilink type.
+
+[ExtensionPoints]
+AttributeValueMMType = bidilink

@@ -22,6 +22,8 @@
 #
 #
 
+from __future__ import with_statement
+
 import sys
 
 from MMBase import *
@@ -40,6 +42,9 @@ TypeLookup = dict()
 
 modlogger = logging.getLogger("MysteryMachine.schema.MMAttributeValue")
 
+ATTRIBUTE_MMTYPE_EXPOINTNAME= "AttributeValueMMType"
+ATTRIBUTE_PYTYPE_EXPOINTNAME= "AttributeValuePyType"
+
 #FIXME make a __new__ method.
 def CreateAttributeValue(val, copy = True):
     """
@@ -52,9 +57,6 @@ def CreateAttributeValue(val, copy = True):
     If a MMAttributeClass is pass as val a copy is created and returned,
     unless copy=False , in which case val is returned.
     """
-    global AttrTypes
-       
-    
     if not isinstance(val,MMAttributeValue):
         #Decide on type to use and create object.
         vtype = FindBestValueType(type(val))
@@ -68,8 +70,21 @@ def CreateAttributeValue(val, copy = True):
     return val
 
 
+def GetClassForType(typename):
+    if not hasattr(AttrTypes,typename):
+        from MysteryMachine import StartApp
+        with StartApp() as ctx:
+            possible_plugins = ctx.GetExtLib().findPluginByFeature(ATTRIBUTE_MMTYPE_EXPOINTNAME,typename)
+            ##TODO Sort plugins by preference
+            for plugin in possible_plugins:
+                ctx.GetExtLib().loadPlugin(plugin)
+                #Just load one module to handle the type.
+                if hasattr(AttrTypes,typename): break
+              
+    return AttrTypes[typename]
+
 def MakeAttributeValue(type,parts):
-   cls = AttrTypes[type]
+   cls = GetClassForType(type)
    return cls(parts = parts)
                               
  
@@ -97,11 +112,27 @@ def FindBestValueType(atype):
     except:
         typelist = list(atype)
 
+
     #Collect the handlers for the functions.
     for t in typelist:
         if t in TypeLookup:
             candidates += TypeLookup[t]
-    
+   
+
+    if len(candidates) == 0:
+        from MysteryMachine import StartApp
+        with StartApp() as ctx:
+            possible_plugins = ctx.GetExtLib().findPluginByFeature(ATTRIBUTE_PYTYPE_EXPOINTNAME,atype.__name__)
+            for plugin in possible_plugins:
+                ctx.GetExtLib().loadPlugin(plugin)
+
+                #Just load one module to handle the type.
+ 
+        #Collect the handlers for the functions (again).
+        for t in typelist:
+            if t in TypeLookup:
+                candidates += TypeLookup[t]
+
     modlogger.debug("candiate attrval's %s" % candidates)
     rlist = sorted(candidates,key=operator.itemgetter(1),
                     reverse= True )
