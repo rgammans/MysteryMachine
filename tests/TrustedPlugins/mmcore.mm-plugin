@@ -1,0 +1,12 @@
+[Core]
+Name = MMCore 
+Module = CorePlugin
+
+[Documentation]
+Author = Roger Gammans
+Version =0.1
+Description= A plugin which provides the plugin interface to core MM Classes. This particular lets us search for features in the core using the ExtensionPoint system.
+
+[ExtensionPoints]
+PackFileDescriptor = Store
+StoreScheme = hgafile,dict
