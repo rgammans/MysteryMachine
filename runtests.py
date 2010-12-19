@@ -34,12 +34,11 @@ STRIP   = re.compile('\.py$')
 
 sys.path.insert(0,"./%s" % TESTSDIR )
 
-path=os.getenv("PYTHONPATH")
+path=os.getenv("MMPYPATH")
 if path == None:
-	path = "."
+	path = os.path.realpath(os.curdir)
 else:
-	#FIXME: Needs to be ';' under windows
-	path = ".:" + path
+	path = os.path.pathsep + os.path.realpath(os.curdir) + path
 
 os.putenv("PYTHONPATH",path)
 
@@ -66,6 +65,9 @@ for python in (PYTHONS):
 		#run tests.
 		sys.stderr.write("Running %s (%s)" % (module,python) )
 		os.system("%s %s/%s" % ( python,  TESTSDIR, module))
+
+os.chdir("tests")
+os.system("lettuce")
 
 sys.stderr.write("\n")
 sys.stdout.write("\n")
