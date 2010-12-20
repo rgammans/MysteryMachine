@@ -193,6 +193,16 @@ class ExtensionLib(object):
             if plugin.provides(extension_point,featurecode):
                 if VersionNr(None) and  VersionNr(version) <= VersionNr(plugin.version)  : yield plugin
 
+    def findFeaturesOnPoint(self,extension_point):
+        """
+        Finds the plugin which provides feature code 'featurecode'
+        in extension point 'extension_point'.
+        """
+        features = set() 
+        for plugin in itertools.chain(self.plugin_man.getPluginCandidates(),self.trusted_man.getPluginCandidates()):
+            features |= set(plugin.features_on_point(extension_point))
+        return features
+
     def loadPlugin(self,plugin):
         if plugin in  self.plugin_man.getPluginCandidates():
             self.plugin_man.loadPlugin(plugin)

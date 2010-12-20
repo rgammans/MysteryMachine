@@ -30,6 +30,8 @@ import MysteryMachine.Exceptions
 _store_registry = dict()
 import logging
 
+_STORESSCHEME_EXTPOINTNAME = "StoreScheme"
+
 modlogger  = logging.getLogger("MysteryMachine.store")
 
 def CreateStore(uri):
@@ -54,6 +56,12 @@ def GetStore(uri):
     return storeclass(uri, create=False)
 
 
+def GetStoreNames():
+    names = set(_store_registry.keys())
+    with MysteryMachine.StartApp() as ctx:
+        names |= ctx.GetExtLib().findFeaturesOnPoint(_STORESSCHEME_EXTPOINTNAME)
+    return names
+
 def GetCanonicalUri(uri):
     """
     Return uri in a canonical form.
@@ -65,7 +73,7 @@ def GetCanonicalUri(uri):
 
 def GetStoreClass(schemename,version):
     with MysteryMachine.StartApp() as ctx:
-        for ext in ctx.GetExtLib().findPluginByFeature("StoreScheme" , schemename ,version  = version):
+        for ext in ctx.GetExtLib().findPluginByFeature(_STORESSCHEME_EXTPOINTNAME , schemename ,version  = version):
              modlogger.debug( "MMI-GSB: ext = %s"%ext)
              ctx.GetExtLib().loadPlugin(ext)
 

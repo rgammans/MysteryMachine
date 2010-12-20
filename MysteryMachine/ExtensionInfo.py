@@ -108,3 +108,8 @@ class ExtensionInfo (PluginInfo):
         return feature in  self.points[point]
     return False
 
+  def features_on_point(self,point):
+       point = point.lower()
+       if point in self.points:
+           return self.points[point]
+       return []
