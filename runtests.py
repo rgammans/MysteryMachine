@@ -38,7 +38,7 @@ path=os.getenv("MMPYPATH")
 if path == None:
 	path = os.path.realpath(os.curdir)
 else:
-	path = os.path.pathsep + os.path.realpath(os.curdir) + path
+	path = os.path.realpath(os.curdir) + os.path.pathsep + path
 
 os.putenv("PYTHONPATH",path)
 
