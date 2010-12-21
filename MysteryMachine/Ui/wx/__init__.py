@@ -122,6 +122,19 @@ class MainWindow(wx.Frame):
 
     def OnOpenUri(self,event):
         dialog = wx.Dialog(None,-1,"Open from a URI")
+        outersizer=wx.BoxSizer(  wx.VERTICAL)
+        sizer=wx.BoxSizer(  wx.HORIZONTAL)
+        dialog.SetSizer(outersizer)
+        outersizer.Add(wx.StaticText(dialog,-1,label="Chose URI to open"))
+        outersizer.Add(sizer)
+        schemes = MysteryMachine.store.GetStoreNames()
+        combobox = wx.ComboBox(dialog,-1,choices = list(schemes) )
+        textctrl = wx.TextCtrl(dialog,-1)
+        button   = wx.Button(dialog,-1,label="Browse")
+        sizer.Add(combobox)
+        sizer.Add(textctrl)
+        sizer.Add(button)
+        
         dialog.Show()
 
     def OnRevert(self,event):

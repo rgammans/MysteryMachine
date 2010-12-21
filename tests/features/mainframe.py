@@ -67,8 +67,24 @@ def then_i_should_get_a_file_select_dbox(step):
 @step(u'Then I see a window entitled "(.*)"')
 def then_i_see_a_dialog_box_entitled_group1(step, group1):
     opendialog = world.app.window(u"Open from a URI")
+    world.window = opendialog
+    world.focus_obj = opendialog
     assert opendialog ,"No dialog found"
 
+
+@step(u'This window has a combobox')
+def this_window_has_a_combobox(step):
+    combobox = world.window.child(roleName="combo box")
+    world.combobox = combobox
+    assert combobox, "combobox note found"
+
+
+@step(u'This combo has the following selections options')
+def this_combo_has_the_following_selections_options(step):
+    menu = world.combobox.child(roleName="menu")
+    for options in step.hashes:
+        option = options["option"]
+        assert menu.menuItem(option) , "%s selection not found " % option
 
 @before.all
 def setup_world():

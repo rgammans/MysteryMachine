@@ -59,6 +59,23 @@ Scenario: The is an open file menu item
     And click on it
     Then I see a window entitled "Open from a URI"
 
+
+Scenario: The is an open URI window has sensible controls.
+    Given the application is started
+    Then I look at the menubar
+    I should find a "File" menu
+    When I look at the menu I should find a "Open PackUri" entry
+    And click on it
+    Then I see a window entitled "Open from a URI"
+    This window has a combobox
+    This combo has the following selections options:
+        | option  |
+        | dict    |
+        | hgafile |
+    
+
+
+
 Scenario: The is an close file menu item
     Given the application is started
     Then I look at the menubar
