@@ -189,7 +189,7 @@ class ExtensionLib(object):
         in extension point 'extension_point'.
         """
 
-        for plugin in itertools.chain(self.plugin_man.getPluginCandidates(),self.trusted_man.getPluginCandidates()):
+        for plugin in itertools.chain(self.plugin_man.getPluginCandidates(),self.plugin_man.getPluginsLoaded() ,self.trusted_man.getPluginCandidates() ,self.trusted_man.getPluginsLoaded()):
             if plugin.provides(extension_point,featurecode):
                 if VersionNr(None) and  VersionNr(version) <= VersionNr(plugin.version)  : yield plugin
 
@@ -199,16 +199,24 @@ class ExtensionLib(object):
         in extension point 'extension_point'.
         """
         features = set() 
-        for plugin in itertools.chain(self.plugin_man.getPluginCandidates(),self.trusted_man.getPluginCandidates()):
+        for plugin in itertools.chain(self.plugin_man.getPluginCandidates(),self.plugin_man.getPluginsLoaded() ,self.trusted_man.getPluginCandidates() ,self.trusted_man.getPluginsLoaded()):
             features |= set(plugin.features_on_point(extension_point))
         return features
 
+    
+
     def loadPlugin(self,plugin):
+        """Ensure that plugin is loaded. Attempts to load plugin, if possible.
+
+        This is a NOOP if plugin is already loaded.
+        """
+        if plugin.isLoaded(): return
+
         if plugin in  self.plugin_man.getPluginCandidates():
             self.plugin_man.loadPlugin(plugin)
         elif plugin in  self.trusted_man.getPluginCandidates():
             self.trusted_man.loadPlugin(plugin)
-        else: raise RuntimeError("Cant load foriegn plugin")    
+        else: raise RuntimeError("Cant load foreign plugin")    
 
     def IsSystemPlugin(self,plugin):
         return ((plugin in self.trusted_man.getAllPlugins() ) or 

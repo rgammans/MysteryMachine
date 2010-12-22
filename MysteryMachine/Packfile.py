@@ -84,7 +84,6 @@ def GetStoreBases(line,flags):
  
     #TODO: Error reporting - this command is untrusted remember
     try:
-        print "L->",line
         schemename,req_version = re.split('\s+',line)
     except ValueError, e:
         raise Exceptions.CoreError("Invalid schema spec at line %i (error:%s)"%(flags['line_nr'],e.message))
@@ -129,7 +128,7 @@ def LoadFormat1(workdir,formatfile):
             continue
         desctype,line = re.split('\s+',desc,maxsplit=1)
         _processFormatLine(desctype,line,startup_flags)
-        print startup_flags
+        #print startup_flags
     
     if "schema" not in startup_flags: raise Exceptions.CoreError("No schema specified in packfile")
     return OpenVersion0(workdir,startup_flags["schema"])

@@ -100,7 +100,7 @@ class ExtensionInfo (PluginInfo):
     """
     Returns True if the plugin has been loaded into the interpreter
     """
-    return self.plugin_object is None
+    return self.plugin_object is not None
 
   def provides(self,point,feature):
     point = point.lower()

@@ -126,6 +126,13 @@ class LibBaseTest(unittest.TestCase):
             # contain the same data . (Guarantee here are as strong or as weak as SHA1).
             self.assertEquals(repo.heads(None)[0],head.node())
 
+
+    def test_should_be_able_to_load_two_systems_concurrently(self):
+        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/libtest.yaml", "--testmode"]) as g:
+            test1 = g.OpenPackFile("examples/format1.mmpack")
+            test2 = g.OpenPackFile("examples/format1.mmpack")
+
+
     def testContxtMan(self):
         pass
 
