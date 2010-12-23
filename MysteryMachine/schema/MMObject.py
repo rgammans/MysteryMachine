@@ -210,7 +210,11 @@ class MMObject (MMAttributeContainer):
   def __str__(self):
     # def name attribute contains the instructions for a human
     # readable interpreation of this object. Normally "mm:`:name`"
-    name = str(self[".defname"])
+    #
+    # Fall back to Schema ID if defname attribute doesnot exist
+    try:
+        name = str(self[".defname"])
+    except KeyError: name=self.name
     return self.parser.GetString(name,repr(self))
 
   def __repr__(self):

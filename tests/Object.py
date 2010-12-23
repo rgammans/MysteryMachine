@@ -49,6 +49,7 @@ class ObjectTests(unittest.TestCase):
         self.object                  = self.system.NewObject("Dummy") 
         self.object.set_parent(self.parent)       
 
+        self.object2                  = self.system.NewObject("Template") 
         self.logger.debug( "dummy => " ,repr(self.dummyparent))
         self.logger.debug( "parent => " ,repr(self.parent))
         self.logger.debug( "object => " , repr(self.object))
@@ -59,13 +60,14 @@ class ObjectTests(unittest.TestCase):
         self.logger.debug( "----completed getparent test------")
 
 
- 
+
     def testdefname(self):
         self.logger.debug( "----starting defname test------")
         self.assertEquals(str(self.dummyparent),"name")
         self.object["name"]="test"
         self.logger.debug( "--- next assert----")
         self.assertEquals(str(self.object),"test")
+        self.assertEquals(str(self.object2),repr(self.object2))
         self.logger.debug( "----completed defname test------")
 
     def testAttrRef(self):
