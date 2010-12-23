@@ -359,6 +359,7 @@ class filestore(Base):
             self._lock.acquire_read()
             with closing(SafeFile(filename,"w",lock = self._lock)) as file:
                 file.write(value)
+                file.flush()
 
             #Ensure any RCS knows about the file.
             file , = make_rel(self.path,filename)
