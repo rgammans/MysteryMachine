@@ -80,6 +80,7 @@ class MMSystem (MMContainer):
     self.name = EscapeSystemUri(self.uri)
     DocsLoaded[self.name] = self
     store.set_owner(self)
+    self.encoding = self._get_encoding()
 
   def __repr__(self):
     return self.name
@@ -275,6 +276,32 @@ class MMSystem (MMContainer):
     @author
     """
     pass
+
+  def set_encoding(self,encoding):
+    """Define default character set encoding for non-unicode data in thi system
+
+    Raises LookupError if the codec is unknown
+    """
+    import codecs
+    codecs.lookup(encoding) #Check encoding is known
+
+    self.encoding = str(encoding)
+    #We don't use the full attribute type schema here as the encoding
+    #must be treated as simply as possibly because all string interpolation
+    #depends on it. So we can't run the parser for this value - as the parser
+    #may need this value for it's input
+    self.store.SetAttribute(".encoding","_raw",{'txt':self.encoding})     
+
+  def _get_encoding(self):
+    if self.store.HasAttribute(".encoding"):
+        attrtype, parts = self.store.GetAttribute(".encoding")
+        if attrtype != "_raw":
+            raise Error
+        return parts["txt"]
+    else: return "ascii"
+ 
+  def get_encoding(self):
+    return self.encoding
 
   def EnumContents(self):
     for cat in self.EnumCategories():

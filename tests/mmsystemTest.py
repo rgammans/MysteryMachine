@@ -159,7 +159,19 @@ class sysTests(unittest.TestCase):
         self.assertEquals(EscapeSystemUri("dict:test"),str(self.sys))
         self.assertTrue(GetLoadedSystemByName(str(self.sys)) is self.sys)
       
-      
+     
+
+    def testEncoding(self):
+        #Check default encoding
+        self.assertEquals(self.sys.get_encoding(),"ascii" )
+        #Set and readback encoding
+        self.sys.set_encoding("utf-8")
+        self.assertEquals(self.sys.get_encoding(),"utf-8" )
+        #Black box test - to enusre we get fetch in from the store
+        self.assertEquals(self.sys._get_encoding(),"utf-8" )
+        self.assertRaises(LookupError,self.sys.set_encoding,"xyyzzy")
+
+ 
 def getTestNames():
     	return [ 'mmsystemTest.sysTests' ] 
 
