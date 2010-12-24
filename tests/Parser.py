@@ -44,9 +44,12 @@ class ParsersTests(unittest.TestCase):
         self.i.set_parent(self.p)
         self.sys.NewCategory("Character")
         self.c=self.sys.NewObject("Character")
+        self.c2=self.sys.NewObject("Character")
         self.c["name"]="Frodo"
         self.c["carries"]=self.i
         self.c.set_parent(self.p)
+        self.c2.set_parent(self.p)
+        self.c2["name"]=u"Frodo"
         #modlogger   = logging.getLogger("MysteryMachine.parsetools.MMParser")
         #logging.getLogger("MysteryMachine.parsetools.grammar").setLevel(logging.DEBUG)
         #modlogger.setLevel(logging.DEBUG)
@@ -79,6 +82,8 @@ class ParsersTests(unittest.TestCase):
         self.assertEquals( str(self.c['test3'].GetFullExpansion()),"A Literal value")
 
 
+    def testUnicode(self):
+        self.assertEquals(str(self.c2),u"Frodo")
         
 
     def testCycle(self):

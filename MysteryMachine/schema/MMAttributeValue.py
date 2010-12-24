@@ -291,11 +291,9 @@ class MMAttributeValue_BasicText(MMAttributeValue):
     """
     A single Macro part value type.
 
-    This type is appropriate for String values less than approximately
-    one line in size.
+    This type is appropriate for String values.
     """
     typename      = "simple"
-    #Should be basestring really - but that needs baseclass support.
     contain_prefs = { str: 100 }
 
 
@@ -311,6 +309,37 @@ class MMAttributeValue_BasicText(MMAttributeValue):
        #Ensure text values can be transcribed in the system encoding
        # will rasise an exception we will propagate if not decodeable.
        decode(self.parts["txt"])
+
+
+class MMAttributeValue_UnicodeText(MMAttributeValue):
+    """
+    A single Macro part value type.
+
+    This type is appropriate for String values . This type
+    returns unicode as str() and stores in values in utf8
+    """
+    typename      = "simple_utf8"
+    contain_prefs = { unicode: 120 }
+
+
+    def __init__(self,*args,**kwargs):
+        MMAttributeValue.__init__(self,*args,**kwargs)
+        #Get passed in value.
+        if self.value is not None:
+            self.parts["txt"] = self.value.encode("utf8")
+
+    def get_raw(self, obj = None):
+        """
+        Gets unprocessed rst contents of attribute.       
+
+        @return unicode :
+        @author
+        """
+        return unicode(self.parts["txt"],"utf8")      
+
+    def get_raw_rst(self, obj = None):
+        return self.get_raw(obj)
+
 
 class MMAttributeValue_MMRef(MMAttributeValue):
     """

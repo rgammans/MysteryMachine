@@ -132,6 +132,11 @@ class attribValTest(unittest.TestCase):
         self.assertEquals(sillycalled[0],1)
 
 
+    def testUnicode(self):
+        text = u"Some unicode text"
+        attr = CreateAttributeValue(text)
+        self.assertEquals(attr.get_type(),"simple_utf8")
+        self.assertEquals(str(attr),text)
  
 def getTestNames():
 	return [ 'attribValueTest.attribValTest' ] 
