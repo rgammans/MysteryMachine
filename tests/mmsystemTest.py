@@ -78,6 +78,13 @@ class sysTests(unittest.TestCase):
         self.assertRaises(KeyError,self.sys["One"].__getitem__,o12id)
         self.assertRaises(KeyError,self.sys.get_object,"One",o12id)
         self.assertEquals(cat.get_root(),self.sys)
+        
+        #Cat object name.
+        self.assertEquals(str(cat),"one")
+        self.assertEquals(repr(cat),"one")
+        cat[".defname"] = "Test"
+        self.assertEquals(repr(cat),"one")
+        self.assertEquals(str(cat),"Test")
 
     def testObjects(self):
         #Check empty categories are..

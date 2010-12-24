@@ -37,6 +37,7 @@ import time
 import weakref
 import binascii
 
+import logging
 
 class MMSystem (MMContainer):
 
@@ -81,6 +82,7 @@ class MMSystem (MMContainer):
     DocsLoaded[self.name] = self
     store.set_owner(self)
     self.encoding = self._get_encoding()
+    self.logger = logging.getLogger("MysteryMachine.schema.MMSystem")
 
   def __repr__(self):
     return self.name
@@ -370,10 +372,19 @@ class MMCategory(MMAttributeContainer):
         super(MMCategory,self).__init__(self,owner,name)
         self.owner = owner
         self.name   = name
+        self.logger = logging.getLogger("MysteryMachine.schema.MMCategory")
 
 
     def __repr__(self):
         return self.name
+
+    def __str__(self):
+        try:
+            name = self[".defname"].get_raw()
+        except BaseException, e:
+            self.logger.debug(str(e))
+            name = repr(self)
+        return name
 
     def __getitem__(self,item):
         if item[0] == ".":
