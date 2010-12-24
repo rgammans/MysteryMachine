@@ -135,7 +135,9 @@ class MMAttributeContainer(MMContainer):
                         else: self.logger.warn( "rollback skipped! - nothing to do")
             except:
                  (t2, e2, tb2 ) =sys.exc_info()
-                 self.logger.warn("Exception during rollback %s"%e2)
+                 self.logger.warn("Exception during rollback %s,%s"%(t2,e2))
+                 import traceback
+                 self.logger.debug(traceback.format_tb(tb2))
             finally:
                 #Re raise orginally exceptions.
                 raise t1,e1,tb1

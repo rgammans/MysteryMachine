@@ -46,15 +46,23 @@ class SystemProxy:
         return ObjectProxy(cat , id)
     def getSelf(self):
         return self
+    def get_encoding(self):
+        return "ascii"
+
 
 class DummyParser:
     def GetString(self,string,node):
         return string
 
+system = SystemProxy()
+
 class ObjectProxy(MMAttributeContainer):
     def __init__(self):
+        global system
         super(ObjectProxy,self).__init__(self)
         self.d = {}
+        self.owner = system 
+        
     def get_parser(self):
        return DummyParser() 
     def __setitem__(self,k,v):

@@ -35,7 +35,7 @@ import sys
 import types
 import operator
 import copy as _copy
-
+import codecs
 
 AttrTypes = dict()
 TypeLookup = dict()
@@ -286,6 +286,7 @@ class MMAttributeValue (MMBase ):
      #FIXME: Identical valued but distict obj return the same hash
      return hash(["MMAttributeVal" , self.get_type() , self.get_parts()])
 
+
 class MMAttributeValue_BasicText(MMAttributeValue):
     """
     A single Macro part value type.
@@ -304,6 +305,12 @@ class MMAttributeValue_BasicText(MMAttributeValue):
         if self.value is not None:
             self.parts["txt"] = str(self.value)
 
+    def _compose(self,obj):
+       encoding = obj.get_root().get_encoding()
+       decode = codecs.getdecoder(encoding)
+       #Ensure text values can be transcribed in the system encoding
+       # will rasise an exception we will propagate if not decodeable.
+       decode(self.parts["txt"])
 
 class MMAttributeValue_MMRef(MMAttributeValue):
     """

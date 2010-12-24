@@ -51,6 +51,11 @@ class container(MMAttributeContainer):
         super(MMAttributeContainer,self).__init__(*args,**kwargs)
         self.parent = kwargs.get('parent',None)
         self.items  = { }
+
+
+    def get_encoding(self):
+        return "ascii"
+
     def __getitem__(self,i):
         if i not in self.cache: 
             if self.parent:
@@ -64,8 +69,10 @@ class container(MMAttributeContainer):
         return self.items[k]
 
     def __delitem__(self,i):
-        del self.items[i]
-        return self._invaldate_item(i)
+        try:
+            del self.items[i]
+        except KeyError: pass
+        self._invalidate_item(i)
 
     def __iter__(self):
         for k in self.cache.keys():
@@ -135,7 +142,15 @@ class attribTest(unittest.TestCase):
         self.assertEquals(parentobj["foo"].get_raw(),"test")
         self.assertEquals(childobj["foo"].get_raw(),"different")
         
- 
+    def testEncoding(self):
+        m = container()
+        m["encoded"] = "String"
+        self.assertRaises(UnicodeDecodeError,m._set_item,"fake","Not ascii\xa5")
+        self.assertEquals(str(m["encoded"]),"String")
+        self.assertRaises(KeyError,m.__getitem__,"fake")
+        self.assertEquals(str(m["encoded"]),"String")
+
+
 def getTestNames():
     return [ 'attribTest.attribTest' ] 
 
