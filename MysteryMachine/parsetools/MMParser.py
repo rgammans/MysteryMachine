@@ -31,6 +31,7 @@ from grammar import Grammar
 from MysteryMachine.schema.MMBase import  MMBase
 
 import re
+import copy
 from exceptions import *    
 
 import logging
@@ -102,8 +103,13 @@ class MMParser (object):
     self.logger.debug( "raw+IN->%s<-" % rst_string)
 
     docutils_stack.push( [ self.myobject ,  src_stack ] )
+
+    settings =  copy.copy(MMParser.du_defaults)
+    #Determine input encoding, if not a unicode<>
+    settings["input_encoding"] = self.myobject.get_root().get_encoding()
+
     result =   publish_doctree(rst_string,source_path=src,
-                               settings_overrides=MMParser.du_defaults
+                               settings_overrides=settings
                
                 )
 
