@@ -295,6 +295,8 @@ class MMSystem (MMContainer):
     This would probably be the name for the project the system is used to store
     """
     name_attrib = CreateAttributeValue(name)    
+    if hasattr(name_attrib,"_compose"):
+        name_attrib._compose(self)   
     self.store.SetAttribute(".defname",name_attrib.get_type(),name_attrib.get_parts())
 
 
@@ -305,6 +307,8 @@ class MMSystem (MMContainer):
     """
     if self.store.HasAttribute(".defname"):
         attribute = MakeAttributeValue(*(self.store.GetAttribute(".defname")))
+        if hasattr(attribute,"_compose"):
+            attribute._compose(self)
         return str(attribute)
     return None
 
