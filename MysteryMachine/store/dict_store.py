@@ -7,6 +7,7 @@ from MysteryMachine.store.Base import Base
 from MysteryMachine.Exceptions import *
 
 import logging
+import types
 
 _dict_stores = dict()
 
@@ -50,7 +51,7 @@ class dict_store(Base):
         return self._GenericEnum("", lambda d,k:  operator.isMappingType(d[k]) and k[0] !="." )
 
     def _testObject(self,container,name):
-        return re.match(self.invalidobj,name) is None
+        return (re.match(self.invalidobj,name) is None ) and ("..object" in container[name]) 
     
     def EnumObjects(self,cat):
         return self._GenericEnum(cat, self._testObject ) 
@@ -59,21 +60,22 @@ class dict_store(Base):
         dbpath = self.canonicalise(cat)
         d = self._walkPath(dbpath[:-1])
         if dbpath[-1] in d: return
-        self.catdict[dbpath[-1]] = {}
-  
-    def _GenericHas(self,name):
+        d[dbpath[-1]] = { "..category": None }
+ 
+    def _GenericHas(self,sentinel_name,name):
         dbpath = self.canonicalise(name)
         d = self._walkPath(dbpath[:-1])
-        return dbpath[-1] in d
-  
-    HasCategory = _GenericHas
+        return dbpath[-1] in d and sentinel_name in d[dbpath[-1]]
+
+    def HasCategory(self,name):
+        return self._GenericHas("..category",name)
 
     def NewObject(self,cat):
         dbpath = self.canonicalise(cat)
         d = self._walkPath(dbpath)
         objs = list(self.EnumObjects(cat))
         newid = NewId(objs)
-        d[newid] = { }
+        d[newid] = { "..object":None }
         return newid
 
     def _GenericDelete(self,name):
@@ -84,12 +86,16 @@ class dict_store(Base):
     DeleteCategory= _GenericDelete
     DeleteObject =  _GenericDelete
       
-    HasObject = _GenericHas
+    def HasObject(self,name):
+         return self._GenericHas("..object",name)
 
     def EnumAttributes(self,obj):
        return self._GenericEnum(obj, lambda d,a: (not operator.isMappingType(d[a])) and  a[0] != '.')
 
-    HasAttribute = _GenericHas
+    def HasAttribute(self,name):
+        dbpath = self.canonicalise(name)
+        d = self._walkPath(dbpath[:-1])
+        return dbpath[-1] in d and type(d[dbpath[-1]]) is types.TupleType
 
     def SetAttribute(self,attr,attrtype,parts):
         dbpath = self.canonicalise(attr)
@@ -116,3 +122,4 @@ class dict_store(Base):
 
     def unlock(self):
         pass
+

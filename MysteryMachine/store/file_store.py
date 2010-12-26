@@ -294,13 +294,16 @@ class filestore(Base):
         return Id
 
     def HasCategory(self,cat):
-        path = os.path.join(self.path,cat)
-        return os.path.isdir(path)
- 
+        objele = self.canonicalise(cat)
+        path = os.path.join(self.path,*objele)
+        sentinel = os.path.join(path ,CATEGORY_SENTINEL_NAME )
+        return os.path.isdir(path) and os.path.isfile(sentinel)
+
     def HasObject(self,obj):
         objele = self.canonicalise(obj)
         path = os.path.join(self.path,*objele)
-        return os.path.isdir(path)
+        sentinel = os.path.join(path ,OBJECT_SENTINEL_NAME )
+        return os.path.isdir(path) and os.path.isfile(sentinel)
     
     def DeleteObject(self,object):
         dir = os.path.join(self.path,self._getpath(object))
@@ -331,7 +334,11 @@ class filestore(Base):
     
     def HasAttribute(self,attr):
         attrele = self.canonicalise(attr) 
-        for candidate in os.listdir(os.path.join(self.path,*attrele[:-1])):
+        basepath = os.path.join(self.path,*attrele[:-1])
+        for candidate in os.listdir(basepath):
+            candidate_path = os.path.join(basepath,candidate)
+            if not os.path.isfile(candidate_path):
+                 continue
             items = candidate.split(".")
             if items[0] == "":
                 items = items[1:]

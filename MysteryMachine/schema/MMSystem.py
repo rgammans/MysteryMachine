@@ -25,6 +25,7 @@
 from Globals import DocsLoaded
 
 from MysteryMachine.schema.MMObject import *
+from MysteryMachine.schema.MMAttributeValue import CreateAttributeValue, MakeAttributeValue
 from MysteryMachine.schema.MMBase import *
 from MysteryMachine.store import *
 #from MMSystemDiff import *
@@ -330,16 +331,16 @@ class MMSystem (MMContainer):
         len += 1
         if len > 2:  raise KeyError(obj)       
     
-    #Snip off leadinfg  ':'
+    #Snip off leading  ':'
     fullid = fullid[1:]
 
-    if len == 1:
-        if self.store.HasCategory(fullid):
-            return self._get_item(fullid,MMCategory,self,fullid)
-    else:
-        if self.store.HasObject(fullid): 
-            return self._get_item(fullid,MMObject,fullid,self,self.store.GetObjStore(fullid))
-    
+    if self.store.HasCategory(fullid):
+         return self._get_item(fullid,MMCategory,self,fullid)
+    elif self.store.HasObject(fullid): 
+        return self._get_item(fullid,MMObject,fullid,self,self.store.GetObjStore(fullid))
+    elif self.store.HasAttribute(fullid):
+        return MakeAttributeValue(*(self.store.GetAttribute(fullid)))
+
     raise KeyError(fullid)
 
   def __delitem__(self,obj):

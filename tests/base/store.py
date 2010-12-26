@@ -231,3 +231,60 @@ class storeTests(object):
             self.store.revert(self.store.getChangeLog().next())
             for k,v in self.attrnames.iteritems():
                 self.assertEquals(self.store.GetAttribute(k),v)
+
+
+    def test_should_be_able_tell_the_difference_between_objects_categories_and_attribs(self):
+        #Check empty categories are..
+        self.store.NewCategory("One")
+        self.store.NewCategory("Two")
+        self.store.NewCategory("Two:Three")
+        attrtuple = ( "simple",{ "":"fred" }  )
+        self.store.SetAttribute("Five",*attrtuple)
+        objs1=list(self.store.EnumObjects("One"))
+        objs2=list(self.store.EnumObjects("Two"))
+        self.assertEqual(len(objs1),0)
+        self.assertEqual(len(objs2),0)
+        
+        o11=self.store.NewObject("One")
+        o12=self.store.NewObject("One")
+        o21=self.store.NewObject("Two")
+        
+        objs1=list(self.store.EnumObjects("One"))
+        objs2=list(self.store.EnumObjects("Two"))
+        self.assertEqual(len(objs1),2)
+        self.assertEqual(len(objs2),1)
+  
+        self.assertTrue(self.store.HasCategory("One"))
+        self.assertTrue(self.store.HasCategory("Two"))
+        self.assertTrue(self.store.HasCategory("Two:Three"))
+        self.assertFalse(self.store.HasObject("Two:Three"))
+        self.assertFalse(self.store.HasCategory("Five"))
+        self.assertFalse(self.store.HasObject("Five"))
+        self.assertTrue(self.store.HasAttribute("Five"))
+        self.assertFalse(self.store.HasObject("One"))
+        self.assertFalse(self.store.HasAttribute("One"))
+        #Recreate cateogory - should have no effect.
+        self.store.NewCategory("Two")
+        objs2=list(self.store.EnumObjects("Two"))
+        self.assertEqual(len(objs2),1)
+       
+        #Test deletion 
+        self.store.DeleteObject("One"+":"+o12)
+
+        # - Commented out next 4 lines as currently we don't
+        #   require this to work.
+        ##Test deletion if an attriibute is applied.
+        ##Set an attribute.
+        attrtuple = ( "simple",{ "":"fred" }  )
+        #self.store.SetAttribute("Two"+":"+o21+":name",*attrtuple)
+
+    
+        self.store.DeleteObject("Two"+":"+o21)
+
+        objs1=list(self.store.EnumObjects("One"))
+        objs2=list(self.store.EnumObjects("Two"))
+        self.assertEqual(len(objs1),1)
+        self.assertEqual(len(objs2),0)
+
+
+
