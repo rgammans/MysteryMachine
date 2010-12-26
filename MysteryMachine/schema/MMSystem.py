@@ -88,6 +88,15 @@ class MMSystem (MMContainer):
   def __repr__(self):
     return self.name
 
+
+  def __str__(self):
+    try:
+       name = self[".defname"].get_raw()
+    except BaseException, e:
+       self.logger.debug(str(e))
+       name = repr(self)
+    return name
+
   def getUri(self):
     return self.uri
 
@@ -279,6 +288,26 @@ class MMSystem (MMContainer):
     @author
     """
     pass
+
+  def set_name(self,name):
+    """Set a user friendly name for the system.
+
+    This would probably be the name for the project the system is used to store
+    """
+    name_attrib = CreateAttributeValue(name)    
+    self.store.SetAttribute(".defname",name_attrib.get_type(),name_attrib.get_parts())
+
+
+  def get_name(self):
+    """Return a userfriendly for the system.
+
+    returns None if one isn't set.
+    """
+    if self.store.HasAttribute(".defname"):
+        attribute = MakeAttributeValue(*(self.store.GetAttribute(".defname")))
+        return str(attribute)
+    return None
+
 
   def set_encoding(self,encoding):
     """Define default character set encoding for non-unicode data in thi system

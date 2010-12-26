@@ -178,6 +178,17 @@ class sysTests(unittest.TestCase):
         self.assertEquals(self.sys._get_encoding(),"utf-8" )
         self.assertRaises(LookupError,self.sys.set_encoding,"xyyzzy")
 
+
+    def testNaming(self):
+        self.assertEquals(repr(self.sys),str(self.sys))
+        rname=repr(self.sys)
+        testname= u"A test name"
+        self.sys.set_name(testname)
+        self.assertEquals(self.sys.get_name(),testname)
+        self.assertEquals(str(self.sys),testname)
+        self.assertEquals(repr(self.sys),rname)
+        self.assertEquals(str(self.sys[".defname"]),testname)
+
  
 def getTestNames():
     	return [ 'mmsystemTest.sysTests' ] 
