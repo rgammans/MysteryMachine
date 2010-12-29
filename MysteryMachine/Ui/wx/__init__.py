@@ -73,15 +73,21 @@ class MainWindow(wx.Frame):
         self.fileMenu.Append(ID_OPENPKFILE,"&Open PackFile")
         wx.EVT_MENU(self, ID_OPENPKFILE , self.OnOpenFile)        
         
-        self.fileMenu.Append(ID_OPENURI ,"&Open PackUri")
+        self.fileMenu.Append(ID_OPENURI ,"&Open From a URI")
         wx.EVT_MENU(self, ID_OPENURI , self.OnOpenUri)        
  
-        self.fileMenu.Append(ID_REVERT,"&Revert")
+        self.revertMenuItem = self.fileMenu.Append(ID_REVERT,"&Revert")
+        self.revertMenuItem.Enable(False)
         wx.EVT_MENU(self, ID_REVERT, self.OnRevert)        
-    
-        self.fileMenu.Append(ID_CLOSE,"&Close")
+ 
+        self.saveMenuItem = self.fileMenu.Append(ID_REVERT,"&Save")
+        self.saveMenuItem.Enable(False) 
+        
+        self.closeMenuItem = self.fileMenu.Append(ID_CLOSE,"&Close")
+        self.closeMenuItem.Enable(False) 
         wx.EVT_MENU(self, ID_CLOSE, self.OnClose)        
         
+
         self.fileMenu.AppendSeparator()
         
         self.fileMenu.Append(ID_QUIT,"&Quit")
@@ -104,7 +110,7 @@ class MainWindow(wx.Frame):
         
         #Variable to store references to view objects
         self.nextViewId=ID_VIEW_BASE
-        
+        self.panel = None
 
     def OnNew(self,event):
         print "onnew"
@@ -118,7 +124,21 @@ class MainWindow(wx.Frame):
         packfile = wx.FileSelector("Open a MysteryMachine Packfile",wildcard="*.mmpack")
         print packfile
         sys = self.app.ctx.OpenPackFile(packfile)
-        self.app.systems.append(sys)
+        self.app.OpenFrame(sys)
+
+    def AssignSystem(self,sys):
+        import systree
+        if sys:
+            self.SetTitle("MysteryMachine - %s" % (sys  or ""))
+        else:
+            self.SetTitle("MysteryMachine")
+             
+        self.app.frames[sys] = self
+        self.app.systems[self] = sys
+        self.closeMenuItem.Enable(sys is not None)
+        self.saveMenuItem.Enable(sys is not None)
+        self.revertMenuItem.Enable(sys is not None)
+
 
     def OnOpenUri(self,event):
         dialog = wx.Dialog(None,-1,"Open from a URI")
@@ -143,7 +163,8 @@ class MainWindow(wx.Frame):
     
     def OnClose(self,event):
         print "onclose"
-        pass
+        #TODO: Check if system is saved.
+        self.app.CloseFrame(self)
 
     def OnExit(self,event):
         wx.GetApp().ExitMainLoop()
@@ -156,7 +177,6 @@ class MainWindow(wx.Frame):
 
     def SetApp(self,app):
         self.app = app
-
 
 
 class WxMercurialUi(hgui.ui):
@@ -174,14 +194,47 @@ class MMWxApp(wx.PySimpleApp):
         self.SetVendorName("Roger Gammans")
         self.SetAppName("MysteryMachine")
 
-        self.win=MainWindow(None  ,-1,"MysteryMachine", size=(400,400))
-        self.SetTopWindow(self.win)
-        self.win.SetApp(self)
-        self.win.Show()
+        win=MainWindow(None  ,-1,"MysteryMachine", size=(400,400))
+        self.SetTopWindow(win)
+        win.SetApp(self)
+        win.Show()
 
         self.ui = WxMercurialUi()
-        self.systems = []
+        self.frames  =  { None: win }
+        self.systems =  { win: None }
     
+    def OpenFrame(self,system):
+        """Assigns a system to a Frame.
+
+        Opens a new top level frame for a system, or assigns
+        to an existing unassigned frame if any.
+        """
+        if system in self.frames:
+            #System already open so raise it's window to the top.
+            self.frames[system].Raise()
+            return
+
+        if None in self.frames:
+            win = self.frames[None]
+            del self.frames[None]
+            win.AssignSystem(system)
+        else:
+            newwin = MainWindow(None  ,-1, "", size=(400,400))
+            newwin.SetApp(self)
+            newwin.AssignSystem(system)
+            newwin.Show()
+ 
+    def CloseFrame(self,frame):
+        """Close an existing frame and system
+        """
+       
+        system = self.systems[frame]
+        if len(self.frames) == 1:
+            frame.AssignSystem(None)
+        else:
+            frame.Close()
+            del self.frames[system]
+            del self.systems[frame]
 
     def mercurial_ui(self):
         return self.ui 
@@ -191,6 +244,8 @@ class MMWxApp(wx.PySimpleApp):
             self.ctx = ctx
             self.MainLoop()
        self.ctx = None
+
+
 
 def main():
     from MysteryMachine.Main import process_args 
