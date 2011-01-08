@@ -32,6 +32,9 @@ TESTSDIR ='tests'
 
 STRIP   = re.compile('\.py$')
 
+GUITEST_SWITCH = "gui-testing"
+
+
 sys.path.insert(0,"./%s" % TESTSDIR )
 
 path=os.getenv("MMPYPATH")
@@ -44,6 +47,23 @@ os.putenv("PYTHONPATH",path)
 
 def NoTests():
 	return( )
+
+def switch_present(switch):
+    switch = "--"+switch
+    present = (switch in sys.argv)
+    if present:
+        sys.argv.remove(switch)
+    return present
+
+def process_bool(base_switch,default = False):
+    value =default
+    if switch_present(base_switch): value = True
+    if switch_present("no-"+base_switch): value = False
+    return value
+
+
+#Check guitesting switch - default value
+guitesting = process_bool(GUITEST_SWITCH,default = True)
 
 #Allow the ability to run tests under a single python.
 if len(sys.argv) > 1:
@@ -66,8 +86,9 @@ for python in (PYTHONS):
 		sys.stderr.write("Running %s (%s)" % (module,python) )
 		os.system("%s %s/%s" % ( python,  TESTSDIR, module))
 
-os.chdir("tests")
-os.system("lettuce")
+if guitesting:
+    os.chdir("tests")
+    os.system("lettuce")
 
 sys.stderr.write("\n")
 sys.stdout.write("\n")
