@@ -108,7 +108,7 @@ class LibBaseTest(unittest.TestCase):
 
             self.assertTrue(isinstance(test1,MMSystem))
             self.assertEqual(len(list(test1.EnumObjects("Items"))),2)
-            self.assertEqual(len(list(test1.getChangeLog())),2)
+            self.assertEqual(len(list(test1.getChangeLog())),3)
         
             
             test1.SaveAsPackFile("/tmp/format1.mmpack")
