@@ -110,7 +110,12 @@ class MainWindow(wx.Frame):
         
         #Variable to store references to view objects
         self.nextViewId=ID_VIEW_BASE
+
+        self.sizer =  wx.BoxSizer(wx.VERTICAL)
         self.panel = None
+        self.Layout()
+
+
 
     def OnNew(self,event):
         print "onnew"
@@ -129,9 +134,19 @@ class MainWindow(wx.Frame):
     def AssignSystem(self,sys):
         import systree
         if sys:
+            self.panel = systree.TreePanel(self,sys) 
             self.SetTitle("MysteryMachine - %s" % (sys  or ""))
+            self.sizer.Add(self.panel,1,wx.EXPAND)    
+            self.SetSizer(self.sizer)
+            self.Layout()
+            self.panel.Show()
         else:
+            self.sizer.Remove(self.panel)
+            self.panel.Show(False)
+            self.panel.Close()
+            self.panel = None
             self.SetTitle("MysteryMachine")
+            self.SetSizer(None)
              
         self.app.frames[sys] = self
         self.app.systems[self] = sys

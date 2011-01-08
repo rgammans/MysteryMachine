@@ -63,7 +63,7 @@ def process_bool(base_switch,default = False):
 
 
 #Check guitesting switch - default value
-guitesting = process_bool(GUITEST_SWITCH,default = True)
+guitesting = process_bool(GUITEST_SWITCH,default = False)
 
 #Allow the ability to run tests under a single python.
 if len(sys.argv) > 1:
