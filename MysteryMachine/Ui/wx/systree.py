@@ -102,6 +102,9 @@ class TreePanel(wx.Panel):
         wx.EVT_MENU(self,ID_MENU_NEW_OBJ,self.onNewObject)
         self.sizer.Layout()
 
+    def getPanelName(self):
+        return u"System Explorer"
+
     def onRenameItem(self,evt):
         caption = "Change name of "+repr(self.menu_on_item)
         title   = ""

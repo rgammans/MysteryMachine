@@ -25,6 +25,7 @@ import MysteryMachine
 import mercurial.ui as hgui
 
 import wx
+import wx.aui
 
 #Change to read this out of the generated file , created from mercurial data.
 DEVELOPERS = [ "Roger Gammans" ]
@@ -134,17 +135,21 @@ class MainWindow(wx.Frame):
     def AssignSystem(self,sys):
         import systree
         if sys:
-            self.panel = systree.TreePanel(self,sys) 
+            panel = systree.TreePanel(self,sys) 
             self.SetTitle("MysteryMachine - %s" % (sys  or ""))
-            self.sizer.Add(self.panel,1,wx.EXPAND)    
+        
+            self.nb = wx.aui.AuiNotebook(self)
+            self.nb.AddPage(panel,panel.getPanelName())
+
+            self.sizer.Add(self.nb,1,wx.EXPAND)    
             self.SetSizer(self.sizer)
             self.Layout()
-            self.panel.Show()
         else:
-            self.sizer.Remove(self.panel)
-            self.panel.Show(False)
-            self.panel.Close()
-            self.panel = None
+            self.sizer.Remove(self.nb)
+            for page_nr in range(self.nb.GetPageCount()):
+                self.nb.DeletePage(page_nr)
+            self.nb.Close()
+            self.nb = None
             self.SetTitle("MysteryMachine")
             self.SetSizer(None)
              
