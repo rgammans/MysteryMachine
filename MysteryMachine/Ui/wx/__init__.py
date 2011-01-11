@@ -48,6 +48,7 @@ ID_QUIT=105
 ID_ABOUT=106
 ID_ABOUTWX=107
 ID_OPENURI=108
+ID_COMMIT=109
 
 ID_VIEW_BASE=1000
 #
@@ -74,12 +75,16 @@ class MainWindow(wx.Frame):
         self.fileMenu.Append(ID_OPENPKFILE,"&Open PackFile")
         wx.EVT_MENU(self, ID_OPENPKFILE , self.OnOpenFile)        
         
-        self.fileMenu.Append(ID_OPENURI ,"&Open From a URI")
+        self.fileMenu.Append(ID_OPENURI ,"Open From a &URI")
         wx.EVT_MENU(self, ID_OPENURI , self.OnOpenUri)        
  
         self.revertMenuItem = self.fileMenu.Append(ID_REVERT,"&Revert")
         self.revertMenuItem.Enable(False)
         wx.EVT_MENU(self, ID_REVERT, self.OnRevert)        
+  
+        self.commitMenuItem = self.fileMenu.Append(ID_COMMIT,"&Commit")
+        self.commitMenuItem.Enable(False)
+        wx.EVT_MENU(self, ID_COMMIT, self.OnCommit)
  
         self.saveMenuItem = self.fileMenu.Append(ID_REVERT,"&Save")
         self.saveMenuItem.Enable(False) 
@@ -154,11 +159,13 @@ class MainWindow(wx.Frame):
             self.SetSizer(None)
             self.sizer = None
          
+        self.sys = sys    
         self.app.frames[sys] = self
         self.app.systems[self] = sys
         self.closeMenuItem.Enable(sys is not None)
         self.saveMenuItem.Enable(sys is not None)
         self.revertMenuItem.Enable(sys is not None)
+        self.commitMenuItem.Enable(sys is not None)
 
 
     def OnOpenUri(self,event):
@@ -182,6 +189,13 @@ class MainWindow(wx.Frame):
         print "onrevertr"
         pass
     
+    def OnCommit(self,event):
+        caption = "Enter log message for this changeset"
+        title   = ""
+        newstr = wx.GetTextFromUser(title,caption = caption)
+        self.sys.Commit(newstr)
+ 
+
     def OnClose(self,event):
         print "onclose"
         #TODO: Check if system is saved.

@@ -92,6 +92,13 @@ Scenario: The is an revert file menu item
     I should find a "File" menu
     When I look at the menu I should find a "Revert" entry
 
+
+Scenario: The is an revert file menu item
+    Given the application is started
+    Then I look at the menubar
+    I should find a "File" menu
+    When I look at the menu I should find a "Commit" entry
+
 Scenario: The is an quit file menu item
     Given the application is started
     Then I look at the menubar
@@ -108,7 +115,9 @@ Scenario: The close, save and Revert menu options are grey out
    This entry is greyed-out
    When I look at the menu I should find a "Revert" entry
    This entry is greyed-out
-  
+    When I look at the menu I should find a "Commit" entry
+   This entry is greyed-out
+   
 Scenario: Can open two packfiles and Can close the first open on first then the second becomes a blank frame.
     Given the application is started is
     I can Open a Packfile named '../examples/format1.mmpack'
@@ -129,6 +138,8 @@ Scenario: The close,save and revert menu options are not grey out after a system
    This entry is not greyed-out
    When I look at the menu I should find a "Revert" entry
    This entry is not greyed-out
+   When I look at the menu I should find a "Commit" entry
+   This entry is not greyed-out
    When I look at the menu I should find a "Close" entry
    This entry is not greyed-out
- 
+
