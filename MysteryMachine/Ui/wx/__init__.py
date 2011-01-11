@@ -112,7 +112,6 @@ class MainWindow(wx.Frame):
         #Variable to store references to view objects
         self.nextViewId=ID_VIEW_BASE
 
-        self.sizer =  wx.BoxSizer(wx.VERTICAL)
         self.panel = None
         self.Layout()
 
@@ -141,6 +140,7 @@ class MainWindow(wx.Frame):
             self.nb = wx.aui.AuiNotebook(self)
             self.nb.AddPage(panel,panel.getPanelName())
 
+            self.sizer =  wx.BoxSizer(wx.VERTICAL)
             self.sizer.Add(self.nb,1,wx.EXPAND)    
             self.SetSizer(self.sizer)
             self.Layout()
@@ -152,7 +152,8 @@ class MainWindow(wx.Frame):
             self.nb = None
             self.SetTitle("MysteryMachine")
             self.SetSizer(None)
-             
+            self.sizer = None
+         
         self.app.frames[sys] = self
         self.app.systems[self] = sys
         self.closeMenuItem.Enable(sys is not None)
