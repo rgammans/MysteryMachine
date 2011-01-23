@@ -64,7 +64,7 @@ class MMSystem (MMContainer):
   """
 
  
-  def __init__(self, store , new = False ):
+  def __init__(self, store , new = False , flags = { } ):
     """
      Creates an object refering to an existing system on the OS fielstore.
 
@@ -80,6 +80,7 @@ class MMSystem (MMContainer):
     #Add back link to store - call as set in store.Base?
     self.uri = store.getUri()
     self.name = EscapeSystemUri(self.uri)
+    self.loadflags = flags
     DocsLoaded[self.name] = self
     store.set_owner(self)
     self.encoding = self._get_encoding()
@@ -249,7 +250,7 @@ class MMSystem (MMContainer):
     return MMSystem(store)
 
   @staticmethod
-  def OpenUri(uri):
+  def OpenUri(uri,flags =  None):
     """
     Create a backing store for a new blank MMSystem
 
@@ -258,7 +259,7 @@ class MMSystem (MMContainer):
     @author
     """
     store = GetStore(uri) 
-    return MMSystem(store)
+    return MMSystem(store,flags = flags)
 
 
   
@@ -395,10 +396,10 @@ class MMSystem (MMContainer):
     """
     self.store.unlock() 
 
-  def SaveAsPackFile(self,filename,**kwargs):
+  def SaveAsPackFile(self,*args,**kwargs):
     import MysteryMachine.Packfile
-    MysteryMachine.Packfile.SavePackFile(self,filename,**kwargs)
-
+    kwargs['flags'] = self.loadflags
+    MysteryMachine.Packfile.SavePackFile(self,*args,**kwargs)
 
 class MMCategory(MMAttributeContainer):
         

@@ -27,6 +27,8 @@ import MysteryMachine.utils.path
 import MysteryMachine.store as store
 import MysteryMachine.Exceptions as Exceptions
 from MysteryMachine.schema.MMSystem import MMSystem
+from MysteryMachine.Exceptions import *
+
 
 import tempfile
 import zipfile
@@ -34,8 +36,6 @@ import os
 import re
 import logging
 modlogger = logging.getLogger("MysteryMachine.Packfile")
-
-
 
 
 """
@@ -69,6 +69,7 @@ atributes by a a store - but it is not required.
 formatLoaders = [ ]
 
 PACKFORMAT_EXTPOINTNAME ="PackFileDescriptor"
+PACKFILENAME = "packfile_filename"
 
 def GetStoreBases(line,flags):
     """
@@ -93,9 +94,9 @@ def GetStoreBases(line,flags):
     flags["schemaclass"] = store.GetStoreClass(schemename , req_version)
 
 
-def LoadFormat0(workdir,formatfile):
+def LoadFormat0(workdir,formatfile,startup_flags = {}):
     formatfile.close()
-    return OpenVersion0(workdir,"hgafile")
+    return OpenVersion0(workdir,"hgafile",startup_flags)
 formatLoaders.append( (VersionNr('0'),VersionNr('1'),LoadFormat0 ) )
 
 
@@ -110,15 +111,11 @@ def _processFormatLine(cmd,line,flags):
             else:
                 raise Exceptions.CoreError("Can't process packfile directive %s(%s)" %(cmd,line))
 
-def LoadFormat1(workdir,formatfile): 
-    ##FIXME: Test this code etc.
-    # A stub of what the code should do is below, but
-    # it turns out we've got issues with the extensions engine.
-    #raise Exceptions.CoreError("Version 1 suport not implemented")
+def LoadFormat1(workdir,formatfile,startup_flags = {} ): 
     #Read store requirements
     formatDescriptors = formatfile.readlines()
     #Load exts etc,
-    startup_flags = { 'line_nr':0}
+    startup_flags['line_nr'] = 0
     for desc in formatDescriptors:
         startup_flags['line_nr']+=1
         desc = re.sub("^\s+","",desc)
@@ -131,7 +128,7 @@ def LoadFormat1(workdir,formatfile):
         #print startup_flags
     
     if "schema" not in startup_flags: raise Exceptions.CoreError("No schema specified in packfile")
-    return OpenVersion0(workdir,startup_flags["schema"])
+    return OpenVersion0(workdir,startup_flags["schema"], startup_flags)
 
 formatLoaders.append((VersionNr('1'),VersionNr('2'),LoadFormat1 ) )
 
@@ -167,11 +164,11 @@ def OpenPackFile(filename):
         if ( version >= lowestVer ) and (version < highestVer) :
             break
 
-    return formatHandler(workdir,formatfile)
+    return formatHandler(workdir,formatfile  , startup_flags = { PACKFILENAME: filename } )
 
 
 
-def OpenVersion0(workdir,scheme):
+def OpenVersion0(workdir,scheme,flags = { } ):
     """
     Handles version Zero of the pack format.
 
@@ -179,7 +176,7 @@ def OpenVersion0(workdir,scheme):
     directory. It guarantees to use a hgfile_mixin and file_store.
 
     """
-    system = MMSystem.OpenUri(scheme+":"+workdir)
+    system = MMSystem.OpenUri(scheme+":"+workdir,flags)
     log = list(system.getChangeLog())
     #Unpack last rev into working dir and open MMsystem
     system.Revert(log[-1])
@@ -187,11 +184,16 @@ def OpenVersion0(workdir,scheme):
 
 
 
-def SavePackFile(system,filename,**kwargs):
+def SavePackFile(system,*args,**kwargs):
     """
     Save an opened MMSystem into a packed file - commiting first
     with the message argument as the commit msg if supplied.
     """
+    flags = kwargs.get("flags",{})
+    filename = flags.get(PACKFILENAME)
+    if len(args) > 0: filename = args[0]
+    if not filename: raise NoPackFileName()
+
     system.Commit(kwargs.get('message'))
     system.store.clean()
     f  = file(filename,"w")

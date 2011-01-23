@@ -41,3 +41,9 @@ class StoreApiViolation(TypeError):
     You should use a custom value object to do any special transcoding
     """
     pass
+
+
+class NoPackFileName(RuntimeError):
+    """Raised after an attempt to Save when nofile name set
+    """
+    pass
