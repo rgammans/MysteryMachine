@@ -22,6 +22,8 @@
 from __future__ import with_statement
 
 import MysteryMachine
+from MysteryMachine.Exceptions import *
+
 import mercurial.ui as hgui
 
 import wx
@@ -88,8 +90,13 @@ class MainWindow(wx.Frame):
         self.commitMenuItem.Enable(False)
         wx.EVT_MENU(self, ID_COMMIT, self.OnCommit)
  
-        self.saveMenuItem = self.fileMenu.Append(ID_REVERT,"&Save")
+        self.saveMenuItem = self.fileMenu.Append(ID_SAVE,"&Save")
         self.saveMenuItem.Enable(False) 
+        wx.EVT_MENU(self, ID_SAVE, self.OnSave)
+  
+        self.saveasMenuItem = self.fileMenu.Append(ID_SAVEAS,"Save As..")
+        self.saveasMenuItem.Enable(False) 
+        wx.EVT_MENU(self, ID_SAVEAS, self.OnSaveAs)
         
         self.closeMenuItem = self.fileMenu.Append(ID_CLOSE,"&Close")
         self.closeMenuItem.Enable(False) 
@@ -138,6 +145,19 @@ class MainWindow(wx.Frame):
         sys = self.app.ctx.OpenPackFile(packfile)
         self.app.OpenFrame(sys)
 
+    def OnSave(self,event):
+        try:
+            self.sys.SaveAsPackFile()
+        except NoPackFileName , e:
+            self.OnSaveAs(event)
+
+    def OnSaveAs(self,event):
+        name = str(self.sys) + ".mmpack"
+        packfile = wx.FileSelector("Save a MysteryMachine Packfile",wildcard="*.mmpack",
+                                   default_filename = name,
+                                   default_extension = ".mmpack",flags = wx.FD_SAVE + wx.FD_OVERWRITE_PROMPT)
+        self.sys.SaveAsPackFile(packfile)
+
     def AssignSystem(self,sys):
         import systree
         if sys:
@@ -166,6 +186,7 @@ class MainWindow(wx.Frame):
         self.app.systems[self] = sys
         self.closeMenuItem.Enable(sys is not None)
         self.saveMenuItem.Enable(sys is not None)
+        self.saveasMenuItem.Enable(sys is not None)
         self.revertMenuItem.Enable(sys is not None)
         self.commitMenuItem.Enable(sys is not None)
 
