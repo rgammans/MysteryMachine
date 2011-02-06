@@ -40,7 +40,6 @@ class AttributePanel(wx.Panel):
     def __init__(self,parent,attribute):
         super(AttributePanel,self).__init__(parent,-1,wx.DefaultPosition,wx.Size(200,400))
         self.attribute = attribute
-        self.notebook = parent.nb
         self.buildUi()
         parent.FitInside()
         self.Layout()
@@ -54,13 +53,28 @@ class AttributePanel(wx.Panel):
         self.title.SetLabel(repr(self.attribute)) 
         self.sizer.Add(self.title,0)
 
+        # XXX
+        # I can't find the most sensible way of find the users
+        # prefered monospace font. Since attributes are rst based
+        # monospace editting is pretty much mandantory.
+        #
+        #
+        # Here I used a wx call which only seems to work on windows
+        # then fall back to just asking fro a 9pt monospace.
+        # - if the euser hda a 10py monospace a adefault I'm not
+        # sure what we do... 
+        # XXX XXX
+        #
         deffont = wx.SystemSettings_GetFont(wx.SYS_ANSI_FIXED_FONT)
+        if not deffont.IsFixedWidth():
+            deffont =wx.Font(9, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+         
         self.content  = wx.TextCtrl(self,ID_CONTENT,style = (wx.TE_MULTILINE ))
         self.sizer.Add(self.content,1,wx.EXPAND)
         self.content.SetFont(deffont)
         self.content.SetValue(str(self.attribute)) 
 
-
+        wx.EVT_KILL_FOCUS(self.content, self.onFocusLostFromContent)
 
         self.sizer.Layout()
 
@@ -68,3 +82,5 @@ class AttributePanel(wx.Panel):
         return repr(self.attribute)
 
 
+    def onFocusLostFromContent(self,evt):
+        self.attribute.set_value(self.content.GetValue())
