@@ -161,11 +161,11 @@ class MainWindow(wx.Frame):
     def AssignSystem(self,sys):
         import systree
         if sys:
+            self.nb = wx.aui.AuiNotebook(self)
             panel = systree.TreePanel(self,sys) 
             self.SetTitle("MysteryMachine - %s" % (sys  or ""))
         
-            self.nb = wx.aui.AuiNotebook(self)
-            self.nb.AddPage(panel,panel.getPanelName())
+            self.AddPanel(panel)
 
             self.sizer =  wx.BoxSizer(wx.VERTICAL)
             self.sizer.Add(self.nb,1,wx.EXPAND)    
@@ -190,6 +190,8 @@ class MainWindow(wx.Frame):
         self.revertMenuItem.Enable(sys is not None)
         self.commitMenuItem.Enable(sys is not None)
 
+    def AddPanel(self,panel):
+        self.nb.AddPage(panel,panel.getPanelName())
 
     def OnOpenUri(self,event):
         dialog = wx.Dialog(None,-1,"Open from a URI")

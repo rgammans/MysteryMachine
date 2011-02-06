@@ -18,9 +18,11 @@
 #
 #
 
+
+
 """
 Provides a tree view of a MM system.
-"""
+""" 
 
 import wx
 from MysteryMachine.schema.MMAttribute import MMAttribute
@@ -79,7 +81,8 @@ _popupmenus = { 'MMSystem': _SystemPopupMenu,
 class TreePanel(wx.Panel):
     def __init__(self,parent,system):
         super(TreePanel,self).__init__(parent,-1,wx.DefaultPosition,wx.Size(200,400))
-        self.system = system
+        self.parent   = parent
+        self.system   = system
         self.buildUi()
         parent.FitInside()
         self.Layout()
@@ -96,6 +99,8 @@ class TreePanel(wx.Panel):
 
         wx.EVT_TREE_ITEM_EXPANDING(self.tree, ID_TREECTRL,  self.onExpanding )
         wx.EVT_TREE_ITEM_RIGHT_CLICK(self.tree, ID_TREECTRL,  self.onRightClick )
+        wx.EVT_TREE_ITEM_ACTIVATED(self.tree, ID_TREECTRL,  self.onItemActivated )
+
 
         wx.EVT_MENU(self,ID_MENU_RENAME, self.onRenameItem)
         wx.EVT_MENU(self,ID_MENU_NEW_CAT,self.onNewCategory)
@@ -133,6 +138,15 @@ class TreePanel(wx.Panel):
     def onNewObject(self,evt):
         self.system.NewObject(repr(self.menu_on_item))
         self.updateNode(self.menu_on_itemid,self.menu_on_item)
+
+    def onItemActivated(self,evt):
+        print "actiivation detected"
+        import attributepanel
+        panel = attributepanel.AttributePanel(self.parent,
+                                              self.tree.GetItemData(evt.GetItem()).GetData() )
+
+        self.parent.AddPanel(panel)
+
 
     def onRightClick(self,evt):
         itemid = evt.GetItem()
