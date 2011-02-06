@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#   			systree.py - Copyright Roger Gammans 
+#   			attributepanel.py - Copyright Roger Gammans 
 # 
 #
 #    This program is free software; you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 #
 
 """
-Provides a tree view of a MM attribute. 
+Provides ann editor pane for attributes
 """
 
 import wx
@@ -80,7 +80,6 @@ class AttributePanel(wx.Panel):
 
     def getPanelName(self):
         return repr(self.attribute)
-
 
     def onFocusLostFromContent(self,evt):
         self.attribute.set_value(self.content.GetValue())
