@@ -83,6 +83,23 @@ def GetClassForType(typename):
               
     return AttrTypes[typename]
 
+
+def GetAttributeTypeList():
+    rv = [] 
+    for name in AttrTypes.keys():
+        #Hide private internal types
+        if name[0] != '.': rv +=  [ name ]
+
+    typelist = AttrTypes.keys()
+    from MysteryMachine import StartApp
+    with StartApp() as ctx:
+        for plugin_type in ctx.GetExtLib().findFeaturesOnPoint(ATTRIBUTE_MMTYPE_EXPOINTNAME):
+            if plugin_type[0] == "." : continue 
+            if plugin_type in rv     : continue 
+            rv += [ plugin_type ]
+    
+    return rv
+
 def MakeAttributeValue(type,parts):
    cls = GetClassForType(type)
    return cls(parts = parts)

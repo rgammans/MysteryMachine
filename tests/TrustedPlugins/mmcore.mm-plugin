@@ -10,3 +10,4 @@ Description= A plugin which provides the plugin interface to core MM Classes. Th
 [ExtensionPoints]
 PackFileDescriptor = Store
 StoreScheme = hgafile,dict
+AttributeValueMMType = faketype

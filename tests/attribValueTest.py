@@ -137,6 +137,15 @@ class attribValTest(unittest.TestCase):
         attr = CreateAttributeValue(text)
         self.assertEquals(attr.get_type(),"simple_utf8")
         self.assertEquals(str(attr),text)
+
+
+    def testGetAttributeTypes(self):
+        attrtypeslist = GetAttributeTypeList()
+        self.assertTrue("simple" in attrtypeslist)
+        self.assertTrue("ref" in attrtypeslist)
+        self.assertTrue(".inheritance_shadow" not in attrtypeslist)
+        self.assertTrue("faketype" in attrtypeslist)
+
  
 def getTestNames():
 	return [ 'attribValueTest.attribValTest' ] 
