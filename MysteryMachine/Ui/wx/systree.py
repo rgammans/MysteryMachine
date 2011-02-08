@@ -94,8 +94,7 @@ class TreePanel(wx.Panel):
         self.tree = wx.TreeCtrl(self,ID_TREECTRL)
         self.sizer.Add(self.tree, 1 , wx.EXPAND)
         self.rootItem = self.tree.AddRoot(str(self.system),-1,-1,wx.TreeItemData(obj=self.system))
-        #Dummy item to allow expansion..
-        self.tree.AppendItem(self.rootItem,"Dummy Item")
+        self.tree.SetItemHasChildren(self.rootItem,True)
 
         wx.EVT_TREE_ITEM_EXPANDING(self.tree, ID_TREECTRL,  self.onExpanding )
         wx.EVT_TREE_ITEM_RIGHT_CLICK(self.tree, ID_TREECTRL,  self.onRightClick )
@@ -162,8 +161,7 @@ class TreePanel(wx.Panel):
         self.updateNode(itemid,localroot)
 
     def updateNode(self,itemid,localroot):
-        self.tree.DeleteChildren(itemid)
-
+        self.tree.SetItemHasChildren(itemid,False)
         if itemid == self.rootItem:
             iterator = object_iter(localroot,localroot.EnumCategories())
         else:
@@ -172,6 +170,5 @@ class TreePanel(wx.Panel):
         try:
             for element in sorted(iterator,key=_node_name):
                 tmpid = self.tree.AppendItem(itemid,_node_name(element),-1,-1,wx.TreeItemData(obj =element))
-                #Dummy item to allow expansion..
-                self.tree.AppendItem(tmpid,"Temp Item")
+                self.tree.SetItemHasChildren(tmpid,True)
         except TypeError:  pass
