@@ -113,7 +113,6 @@ if True:
                     self.lock.acquire_read()
                 #Let close() complete.
                 self.locksync.release()
-                self.flush()
                 os.fsync(self.fileno())
                 super(SafeFile,self).close()
                 with self.dictlock:
@@ -132,8 +131,11 @@ if True:
                     self.lock.release()
             
             def close(self):
-                #TODO - launch this in subsidary thread for performance.
-                # but note we need to keep a ref to this class. 
+                #Before we hand of to another thread ensure we have passed
+                #all the data to the OS, so parallel file open()s get the 
+                #correct data.
+                self.flush()
+                #Launch real close() in a thread.
                 thread.start_new_thread(self.threadFn, () )
                 #Wait for thread to claim reader lock before releasing it here.
                 self.locksync.acquire()
@@ -366,7 +368,6 @@ class filestore(Base):
             self._lock.acquire_read()
             with closing(SafeFile(filename,"w",lock = self._lock)) as file:
                 file.write(value)
-                file.flush()
 
             #Ensure any RCS knows about the file.
             file , = make_rel(self.path,filename)
