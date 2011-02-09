@@ -26,6 +26,7 @@ Provides a tree view of a MM system.
 
 import wx
 from MysteryMachine.schema.MMAttribute import MMAttribute
+from MysteryMachine.schema.MMObject import MMObject
 from MysteryMachine.schema.MMSystem import MMSystem
 
 
@@ -139,12 +140,19 @@ class TreePanel(wx.Panel):
         self.updateNode(self.menu_on_itemid,self.menu_on_item)
 
     def onItemActivated(self,evt):
-        print "actiivation detected"
-        import attributepanel
-        panel = attributepanel.AttributePanel(self.parent,
-                                              self.tree.GetItemData(evt.GetItem()).GetData() )
+        node = self.tree.GetItemData(evt.GetItem()).GetData()
+        panel = None
+ 
+        if isinstance(node,MMAttribute):
+            import attributepanel
+            panel = attributepanel.AttributePanel(self.parent, node )
+        
+        if isinstance(node,MMObject):
+            import objectpanel
+            panel = objectpanel.ObjectPanel(self.parent, node )
 
-        self.parent.AddPanel(panel)
+
+        if panel: self.parent.AddPanel(panel)
 
 
     def onRightClick(self,evt):
