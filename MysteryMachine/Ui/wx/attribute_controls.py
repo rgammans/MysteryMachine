@@ -40,7 +40,6 @@ def GetWidgetFor(attribute, parent = None):
 
 class BasicMMAttributeValidator(wx.PyValidator):
     def __init__(self,*args,**kwargs):
-        print args
         super(BasicMMAttributeValidator,self).__init__(*args)
         self.attribute = kwargs.get('attribute')
 
