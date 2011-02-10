@@ -170,6 +170,8 @@ class TreePanel(wx.Panel):
 
     def updateNode(self,itemid,localroot):
         self.tree.SetItemHasChildren(itemid,False)
+        self.tree.DeleteChildren(itemid)
+
         if itemid == self.rootItem:
             iterator = object_iter(localroot,localroot.EnumCategories())
         else:

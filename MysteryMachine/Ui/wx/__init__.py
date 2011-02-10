@@ -258,7 +258,7 @@ class MMWxApp(wx.PySimpleApp):
         self.SetVendorName("Roger Gammans")
         self.SetAppName("MysteryMachine")
 
-        win=MainWindow(None  ,-1,"MysteryMachine", size=(400,400))
+        win=MainWindow(None  ,-1,"MysteryMachine", size=(400,200))
         self.SetTopWindow(win)
         win.SetApp(self)
         win.Show()
