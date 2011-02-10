@@ -23,7 +23,8 @@ Provides an editor pane for objects
 """
 
 import wx
-import wx.lib.scrolledpanel as sp
+import  wx.lib.scrolledpanel as scrolled
+
 
 from MysteryMachine.schema.MMObject import MMObject
 from MysteryMachine.schema.MMSystem import MMSystem
@@ -37,14 +38,14 @@ def NewUI_ID():
   return Ui_Id 
 
 
-class ObjectPanel(sp.ScrolledPanel):
+class ObjectPanel(scrolled.ScrolledPanel):
     def __init__(self,parent,obj):
-        super(ObjectPanel,self).__init__(parent,-1,wx.DefaultPosition,wx.Size(200,400))
+        super(ObjectPanel,self).__init__(parent,-1,wx.DefaultPosition,wx.Size(0,0))
         self.obj = obj
         self.buildUi()
-        parent.FitInside()
         self.TransferDataToWindow()
-        self.Layout()
+        self.SetAutoLayout(True)
+        self.SetupScrolling()
 
 
     def getPanelName(self):
@@ -65,7 +66,7 @@ class ObjectPanel(sp.ScrolledPanel):
             panel, included  = self._buildObjectPanel(current,done)
             #Skip parent's from which nothing is inherited..
             if included:
-                self.sizer.Add(panel,0)
+                self.sizer.Add(panel,0,wx.EXPAND)
                 done += included
             else:
                 panel.Show(False)
@@ -89,5 +90,5 @@ class ObjectPanel(sp.ScrolledPanel):
             included += [ attr.name ]
             label = wx.StaticText(self,-1,label = attr.name)
             sizer.Add(label)
-            sizer.Add(GetWidgetFor(attr,parent = self))
+            sizer.Add(GetWidgetFor(attr,parent = self),0,wx.EXPAND)
         return sizer , included
