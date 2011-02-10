@@ -81,11 +81,10 @@ _popupmenus = { 'MMSystem': _SystemPopupMenu,
 
 class TreePanel(wx.Panel):
     def __init__(self,parent,system):
-        super(TreePanel,self).__init__(parent,-1,wx.DefaultPosition,wx.Size(200,400))
+        super(TreePanel,self).__init__(parent,-1,wx.DefaultPosition,wx.Size(0,0))
         self.parent   = parent
         self.system   = system
         self.buildUi()
-        parent.FitInside()
         self.Layout()
 
 
