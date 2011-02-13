@@ -29,6 +29,8 @@ from MysteryMachine.schema.MMAttribute import MMAttribute
 from MysteryMachine.schema.MMObject import MMObject
 from MysteryMachine.schema.MMSystem import MMSystem
 
+from widgets import ObjectPicker, EVT_OBJECTPICKED_EVENT
+import functools
 
 Ui_Id = 2000
 def NewUI_ID():
@@ -41,6 +43,7 @@ ID_TREECTRL    = NewUI_ID()
 ID_MENU_RENAME = NewUI_ID()
 ID_MENU_NEW_CAT= NewUI_ID()
 ID_MENU_NEW_OBJ= NewUI_ID()
+ID_MENU_CHANGE_PARENT= NewUI_ID()
 
 
 def object_iter(root,iterator):
@@ -64,13 +67,13 @@ _SystemPopupMenu.Append(ID_MENU_NEW_CAT,"New Category")
 
 _CategoryPopupMenu = wx.Menu()
 _CategoryPopupMenu.Append(ID_MENU_RENAME,"Change display name","Change this categories descriptive name")
-_CategoryPopupMenu.Append(NewUI_ID(),"Change default Inheritance parent")
+_CategoryPopupMenu.Append(ID_MENU_CHANGE_PARENT,"Change default Inheritance parent")
 _CategoryPopupMenu.AppendSeparator()
 _CategoryPopupMenu.Append(ID_MENU_NEW_OBJ,"New Object")
 
 _ObjectPopupMenu = wx.Menu()
 _ObjectPopupMenu.Append(ID_MENU_RENAME,"Rename","Change this object's default name")
-_ObjectPopupMenu.Append(NewUI_ID(),"Change Inheritance parent")
+_ObjectPopupMenu.Append(ID_MENU_CHANGE_PARENT,"Change Inheritance parent")
 _ObjectPopupMenu.AppendSeparator()
 _ObjectPopupMenu.Append(NewUI_ID(),"New Attribute")
 
@@ -103,7 +106,8 @@ class TreePanel(wx.Panel):
 
         wx.EVT_MENU(self,ID_MENU_RENAME, self.onRenameItem)
         wx.EVT_MENU(self,ID_MENU_NEW_CAT,self.onNewCategory)
-        wx.EVT_MENU(self,ID_MENU_NEW_OBJ,self.onNewObject)
+        wx.EVT_MENU(self,ID_MENU_NEW_CAT,self.onNewCategory)
+        wx.EVT_MENU(self,ID_MENU_CHANGE_PARENT,self.onChangeParent)
         self.sizer.Layout()
 
     def getPanelName(self):
@@ -181,3 +185,14 @@ class TreePanel(wx.Panel):
                 tmpid = self.tree.AppendItem(itemid,_node_name(element),-1,-1,wx.TreeItemData(obj =element))
                 self.tree.SetItemHasChildren(tmpid,True)
         except TypeError:  pass
+
+
+    def onChangeParent(self,evt):
+        print "change parent"
+        dlg = ObjectPicker(self,-1,title ="Chose",system = self.system,
+                            action = functools.partial(self.onNewParentChosen,self.menu_on_item))
+        dlg.Show()
+
+    def onNewParentChosen(self,parent,item):
+        print "chosen " + str(item)
+        parent.set_parent(item)
