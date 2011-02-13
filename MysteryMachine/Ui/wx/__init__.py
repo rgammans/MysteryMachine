@@ -25,6 +25,7 @@ import MysteryMachine
 from MysteryMachine.Exceptions import *
 
 import mercurial.ui as hgui
+import tempfile
 
 import wx
 import wx.aui
@@ -60,6 +61,64 @@ ID_SAVEAS=wx.ID_SAVEAS
 
 ID_VIEW_BASE=1000
 #
+
+ID_URI_DIR_BROWSE=200
+
+def _noop(uri):
+    return None
+
+class OpenUriDialog(wx.Dialog):
+    def __init__(self,parent,id, title = "Open from a URI", caption =u"Chose URI to open", action = _noop ):
+        super(OpenUriDialog,self).__init__(parent,id,title)
+        self.action = action
+        outersizer=wx.StaticBoxSizer(wx.StaticBox(self,1,caption),  wx.VERTICAL)
+        sizer=wx.BoxSizer(  wx.HORIZONTAL)
+        self.SetSizer(outersizer)
+        outersizer.Add(sizer ,1 , wx.EXPAND, 20)
+        schemes = MysteryMachine.store.GetStoreNames()
+        self.combobox = wx.ComboBox(self,-1,choices = list(schemes) )
+        self.textctrl = wx.TextCtrl(self,-1)
+        self.button   = wx.Button(self,ID_URI_DIR_BROWSE,label="Browse")
+        wx.EVT_BUTTON(self,ID_URI_DIR_BROWSE,self.onDirBrowse)
+        sizer.Add(self.combobox,1)
+        sizer.Add(wx.StaticText(self,-1,label = ":" ) ,0)
+        sizer.Add(self.textctrl,2)
+        sizer.Add(self.button,1)
+
+        sizer2=wx.StdDialogButtonSizer()
+        sizer2.Add(wx.Button(self,wx.ID_OK,"OK"))
+        sizer2.Add(wx.Button(self,wx.ID_CANCEL,"Cancel"))
+        outersizer.Add(sizer2)
+        outersizer.Fit(self) 
+
+        wx.EVT_BUTTON(self,wx.ID_OK,self.onDoLoad)
+        wx.EVT_BUTTON(self,wx.ID_CANCEL,self.onCancel)
+        self.Show()
+
+    def onDoLoad(self,evt):
+        print "inDoload"
+        uri = self.combobox.GetValue() + ":" + self.textctrl.GetValue()
+        sys = self.action(uri)
+        wx.GetApp().OpenFrame(sys)
+        self.Close()
+        self.Destroy()
+
+
+    def onCancel(self,evt):
+        print "o-uri cancelled"
+        self.Close()
+        self.Destroy()
+
+    def GetUri(self):
+        return self.combobox.GetValue() + ":" + self.textctrl.GetValue()
+
+    def onDirBrowse(self,event):
+        chosendir = wx.DirSelector("Select system directory")
+        self.textctrl.SetValue(chosendir)
+
+def _create_new(uri):
+    return wx.GetApp().ctx.CreateNew(uri = uri)
+
 class MainWindow(wx.Frame):
 
 
@@ -77,7 +136,7 @@ class MainWindow(wx.Frame):
         #Create menu.
         self.menu=wx.MenuBar()
         self.fileMenu=wx.Menu()
-        self.fileMenu.Append( -1 , "&New","Create a new freeform")
+        self.fileMenu.Append( ID_NEW , "&New","Create a new freeform")
         wx.EVT_MENU(self, ID_NEW, self.OnNew)        
     
         self.fileMenu.Append(ID_OPENPKFILE,"&Open PackFile")
@@ -137,6 +196,11 @@ class MainWindow(wx.Frame):
 
     def OnNew(self,event):
         print "onnew"
+        dialog = OpenUriDialog(None , -1 , title = "Chose Uri to store new sytem" , caption = "Enter scheme and Uri" , action = _create_new)
+        #Set some default values here so users don't need to worry.
+        dialog.combobox.SetValue("hgafile")
+        workdir = tempfile.mkdtemp("mm-newsystem")
+        dialog.textctrl.SetValue(workdir)
         pass
 
     def OnAboutMM(self,event):
@@ -198,22 +262,8 @@ class MainWindow(wx.Frame):
         self.nb.AddPage(panel,panel.getPanelName())
 
     def OnOpenUri(self,event):
-        dialog = wx.Dialog(None,-1,"Open from a URI")
-        outersizer=wx.BoxSizer(  wx.VERTICAL)
-        sizer=wx.BoxSizer(  wx.HORIZONTAL)
-        dialog.SetSizer(outersizer)
-        outersizer.Add(wx.StaticText(dialog,-1,label="Chose URI to open"))
-        outersizer.Add(sizer)
-        schemes = MysteryMachine.store.GetStoreNames()
-        combobox = wx.ComboBox(dialog,-1,choices = list(schemes) )
-        textctrl = wx.TextCtrl(dialog,-1)
-        button   = wx.Button(dialog,-1,label="Browse")
-        sizer.Add(combobox)
-        sizer.Add(textctrl)
-        sizer.Add(button)
-        
-        dialog.Show()
-
+        dialog = OpenUriDialog(None , -1  , action = self.app.ctx.OpenUri)
+    
     def OnRevert(self,event):
         print "onrevertr"
         pass
