@@ -19,18 +19,18 @@
 # 
 #
 
+"""
+Provides an implementation of common widgets.
+""" 
+
 import wx
-import  wx.lib.newevent
+import wx.lib.newevent
 
 import MysteryMachine
 from MysteryMachine.schema.MMSystem import MMSystem
 from MysteryMachine.schema.MMAttribute import MMAttribute
 from MysteryMachine.schema.MMObject import MMObject
 
-
-
-
-ObjectPickedCommandEvent, EVT_OBJECTPICKED_EVENT = wx.lib.newevent.NewCommandEvent()
 
 
 
@@ -56,52 +56,27 @@ def _node_name(node):
 
 
 
-class ObjectPicker(wx.Dialog):
+class MMTreeView(wx.TreeCtrl):
     def __init__(self,parent,id,*args,**kwargs):
         self.system = _get_argument('system',kwargs)
-        self.action = _get_argument('action',kwargs)
 
-        _apply_default('size',(400,400),kwargs)
-        super(ObjectPicker,self).__init__(parent,id,**kwargs)
+        super(MMTreeView,self).__init__(parent,id,**kwargs)
+        self.id = id
 
-        self.BuildUi()
-        self.value = None
+        self.rootItem = self.AddRoot(str(self.system),-1,-1,wx.TreeItemData(obj=self.system))
+        self.SetItemHasChildren(self.rootItem,True)
 
-    def GetObject(self):
-        return self.value
+        wx.EVT_TREE_ITEM_EXPANDING(self ,self.id,  self.onExpanding )
 
-    def BuildUi(self):
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(self.sizer)
-        self.tree = wx.TreeCtrl(self,-1)
-        self.rootItem = self.tree.AddRoot(str(self.system),-1,-1,wx.TreeItemData(obj=self.system))
-        self.tree.SetItemHasChildren(self.rootItem,True)
-
-        wx.EVT_TREE_ITEM_EXPANDING(self.tree, -1,  self.onExpanding )
-
-
-        self.Sizer.Add(self.tree,1,wx.EXPAND)
-        
-        sizer2=wx.StdDialogButtonSizer()
-        sizer2.Add(wx.Button(self,wx.ID_OK,"OK"))
-        sizer2.Add(wx.Button(self,wx.ID_CANCEL,"Cancel"))
-
-        self.sizer.Add(sizer2)
-        #self.sizer.Fit(self) 
-
-        wx.EVT_BUTTON(self,wx.ID_OK,self.onOK)
-        wx.EVT_BUTTON(self,wx.ID_CANCEL,self.onCancel)
-        self.Show()
-        self.SetAutoLayout(True)
 
     def onExpanding(self,evt):
         itemid = evt.GetItem()
-        localroot = self.tree.GetItemData(itemid).GetData()
+        localroot = self.GetItemData(itemid).GetData()
         self.updateNode(itemid,localroot)
 
     def updateNode(self,itemid,localroot):
-        self.tree.SetItemHasChildren(itemid,False)
-        self.tree.DeleteChildren(itemid)
+        self.SetItemHasChildren(itemid,False)
+        self.DeleteChildren(itemid)
 
         if itemid == self.rootItem:
             iterator = object_iter(localroot,localroot.EnumCategories())
@@ -110,19 +85,6 @@ class ObjectPicker(wx.Dialog):
 
         try:
             for element in sorted(iterator,key=_node_name):
-                tmpid = self.tree.AppendItem(itemid,_node_name(element),-1,-1,wx.TreeItemData(obj =element))
-                self.tree.SetItemHasChildren(tmpid,True)
+                tmpid = self.AppendItem(itemid,_node_name(element),-1,-1,wx.TreeItemData(obj =element))
+                self.SetItemHasChildren(tmpid,True)
         except TypeError:  pass
-
-    def onOK(self,event):
-        value_id = self.tree.GetSelection()
-        self.value=self.tree.GetItemData(value_id).GetData()
-        self.Close()
-        self.action(self.value)
-        self.Destroy()
-
-
-    def onCancel(self,event):
-        self.Close()
-        self.Destroy()
-

@@ -25,11 +25,14 @@ Provides a tree view of a MM system.
 """ 
 
 import wx
+
+
 from MysteryMachine.schema.MMAttribute import MMAttribute
 from MysteryMachine.schema.MMObject import MMObject
 from MysteryMachine.schema.MMSystem import MMSystem
 
-from widgets import ObjectPicker, EVT_OBJECTPICKED_EVENT
+from dialogs import ObjectPicker, EVT_OBJECTPICKED_EVENT
+import widgets
 import functools
 
 Ui_Id = 2000
@@ -94,12 +97,8 @@ class TreePanel(wx.Panel):
     def buildUi(self):
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.SetSizer(self.sizer)
-        self.tree = wx.TreeCtrl(self,ID_TREECTRL)
+        self.tree = widgets.MMTreeView(self,ID_TREECTRL, system = self.system)
         self.sizer.Add(self.tree, 1 , wx.EXPAND)
-        self.rootItem = self.tree.AddRoot(str(self.system),-1,-1,wx.TreeItemData(obj=self.system))
-        self.tree.SetItemHasChildren(self.rootItem,True)
-
-        wx.EVT_TREE_ITEM_EXPANDING(self.tree, ID_TREECTRL,  self.onExpanding )
         wx.EVT_TREE_ITEM_RIGHT_CLICK(self.tree, ID_TREECTRL,  self.onRightClick )
         wx.EVT_TREE_ITEM_ACTIVATED(self.tree, ID_TREECTRL,  self.onItemActivated )
 
@@ -136,11 +135,11 @@ class TreePanel(wx.Panel):
                 self.menu_on_item.NewCategory(newstr)
             except BaseException , e:
                 wx.MessageBox(str(e))
-        self.updateNode(self.menu_on_itemid,self.menu_on_item)
+        self.tree.updateNode(self.menu_on_itemid,self.menu_on_item)
         
     def onNewObject(self,evt):
         self.system.NewObject(repr(self.menu_on_item))
-        self.updateNode(self.menu_on_itemid,self.menu_on_item)
+        self.treee.updateNode(self.menu_on_itemid,self.menu_on_item)
 
     def onItemActivated(self,evt):
         node = self.tree.GetItemData(evt.GetItem()).GetData()
@@ -165,27 +164,6 @@ class TreePanel(wx.Panel):
         self.menu_on_item = localroot
         print "onRightClick on %r " % localroot
         self.PopupMenu(_popupmenus[localroot.__class__.__name__])
-
-    def onExpanding(self,evt):
-        itemid = evt.GetItem()
-        localroot = self.tree.GetItemData(itemid).GetData()
-        self.updateNode(itemid,localroot)
-
-    def updateNode(self,itemid,localroot):
-        self.tree.SetItemHasChildren(itemid,False)
-        self.tree.DeleteChildren(itemid)
-
-        if itemid == self.rootItem:
-            iterator = object_iter(localroot,localroot.EnumCategories())
-        else:
-            iterator = localroot.__iter__()
-
-        try:
-            for element in sorted(iterator,key=_node_name):
-                tmpid = self.tree.AppendItem(itemid,_node_name(element),-1,-1,wx.TreeItemData(obj =element))
-                self.tree.SetItemHasChildren(tmpid,True)
-        except TypeError:  pass
-
 
     def onChangeParent(self,evt):
         print "change parent"
