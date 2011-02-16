@@ -28,6 +28,8 @@ from MysteryMachine.schema.MMAttribute import *
 
 from MysteryMachine.store.dict_store import *
 
+import MysteryMachine.Exceptions as Error
+
 import MysteryMachine.schema.MMAttributeValue
 import unittest
 import logging
@@ -127,6 +129,15 @@ class ObjectTests(unittest.TestCase):
         self.assertEquals(p["name"].GetFullExpansion(), "test")
         self.assertEquals(self.object["name"].GetFullExpansion(), "other")
 
+
+    def testParentAbuse(self):
+        self.object2["attribute"] ="An attribute"
+        self.assertRaises(Error.InvalidParent,self.object.set_parent,self.object2["attribute"])
+
+        # Try to create a pointless loop in the parent heirachy.
+        self.assertRaises(Error.InvalidParent,self.parent.set_parent,self.object)
+        #Just make sure endless loops don't happen
+        self.assertRaises(KeyError,self.parent.__getitem__,"fooe")
 
     def testIterIf(self):
         self.object["Attr1"] = "some data"

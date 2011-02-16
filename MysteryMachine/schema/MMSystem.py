@@ -30,6 +30,7 @@ from MysteryMachine.schema.MMBase import *
 from MysteryMachine.store import *
 #from MMSystemDiff import *
 #from Controller import *
+import MysteryMachine.Exceptions as Error
 
 from Globals import * 
 
@@ -214,7 +215,7 @@ class MMSystem (MMContainer):
 
     id = self.store.NewObject(category)
     obj = self.get_object(category,id)
-    obj.set_parent(parent)
+    if parent is not None: obj.set_parent(parent)
     return obj
 
   
@@ -481,4 +482,6 @@ class MMCategory(MMAttributeContainer):
 
 
     def set_parent(self,newparent):
+        if type(newparent) is not MMObject: raise Error.InvalidParent()
+
         self['.parent'] = newparent

@@ -166,6 +166,10 @@ class sysTests(unittest.TestCase):
         #Check we can't create objects which are their own parents.
         self.assertEquals(o12.get_parent(),None)
  
+        o12["attr"] = "text"
+        self.assertRaises(Error.InvalidParent,cat.set_parent,o12["attr"])
+
+
 
     def testLoaded(self):
 

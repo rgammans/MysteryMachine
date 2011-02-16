@@ -27,6 +27,8 @@ from MysteryMachine.parsetools.MMParser import MMParser , Grammar
 from MysteryMachine.schema.MMAttribute import * 
 from MysteryMachine.schema.MMAttributeValue import  * 
 
+import MysteryMachine.Exceptions as Error
+
 import weakref
 import logging
 
@@ -209,6 +211,13 @@ class MMObject (MMAttributeContainer):
   def set_parent(self,parent):
     #We can safely use the basic code to set the parent as it
     #  only uses any inheirted values as a type hint.
+    if type(parent) is not MMObject: raise Error.InvalidParent("%s is not an MMObject"%type(parent))
+
+    parent_walk = parent.getSelf()
+    while parent_walk is not None:
+        if parent_walk is self: raise Error.InvalidParent("would create a loop: %r is a parent of %r"%(self,parent))
+        parent_walk = parent_walk.get_parent()
+
     self[".parent"]=parent
 
   def __str__(self):
