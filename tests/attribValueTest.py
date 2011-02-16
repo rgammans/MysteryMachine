@@ -146,6 +146,16 @@ class attribValTest(unittest.TestCase):
         self.assertTrue(".inheritance_shadow" not in attrtypeslist)
         self.assertTrue("faketype" in attrtypeslist)
 
+    def testNullAttributeType(self):
+       attr =  MakeAttributeValue("null",{})
+       self.assertEquals(attr.get_object(),None)
+       attr =  MakeAttributeValue("null",{'value':""})
+       self.assertEquals(attr.get_object(),None)
+       attr =  MakeAttributeValue("null",{'value':"sdkasjdlk", 'ref':"more stuff"})
+       self.assertEquals(attr.get_object(),None)
+
+
+
  
 def getTestNames():
 	return [ 'attribValueTest.attribValTest' ] 
