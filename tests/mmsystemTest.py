@@ -156,7 +156,16 @@ class sysTests(unittest.TestCase):
         #Test parent.
         self.assertEquals(o11.get_parent(),None)
         cat[".parent"] = o21
+        self.assertEquals(cat.get_parent(),o21)
         self.assertEquals(o11.get_parent(),o21)
+
+        o12=self.sys.NewObject("One",None)
+        cat.set_parent(o12)
+        self.assertEquals(cat.get_parent(),o12)
+        self.assertEquals(o11.get_parent(),o12)
+        #Check we can't create objects which are their own parents.
+        self.assertEquals(o12.get_parent(),None)
+ 
 
     def testLoaded(self):
 

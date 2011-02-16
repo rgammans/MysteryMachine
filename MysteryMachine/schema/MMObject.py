@@ -200,6 +200,10 @@ class MMObject (MMAttributeContainer):
     self.logger.debug( "Parent = %r" % parent)
     if parent != None:
         parent = parent.get_object()
+
+    #If the categories parent is ourselves this can occur
+    # Null the parent to prevent endless recursion.
+    if parent is self: parent = None
     return parent
 
   def set_parent(self,parent):

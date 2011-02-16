@@ -421,6 +421,7 @@ class MMCategory(MMAttributeContainer):
             name = repr(self)
         return name
 
+
     def __getitem__(self,item):
         if item[0] == ".":
             itemname = "." + self.canonicalise(item[1:])
@@ -474,3 +475,10 @@ class MMCategory(MMAttributeContainer):
     def iterkeys(self):
        for objkey in self.owner.EnumObjects(self.name):
            yield objkey 
+
+    def get_parent(self):
+        return self['.parent'].getSelf()
+
+
+    def set_parent(self,newparent):
+        self['.parent'] = newparent
