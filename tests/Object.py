@@ -139,6 +139,12 @@ class ObjectTests(unittest.TestCase):
         #Just make sure endless loops don't happen
         self.assertRaises(KeyError,self.parent.__getitem__,"fooe")
 
+    def testBreakParentRef(self):
+        self.parent["testattr"] = "somedata"
+        self.assertEquals(str(self.object["testattr"]),"somedata")
+        self.object.set_parent(MMNullReferenceValue())
+        self.assertRaises(KeyError,self.object.__getitem__,"testattr")
+
     def testIterIf(self):
         self.object["Attr1"] = "some data"
         self.object["name"]  = "fred blogs"

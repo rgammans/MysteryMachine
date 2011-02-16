@@ -191,7 +191,7 @@ class MMObject (MMAttributeContainer):
     #Bypass inheritance lookup.
     if self.store.HasAttribute(".parent"):
         parent = self._get_item(".parent",self._make_attr,".parent") 
-    else: #TODO Get parent from object's category 
+    else: # Get parent from object's category 
         idpath = self.name.split(":")[:-1]
         category = self.owner[idpath[-1]]
         try:
@@ -211,7 +211,8 @@ class MMObject (MMAttributeContainer):
   def set_parent(self,parent):
     #We can safely use the basic code to set the parent as it
     #  only uses any inheirted values as a type hint.
-    if type(parent) is not MMObject: raise Error.InvalidParent("%s is not an MMObject"%type(parent))
+    if type(parent) not in (MMObject, MMNullReferenceValue): 
+        raise Error.InvalidParent("%s is not an MMObject"%type(parent))
 
     parent_walk = parent.getSelf()
     while parent_walk is not None:

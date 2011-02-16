@@ -427,6 +427,10 @@ class MMNullReferenceValue(MMAttributeValue):
     def get_object(self, obj = None ):
         return None 
 
+    def getSelf(self):
+        #Function need especially for MMObject.set_parent.
+        return None
+ 
     def get_raw_rst(self,obj = None):
         return ""
 
