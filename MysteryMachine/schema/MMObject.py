@@ -99,7 +99,7 @@ class MMObject (MMAttributeContainer):
         return self._get_item(attrname,self._make_attr,attrname) 
     else:
         parent = self.get_parent()
-        if not parent:
+        if parent is None:
            #No Parent so raise no attrname.
            raise KeyError(attrname)
         
@@ -188,16 +188,18 @@ class MMObject (MMAttributeContainer):
     @return string[*] :
     @author
     """
+    parent = None
     #Bypass inheritance lookup.
     if self.store.HasAttribute(".parent"):
         parent = self._get_item(".parent",self._make_attr,".parent") 
-    else: # Get parent from object's category 
-        idpath = self.name.split(":")[:-1]
-        category = self.owner[idpath[-1]]
-        try:
-            parent = category[".parent"]
-        except KeyError:
-            parent = None
+
+    #We don't try to get the parent from the category - the 
+    # category only store a default parent to be used at creation
+    #
+    #By limiting the inheritance in this manner we reduce the 
+    # amount of confusing 'action at a distance' and make the
+    # checking required to stop inheritance loops reasonable.
+    
     self.logger.debug( "parent type is %s " %type(parent))
     self.logger.debug( "Parent = %r" % parent)
     if parent != None:

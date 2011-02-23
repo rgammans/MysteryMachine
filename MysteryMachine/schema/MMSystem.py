@@ -215,6 +215,14 @@ class MMSystem (MMContainer):
 
     id = self.store.NewObject(category)
     obj = self.get_object(category,id)
+    
+    if parent is None:
+        #Get parent from category
+        try:
+            parent = self[category][".parent"]
+            parent = parent.getSelf()
+        except KeyError: pass
+        
     if parent is not None: obj.set_parent(parent)
     return obj
 

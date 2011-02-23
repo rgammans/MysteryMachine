@@ -141,9 +141,14 @@ class ObjectTests(unittest.TestCase):
 
     def testBreakParentRef(self):
         self.parent["testattr"] = "somedata"
+        self.dummyparent["testattr"] = "otherdata"
         self.assertEquals(str(self.object["testattr"]),"somedata")
         self.object.set_parent(MMNullReferenceValue())
         self.assertRaises(KeyError,self.object.__getitem__,"testattr")
+        myobj = self.system.NewObject("dummy")
+        self.assertEquals(str(myobj["testattr"]),"otherdata")
+        myobj = self.system.NewObject("dummy",MMNullReferenceValue())
+        self.assertRaises(KeyError,myobj.__getitem__,"testattr")
 
     def testIterIf(self):
         self.object["Attr1"] = "some data"
