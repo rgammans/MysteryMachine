@@ -21,6 +21,8 @@
 import wx
 import functools
 
+from dialogs import ObjectPicker, EVT_OBJECTPICKED_EVENT
+
 _Factory = {}
 
 Ui_Id = wx.ID_HIGHEST
@@ -54,9 +56,16 @@ class BasicMMAttributeValidator(wx.PyValidator):
         self.GetWindow().SetValue(str(self.attribute))
 
     def TransferFromWindow(self):
-        print "TFW"
-        self.attribute.set_value(self.GetWindow().GetValue())
+        if self.GetWindow().IsModified():
+            print "TFW"
+            self.attribute.set_value(self.GetWindow().GetValue())
 
+
+def _writeback(ctrl,event): 
+    print "_Writeback"
+    ctrl.GetValidator().TransferFromWindow()
+
+ID_ATTRTEXTCTRL = NewUI_ID()
 def simple_wx_widget(parent,attribute):
 
         # XXX
@@ -75,7 +84,8 @@ def simple_wx_widget(parent,attribute):
         if not deffont.IsFixedWidth():
             deffont =wx.Font(9, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
          
-        content  = wx.TextCtrl(parent,-1,style = (wx.TE_MULTILINE ))
+        content  = wx.TextCtrl(parent,ID_ATTRTEXTCTRL,style = (wx.TE_MULTILINE ))
+        wx.EVT_KILL_FOCUS(content,functools.partial(_writeback,content))
         content.SetFont(deffont)
         #content.SetValue(str(attribute)) 
         content.SetValidator(BasicMMAttributeValidator(attribute = attribute))
@@ -105,14 +115,50 @@ def _list_wx_widget(parent,attribute):
 _Factory["list"]      = _list_wx_widget
 
 
-def _ref_wx_widget(parent,attribute):
-    sizer = wx.BoxSizer(wx.HORIZONTAL)
-    label = wx.StaticText(parent,-1)
-    label.SetLabel("Reference to " + str(attribute.getSelf()))
-    sizer.Add(label)
-    sizer.Add(wx.Button(parent,-1,label="Goto"))
-    sizer.Add(wx.Button(parent,-1,label="Change.."))
-    return sizer
+class MMRefAttributeValidator(wx.PyValidator):
+    def __init__(self,*args,**kwargs):
+        super(MMRefAttributeValidator,self).__init__(*args)
+        self.attribute = kwargs.get('attribute')
+
+    def Clone(self): 
+       return MMRefAttributeValidator(attribute = self.attribute )
+
+    def Validate(self): 
+        return True 
+
+    def TransferToWindow(self):
+        print "link update"
+        self.GetWindow().label.SetLabel("Reference to " + str(self.attribute.getSelf()))
+        self.GetWindow().Layout()
+
+    def UpdateValue(self,new_value):
+        self.attribute.set_value(new_value)
+        #Update display.
+        self.TransferToWindow()
+ 
+class _ref_wx_widget(wx.PyControl):
+    ID_OPENBUTTON   = NewUI_ID()
+    ID_CHANGEBUTTON = NewUI_ID()
+    ID_EXPANDBUTTON = NewUI_ID()
+    def __init__(self,parent,attribute):
+        super(_ref_wx_widget,self).__init__(parent,wx.ID_ANY)
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.SetSizer(sizer)
+        self.attribute = attribute
+        self.label = wx.StaticText(self,-1)
+        self.SetValidator(MMRefAttributeValidator( attribute = self.attribute))
+        sizer.Add(self.label)
+        sizer.Add(wx.Button(self,self.__class__.ID_OPENBUTTON,label="Open"))
+        sizer.Add(wx.Button(self,self.__class__.ID_CHANGEBUTTON,label="Change.."))
+        sizer.Add(wx.Button(self,self.__class__.ID_EXPANDBUTTON,label="Expand"))
+
+        wx.EVT_BUTTON(self,self.__class__.ID_CHANGEBUTTON,self.onChangeTarget)
+    
+    def onChangeTarget(self,evt): 
+        dlg = ObjectPicker(self,-1,title ="Chose new target",system = self.attribute.get_root(),
+                            action = self.GetValidator().UpdateValue)
+        dlg.Show()
+
 
 _Factory["ref"]      = _ref_wx_widget
 

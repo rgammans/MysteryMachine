@@ -167,7 +167,7 @@ class TreePanel(wx.Panel):
 
     def onChangeParent(self,evt):
         print "change parent"
-        dlg = ObjectPicker(self,-1,title ="Chose",system = self.system,
+        dlg = ObjectPicker(self,-1,title ="Choose new parent",system = self.system,
                             action = functools.partial(self.onNewParentChosen,self.menu_on_item))
         dlg.Show()
 
