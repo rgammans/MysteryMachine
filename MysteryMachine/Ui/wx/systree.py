@@ -106,7 +106,7 @@ class TreePanel(wx.Panel):
 
         wx.EVT_MENU(self,ID_MENU_RENAME, self.onRenameItem)
         wx.EVT_MENU(self,ID_MENU_NEW_CAT,self.onNewCategory)
-        wx.EVT_MENU(self,ID_MENU_NEW_CAT,self.onNewCategory)
+        wx.EVT_MENU(self,ID_MENU_NEW_OBJ,self.onNewObject)
         wx.EVT_MENU(self,ID_MENU_CHANGE_PARENT,self.onChangeParent)
         self.sizer.Layout()
 
