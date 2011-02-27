@@ -404,6 +404,35 @@ class MMAttributeValue_MMRef(MMAttributeValue):
         return ":mm:`"+ self.get_raw(obj) + "`"
 
 
+class MMNullReferenceValue(MMAttributeValue):
+    """
+    This class can only hold a single value. None.
+ 
+    It should act like MMRef but always return None
+    from get_object(). It should only have a single part
+    which is always empty.
+    """
+    typename = "null"
+    contain_prefs = { None: 100 }
+
+    def __init__(self,*args,**kwargs):
+        super(MMNullReferenceValue, self).__init__(*args,**kwargs)
+        self.parts = { 'value' : '' } 
+            
+        self.exports += [ "get_object" ]
+
+    def _validate(self, obj = None):
+        return True
+
+    def get_object(self, obj = None ):
+        return None 
+
+    def getSelf(self):
+        #Function need especially for MMObject.set_parent.
+        return None
+ 
+    def get_raw_rst(self,obj = None):
+        return ""
 
 
 class ShadowAttributeValue(MMAttributeValue):

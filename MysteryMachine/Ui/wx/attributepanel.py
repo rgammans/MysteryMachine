@@ -57,8 +57,6 @@ class AttributePanel(wx.Panel):
         self.content  = GetWidgetFor(self.attribute,parent = self)
         self.sizer.Add(self.content,1,wx.EXPAND)
         
-#        wx.EVT_KILL_FOCUS(self.content, self.onFocusLostFromContent)
-        
         self.sizer.Layout()
 
     def getPanelName(self):

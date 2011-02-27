@@ -31,6 +31,16 @@ class DuplicateRegistration(RuntimeError): pass
 class NullReference(LookupError): pass
 class NoAttribute(LookupError): pass #Specifically no MMAttribute.
 
+class InvalidParent(RuntimeError):
+    """
+    An object as been passed to set_parent which is not a valid parent.
+
+    A parent must be either an MMObject or a MMNullReference.(NYI)
+    Additionally a new object must not already exist on the parents
+    parent chain.
+    """
+    pass
+
 class StoreApiViolation(TypeError):
     """Incorrect types have been base to the StoreApi
      

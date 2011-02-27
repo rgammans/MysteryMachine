@@ -30,6 +30,7 @@ from MysteryMachine.schema.MMBase import *
 from MysteryMachine.store import *
 #from MMSystemDiff import *
 #from Controller import *
+import MysteryMachine.Exceptions as Error
 
 from Globals import * 
 
@@ -214,7 +215,15 @@ class MMSystem (MMContainer):
 
     id = self.store.NewObject(category)
     obj = self.get_object(category,id)
-    obj.set_parent(parent)
+    
+    if parent is None:
+        #Get parent from category
+        try:
+            parent = self[category][".parent"]
+            parent = parent.getSelf()
+        except KeyError: pass
+        
+    if parent is not None: obj.set_parent(parent)
     return obj
 
   
@@ -421,6 +430,7 @@ class MMCategory(MMAttributeContainer):
             name = repr(self)
         return name
 
+
     def __getitem__(self,item):
         if item[0] == ".":
             itemname = "." + self.canonicalise(item[1:])
@@ -474,3 +484,12 @@ class MMCategory(MMAttributeContainer):
     def iterkeys(self):
        for objkey in self.owner.EnumObjects(self.name):
            yield objkey 
+
+    def get_parent(self):
+        return self['.parent'].getSelf()
+
+
+    def set_parent(self,newparent):
+        if type(newparent) is not MMObject: raise Error.InvalidParent()
+
+        self['.parent'] = newparent

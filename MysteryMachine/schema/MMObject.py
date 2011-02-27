@@ -27,6 +27,8 @@ from MysteryMachine.parsetools.MMParser import MMParser , Grammar
 from MysteryMachine.schema.MMAttribute import * 
 from MysteryMachine.schema.MMAttributeValue import  * 
 
+import MysteryMachine.Exceptions as Error
+
 import weakref
 import logging
 
@@ -97,7 +99,7 @@ class MMObject (MMAttributeContainer):
         return self._get_item(attrname,self._make_attr,attrname) 
     else:
         parent = self.get_parent()
-        if not parent:
+        if parent is None:
            #No Parent so raise no attrname.
            raise KeyError(attrname)
         
@@ -186,25 +188,39 @@ class MMObject (MMAttributeContainer):
     @return string[*] :
     @author
     """
+    parent = None
     #Bypass inheritance lookup.
     if self.store.HasAttribute(".parent"):
         parent = self._get_item(".parent",self._make_attr,".parent") 
-    else: #TODO Get parent from object's category 
-        idpath = self.name.split(":")[:-1]
-        category = self.owner[idpath[-1]]
-        try:
-            parent = category[".parent"]
-        except KeyError:
-            parent = None
+
+    #We don't try to get the parent from the category - the 
+    # category only store a default parent to be used at creation
+    #
+    #By limiting the inheritance in this manner we reduce the 
+    # amount of confusing 'action at a distance' and make the
+    # checking required to stop inheritance loops reasonable.
+    
     self.logger.debug( "parent type is %s " %type(parent))
     self.logger.debug( "Parent = %r" % parent)
     if parent != None:
         parent = parent.get_object()
+
+    #If the categories parent is ourselves this can occur
+    # Null the parent to prevent endless recursion.
+    if parent is self: parent = None
     return parent
 
   def set_parent(self,parent):
     #We can safely use the basic code to set the parent as it
     #  only uses any inheirted values as a type hint.
+    if type(parent) not in (MMObject, MMNullReferenceValue): 
+        raise Error.InvalidParent("%s is not an MMObject"%type(parent))
+
+    parent_walk = parent.getSelf()
+    while parent_walk is not None:
+        if parent_walk is self: raise Error.InvalidParent("would create a loop: %r is a parent of %r"%(self,parent))
+        parent_walk = parent_walk.get_parent()
+
     self[".parent"]=parent
 
   def __str__(self):
