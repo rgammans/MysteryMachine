@@ -54,11 +54,13 @@ class BasicMMAttributeValidator(wx.PyValidator):
     def TransferToWindow(self):
         print "TTW"
         self.GetWindow().SetValue(str(self.attribute))
+        return True 
 
     def TransferFromWindow(self):
         if self.GetWindow().IsModified():
             print "TFW"
             self.attribute.set_value(self.GetWindow().GetValue())
+        return True 
 
 
 def _writeback(ctrl,event): 
@@ -97,21 +99,24 @@ _Factory["simple_utf8"] = simple_wx_widget
 
 
 def _list_wx_widget(parent,attribute):
+    panel = wx.Panel(parent,-1)
+    panel.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
     sizer = wx.FlexGridSizer(wx.VERTICAL,3,len(attribute))
+    panel.SetSizer(sizer) 
     i = 0
     for element in attribute:
-        index_label = wx.StaticText(parent,ID_LABEL)
+        index_label = wx.StaticText(panel,ID_LABEL)
         index_label.SetLabel(str(i))
-        stable_idx  = wx.StaticText(parent,ID_LABEL)
+        stable_idx  = wx.StaticText(panel,ID_LABEL)
         stable_idx.SetLabel(element.name)
-        data        = GetWidgetFor(element, parent = parent)
+        data        = GetWidgetFor(element, parent = panel)
 
         sizer.Add(index_label)
         sizer.Add(stable_idx)
         sizer.Add(data)
         i += 1
 
-    return sizer
+    return panel 
 _Factory["list"]      = _list_wx_widget
 
 
@@ -130,13 +135,14 @@ class MMRefAttributeValidator(wx.PyValidator):
         print "link update"
         self.GetWindow().label.SetLabel("Reference to " + str(self.attribute.getSelf()))
         self.GetWindow().Layout()
+        return True 
 
     def UpdateValue(self,new_value):
         self.attribute.set_value(new_value)
         #Update display.
         self.TransferToWindow()
  
-class _ref_wx_widget(wx.PyControl):
+class _ref_wx_widget(wx.PyPanel):
     ID_OPENBUTTON   = NewUI_ID()
     ID_CHANGEBUTTON = NewUI_ID()
     ID_EXPANDBUTTON = NewUI_ID()
