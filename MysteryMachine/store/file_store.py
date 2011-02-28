@@ -281,6 +281,7 @@ class filestore(Base):
             #Don't bother with safe file for this - a journalled FS
             # should be enough, since there is no data. 
             f=file(sentinel,"w")
+            sentinel,  = make_rel(self.path,sentinel)
             self.Add_file(sentinel)
 
     def NewObject(self,category):
@@ -292,6 +293,7 @@ class filestore(Base):
         #Don't bother with safe file for this - a journalled FS
         # should be enough, since there is no data. 
         f=file(sentinel,"w")
+        sentinel, = make_rel(self.path,sentinel)
         self.Add_file(sentinel)
         return Id
 
