@@ -140,6 +140,7 @@ class _object_section(wx.PyPanel):
     def add(self,panel):
          self.included += [ panel.attribute.name ]
          self.sizer.Add(panel,0,wx.EXPAND)
+         self.Show(True)
          self.Layout()
 
     def remove(self,panel):
@@ -147,6 +148,7 @@ class _object_section(wx.PyPanel):
         self.sizer.Remove(panel)
         panel.Show(False)
         panel.Destroy()
+        if not self.included: self.Show(False)
         self.Layout()
 
     def get_included(self):
