@@ -139,7 +139,7 @@ class TreePanel(wx.Panel):
         
     def onNewObject(self,evt):
         self.system.NewObject(repr(self.menu_on_item))
-        self.treee.updateNode(self.menu_on_itemid,self.menu_on_item)
+        self.tree.updateNode(self.menu_on_itemid,self.menu_on_item)
 
     def onItemActivated(self,evt):
         node = self.tree.GetItemData(evt.GetItem()).GetData()
