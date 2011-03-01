@@ -24,6 +24,11 @@ from __future__ import with_statement
 import MysteryMachine
 from MysteryMachine.Exceptions import *
 
+from MysteryMachine.schema.MMAttribute import MMAttribute
+from MysteryMachine.schema.MMObject import MMObject
+from MysteryMachine.schema.MMSystem import MMSystem
+
+
 import mercurial.ui as hgui
 import tempfile
 
@@ -260,6 +265,31 @@ class MainWindow(wx.Frame):
 
     def AddPanel(self,panel):
         self.nb.AddPage(panel,panel.getPanelName())
+
+
+    def NewSchemaView(self,schema_node):
+        """Creates a new tab showing schema_node.
+
+        schema_node must be a node in a MysteryMachine.schema.
+        """
+        ##FIXME: consult userprefs to find what panel to open
+        #        for each object type.
+        panel = None
+ 
+        if isinstance(schema_node,MMAttribute):
+            import attributepanel
+            panel = attributepanel.AttributePanel(self, schema_node )
+        
+        if isinstance(schema_node,MMObject):
+            import objectpanel
+            panel = objectpanel.ObjectPanel(self, schema_node )
+
+        if isinstance(schema_node,MMSystem):
+            import systree
+            panel = systree.TreePanel(self,schema_node)
+ 
+        if panel: self.AddPanel(panel)
+ 
 
     def OnOpenUri(self,event):
         dialog = OpenUriDialog(None , -1  , action = self.app.ctx.OpenUri)

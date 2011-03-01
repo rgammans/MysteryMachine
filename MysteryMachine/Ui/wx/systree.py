@@ -143,19 +143,7 @@ class TreePanel(wx.Panel):
 
     def onItemActivated(self,evt):
         node = self.tree.GetItemData(evt.GetItem()).GetData()
-        panel = None
- 
-        if isinstance(node,MMAttribute):
-            import attributepanel
-            panel = attributepanel.AttributePanel(self.parent, node )
-        
-        if isinstance(node,MMObject):
-            import objectpanel
-            panel = objectpanel.ObjectPanel(self.parent, node )
-
-
-        if panel: self.parent.AddPanel(panel)
-
+        self.parent.NewSchemaView(node) 
 
     def onRightClick(self,evt):
         itemid = evt.GetItem()
