@@ -98,25 +98,25 @@ _Factory["simple"]      = simple_wx_widget
 _Factory["simple_utf8"] = simple_wx_widget
 
 
-def _list_wx_widget(parent,attribute):
-    panel = wx.Panel(parent,-1)
-    panel.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
-    sizer = wx.FlexGridSizer(wx.VERTICAL,3,len(attribute))
-    panel.SetSizer(sizer) 
-    i = 0
-    for element in attribute:
-        index_label = wx.StaticText(panel,ID_LABEL)
-        index_label.SetLabel(str(i))
-        stable_idx  = wx.StaticText(panel,ID_LABEL)
-        stable_idx.SetLabel(element.name)
-        data        = GetWidgetFor(element, parent = panel)
+class _list_wx_widget(wx.PyPanel):
+    def __init__(self,parent,attribute):
+        super(_list_wx_widget,self).__init__(parent,-1)
+        self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
+        sizer = wx.FlexGridSizer(wx.VERTICAL,3,len(attribute))
+        self.SetSizer(sizer) 
+        i = 0
+        for element in attribute:
+            index_label = wx.StaticText(self,ID_LABEL)
+            index_label.SetLabel(str(i))
+            stable_idx  = wx.StaticText(self,ID_LABEL)
+            stable_idx.SetLabel(element.name)
+            data        = GetWidgetFor(element, parent = self)
 
-        sizer.Add(index_label)
-        sizer.Add(stable_idx)
-        sizer.Add(data)
-        i += 1
+            sizer.Add(index_label)
+            sizer.Add(stable_idx)
+            sizer.Add(data)
+            i += 1
 
-    return panel 
 _Factory["list"]      = _list_wx_widget
 
 
