@@ -159,12 +159,16 @@ class _ref_wx_widget(wx.PyPanel):
         sizer.Add(wx.Button(self,self.__class__.ID_EXPANDBUTTON,label="Expand"))
 
         wx.EVT_BUTTON(self,self.__class__.ID_CHANGEBUTTON,self.onChangeTarget)
+        wx.EVT_BUTTON(self,self.__class__.ID_OPENBUTTON,self.onOpenTarget)
     
     def onChangeTarget(self,evt): 
         dlg = ObjectPicker(self,-1,title ="Chose new target",system = self.attribute.get_root(),
                             action = self.GetValidator().UpdateValue)
         dlg.Show()
 
+    def onOpenTarget(self,evt):
+        frame = self.GetTopLevelParent()
+        frame.NewSchemaView(self.attribute.getSelf())
 
 _Factory["ref"]      = _ref_wx_widget
 
