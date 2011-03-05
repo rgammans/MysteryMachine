@@ -53,6 +53,7 @@ class DlinkTests(unittest.TestCase):
         self.system.NewCategory( "Dummy" ,defaultparent =self.dummyparent)
         self.object1                  = self.system.NewObject("Dummy") 
         self.object2                  = self.system.NewObject("Dummy") 
+        self.object3                  = self.system.NewObject("Dummy") 
         self.object1.set_parent(self.parent)       
 
         #self.logger.debug( "dummy => " ,repr(self.dummyparent))
@@ -175,7 +176,38 @@ class DlinkTests(unittest.TestCase):
         self.assertEquals(self.object2["objlink1"].get_object(),self.object1)
         self.assertEquals(self.dummyparent["objlink1"].get_object(),None)
         self.assertEquals(self.dummyparent["objlink1"].get_anchor(),self.dummyparent)
-        pass
+
+    def testUnstored(self):
+        self.object2["uobjlink1"] = dlk.CreateAnchorPoint(self.object2)
+        self.object3["uobjlink1"] = dlk.CreateAnchorPoint(self.object3)
+        attr = MMUnstorableAttribute("foo", dlk.CreateAnchorPoint(self.object1) , self.object1)
+        self.assertRaises(KeyError,self.object1.__getitem__,"foo")
+        #Test that the value can be set multiple times with a problems
+        attr.set_value (dlk.ConnectTo( self.object2["uobjlink1"]))
+        attr.set_value (dlk.ConnectTo( self.object3["uobjlink1"]))
+        self.assertEquals(   self.object2["uobjlink1"].get_object() , None )
+        self.assertEquals(   self.object3["uobjlink1"].get_object() , None )
+        self.assertRaises(KeyError,self.object1.__getitem__,"foo")
+        self.object1["ulink2"] = attr
+        self.assertEquals(self.object1["ulink2"].get_object(),self.object3)
+        self.assertEquals(self.object3["uobjlink1"].get_object(),self.object1)
+
+    def testUnstoredWithShadow(self):
+        self.dummyparent["usobjlink1"] = dlk.CreateAnchorPoint(self.dummyparent)
+        attr = MMUnstorableAttribute("foo", dlk.CreateAnchorPoint(self.object1) , self.object1)
+        self.assertRaises(KeyError,self.object1.__getitem__,"foo")
+        attr.set_value (dlk.ConnectTo( self.object3["usobjlink1"]))
+        attr.set_value (dlk.ConnectTo( self.object2["usobjlink1"]))
+        self.assertEquals(   self.object2["usobjlink1"].get_object() , None )
+        self.assertEquals(   self.object3["usobjlink1"].get_object() , None )
+        self.assertRaises(KeyError,self.object1.__getitem__,"foo")
+        self.object1["uslink2"] = attr
+        self.object2["usobjlink1"] = dlk.ConnectTo( self.object1["uslink2"])
+        self.assertEquals(self.object1["uslink2"].get_object(),self.object2)
+        self.assertEquals(self.object2["usobjlink1"].get_object(),self.object1)
+        self.assertEquals(self.dummyparent["usobjlink1"].get_object(),None)
+        self.assertEquals(self.dummyparent["usobjlink1"].get_anchor(),self.dummyparent)
+
 
 
 def getTestNames():

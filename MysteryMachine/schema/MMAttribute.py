@@ -355,3 +355,42 @@ class MMAttribute (MMAttributeContainer):
        yield self._keymap(name) 
   
   itervalues = __iter__ 
+
+
+#        Since MMUnstorableAttribtes doesn't honor the owner
+#        properties of MMAttributes, they shouldn't be considered
+#        MMAttributes, so we might want to invert the inheritance
+#        relationship later.
+# 
+#        However there is an argument for this way round as 
+#        isinstance(MMAttribute,MMUnstorableAttribute()) should
+#        probably be true -  as it is  a more readable (and obviously correct)
+#        test, for both object types.
+      
+class MMUnstorableAttribute(MMAttribute):
+    """A temporary attribute which is only weakly bound to it's owner.
+
+    Specifically a MMUnstorableAttribute is never written back
+    to it's owning object, and consequently it's value is never _compose()'d
+
+    Essentially this attribtue *lies* about having an owner.
+
+    The value of this to allow generic editor code to set up Values
+    before writing them to the schema.
+    """
+    #The implementation of this is trivial we just need to disable
+    #the writeback method. But we also force out own compose immediately
+    #after init, as that help afew types set themselves up.
+
+    #
+    # If you write a MMAttributeValue type which uses compose
+    # I strongly advise in your unittests you test it as part
+    # of a MMUnstorableAttribute as well.
+    #
+
+    def __init__(self,*args,**kwargs):
+        super(MMUnstorableAttribute,self).__init__(*args,**kwargs)
+        self._compose()
+
+    def _writeback(self):
+        pass

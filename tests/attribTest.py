@@ -150,6 +150,35 @@ class attribTest(unittest.TestCase):
         self.assertRaises(KeyError,m.__getitem__,"fake")
         self.assertEquals(str(m["encoded"]),"String")
 
+    def testUnstorableCreate(self):
+       m = container()
+       attr=MMUnstorableAttribute("document","test\n----\n\n\nA Message",m)
+       self.assertRaises(KeyError,m.__getitem__,"document")
+       #sys.stderr.write(str(attr.get_raw_rst))
+       self.assertEqual(attr.get_raw_rst(),"test\n----\n\n\nA Message")
+       attr2 =MMUnstorableAttribute("otherdoc",attr.get_value(),m)
+       self.assertRaises(KeyError,m.__getitem__,"otherdoc")
+       self.assertEqual(attr.get_value(),attr2.get_value())
+       self.assertFalse(attr.get_value() is attr2.get_value())
+       attr3 =MMUnstorableAttribute("otherdoc",attr.get_value(),m ,copy = False)
+       self.assertRaises(KeyError,m.__getitem__,"otherdoc")
+       self.assertEqual(attr.get_value(),attr3.get_value())
+       self.assertTrue(attr.get_value() is attr3.get_value())
+ 
+
+    def testUnstoredAttribContainer(self):
+        obj = container()
+        #Create a string attribute and check it doesn't get written back
+        # but can be evaluated.
+        a = MMUnstorableAttribute("name","str",obj)
+        self.assertRaises(KeyError,obj.__getitem__,"name" )
+        self.assertEquals(str(a),"str")
+
+        #Check set_value changes our attribute without modify it's claimed container.
+        a.set_value("a different string")
+        self.assertRaises(KeyError,obj.__getitem__,"name" )
+        self.assertEquals(str(a),"a different string")
+
 
 def getTestNames():
     return [ 'attribTest.attribTest' ] 
