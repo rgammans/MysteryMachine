@@ -159,7 +159,10 @@ class _ref_wx_widget(wx.PyPanel):
         self.label = wx.StaticText(self,-1)
         self.SetValidator(MMRefAttributeValidator( attribute = self.attribute))
         sizer.Add(self.label)
-        sizer.Add(wx.Button(self,self.__class__.ID_OPENBUTTON,label="Open"))
+    
+        openbutton = wx.Button(self,self.__class__.ID_OPENBUTTON,label="Open")
+        openbutton.Enable(hasattr(self.GetTopLevelParent(),"NewSchemaView"))
+        sizer.Add(openbutton)
         sizer.Add(wx.Button(self,self.__class__.ID_CHANGEBUTTON,label="Change.."))
         sizer.Add(wx.Button(self,self.__class__.ID_EXPANDBUTTON,label="Expand"))
 
