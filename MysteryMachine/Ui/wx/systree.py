@@ -31,7 +31,9 @@ from MysteryMachine.schema.MMAttribute import MMAttribute
 from MysteryMachine.schema.MMObject import MMObject
 from MysteryMachine.schema.MMSystem import MMSystem
 
-from dialogs import ObjectPicker, EVT_OBJECTPICKED_EVENT
+from dialogs.objectpicker import ObjectPicker, EVT_OBJECTPICKED_EVENT
+from dialogs.newattribute import NewAttributeDialog
+
 import widgets
 import functools
 
@@ -46,6 +48,7 @@ ID_TREECTRL    = NewUI_ID()
 ID_MENU_RENAME = NewUI_ID()
 ID_MENU_NEW_CAT= NewUI_ID()
 ID_MENU_NEW_OBJ= NewUI_ID()
+ID_MENU_NEW_ATTR=NewUI_ID()
 ID_MENU_CHANGE_PARENT= NewUI_ID()
 
 
@@ -78,7 +81,7 @@ _ObjectPopupMenu = wx.Menu()
 _ObjectPopupMenu.Append(ID_MENU_RENAME,"Rename","Change this object's default name")
 _ObjectPopupMenu.Append(ID_MENU_CHANGE_PARENT,"Change Inheritance parent")
 _ObjectPopupMenu.AppendSeparator()
-_ObjectPopupMenu.Append(NewUI_ID(),"New Attribute")
+_ObjectPopupMenu.Append(ID_MENU_NEW_ATTR,"New Attribute")
 
 _popupmenus = { 'MMSystem': _SystemPopupMenu,
                 'MMCategory': _CategoryPopupMenu,
@@ -106,6 +109,7 @@ class TreePanel(wx.Panel):
         wx.EVT_MENU(self,ID_MENU_RENAME, self.onRenameItem)
         wx.EVT_MENU(self,ID_MENU_NEW_CAT,self.onNewCategory)
         wx.EVT_MENU(self,ID_MENU_NEW_OBJ,self.onNewObject)
+        wx.EVT_MENU(self,ID_MENU_NEW_ATTR,self.onNewAttribute)
         wx.EVT_MENU(self,ID_MENU_CHANGE_PARENT,self.onChangeParent)
         self.sizer.Layout()
 
@@ -140,6 +144,10 @@ class TreePanel(wx.Panel):
     def onNewObject(self,evt):
         self.system.NewObject(repr(self.menu_on_item))
         self.tree.updateNode(self.menu_on_itemid,self.menu_on_item)
+        
+    def onNewAttribute(self,evt):
+        dlg = NewAttributeDialog(self,-1,owner = self.menu_on_item ,title ="Enter initial value")
+        dlg.Show()
 
     def onItemActivated(self,evt):
         node = self.tree.GetItemData(evt.GetItem()).GetData()

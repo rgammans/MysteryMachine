@@ -32,7 +32,7 @@ from MysteryMachine.schema.MMSystem import MMSystem
 from MysteryMachine.schema.MMAttribute import MMAttribute
 from MysteryMachine.schema.MMObject import MMObject
 
-import widgets
+import MysteryMachine.Ui.wx.widgets as widgets
 
 
 

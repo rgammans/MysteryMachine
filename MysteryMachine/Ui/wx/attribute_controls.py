@@ -21,7 +21,7 @@
 import wx
 import functools
 
-from dialogs import ObjectPicker, EVT_OBJECTPICKED_EVENT
+from dialogs.objectpicker import ObjectPicker, EVT_OBJECTPICKED_EVENT
 
 _Factory = {}
 
@@ -39,6 +39,11 @@ def GetWidgetFor(attribute, parent = None):
     widget_factory = _Factory[attr_type]
     return widget_factory(parent,attribute)
 
+
+##Create a widget for a Null attribute to prevent crashes..
+def _null(parent,attribute):
+    return wx.Panel(parent,-1)
+_Factory["null"] = _null
 
 class BasicMMAttributeValidator(wx.PyValidator):
     def __init__(self,*args,**kwargs):
