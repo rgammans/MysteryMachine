@@ -45,6 +45,11 @@ class MMListAttribute(MMAttributeValue):
     contain_prefs = { list: 100 }
 
     def __init__(self,*args,**kwargs):
+        ##Set a default value to be overwritten 
+        parts = kwargs.get("parts")
+        if not parts:
+            kwargs["parts"] = {'0element':''}
+
         super(MMListAttribute,self).__init__(self,*args,**kwargs)
         self.special = ["0element"]
         if self.value is not None:

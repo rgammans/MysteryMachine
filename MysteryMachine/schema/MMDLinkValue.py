@@ -228,13 +228,14 @@ class MMDLinkValue(MMAttributeValue):
             if self.anchorp is not None:
                 self.parts["anchor"] = repr(self.anchorp)
             else:
-                if self.obj is None:
-                    raise ValueError("BiDilink needs an object")
-                if partner_name is None:
-                    raise ValueError("BiDiLink needs a foreign target")
-                #Create member variables we can use..
-                self.partner_path =  repr(self.obj).split(":") + partner_name.split(":")
-                self.parts["target"] =  repr(self.obj)+":" + partner_name +", 0"
+                if (self.obj is not None) and  (partner_name is not None):
+                    #Create member variables we can use..
+                    self.partner_path =  repr(self.obj).split(":") + partner_name.split(":")
+                    self.parts["target"] =  repr(self.obj)+":" + partner_name +", 0"
+                else:
+                    ###Fallback to default ctor.
+                    self.parts["anchordist"]="1"
+                    self._process_parts()
         else:
              self._process_parts()
 

@@ -315,6 +315,10 @@ class MMAttributeValue_BasicText(MMAttributeValue):
 
 
     def __init__(self,*args,**kwargs):
+        ##Set a default value to be overwritten 
+        parts = kwargs.get("parts")
+        if not parts:
+            kwargs["parts"] = {'txt':''}
         MMAttributeValue.__init__(self,*args,**kwargs)
         #Get passed in value.
         if self.value is not None:
@@ -367,6 +371,10 @@ class MMAttributeValue_MMRef(MMAttributeValue):
     contain_prefs = { MMBase: 50 }
 
     def __init__(self,*args,**kwargs):
+         ##Set a default value to be overwritten 
+        parts = kwargs.get("parts")
+        if not parts:
+            kwargs["parts"] = {'obj':''}
         super(MMAttributeValue_MMRef, self).__init__(*args,**kwargs)
         if isinstance(self.value,MMBase):
             #Get string represenation of the object.
@@ -374,9 +382,11 @@ class MMAttributeValue_MMRef(MMAttributeValue):
             self.parts['obj'] = repr(self.value)
             
             self.logger.debug( "MMA-O:init->%s<--" % self.parts['obj'])
-        if not self._validate(): raise Error()    
         #All ok.
         self.exports += [ "get_object" ]
+
+    def _compose(self,obj = None):
+        if not self._validate(obj): raise Error()    
 
     def _validate(self, obj = None):
         objref = None
@@ -395,6 +405,9 @@ class MMAttributeValue_MMRef(MMAttributeValue):
         ##TODO Consider caching the return result.
   #      self.logger.debug( "refobj->%s<--" % attr)
         pstr = self.get_raw(obj)
+        #Special case answer.
+        if pstr == "": return obj.get_root() 
+
         self.logger.debug( "MMA-O:go:pstr  ->%s<--" % pstr)
         objref = Grammar(obj).parseString(pstr)[0]
   #      self.logger.debug( "ret = %s, class = %s" % (objref , objref.__class__ ))
