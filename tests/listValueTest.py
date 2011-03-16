@@ -240,7 +240,27 @@ class ListValTest(unittest.TestCase):
 
 
 
+    def testValueCopy(self):
+        #Test appending to a non-emptylist
+        val  = MMListAttribute(value =  [ "first" , "second" , "third" ] )
+        obj  = ObjectProxy()
+        obj["list"] = val
+        obj["text"] = "some text"
+        #Check values from initialisation
+        self.assertEquals(obj["list"].count() ,3 )   
+        obj["list"][2] = obj["text"]
+        obj["list"].append( obj["text"])
+        self.assertEquals(str(obj["list"][0]) ,"first" )   
+        self.assertEquals(str(obj["list"][1]) , "second" )   
+        self.assertEquals(str(obj["list"][2]) , "some text" )   
+        self.assertEquals(str(obj["list"][3]) , "some text" )   
 
+        #Test appending to an empty list
+        val2  = MMListAttribute(value =  [ ] )
+        obj["l2"] = val2
+        obj["l2"].append(obj["text"])
+        self.assertEquals(str(obj["l2"][0]) ,"some text" )   
+        
 
     def testKey(self):
         a = ListKey()

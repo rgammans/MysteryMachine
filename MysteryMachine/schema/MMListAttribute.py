@@ -35,8 +35,6 @@ except:
     izip_longest = functools.partial(map,None)
 
 
-
-
 class MMListAttribute(MMAttributeValue):
     """
     An attribute value type which provides an ordered list of strings.
@@ -58,7 +56,9 @@ class MMListAttribute(MMAttributeValue):
             for item in self.value:
                 self.append(item)
 
-        self.exports+= ["GetStableIndex", "__iter__" , "__contains__", "__len__", "__getitem__","__setitem__","__delitem__","count","extend","insert","append" ]
+        self.exports+= ["GetStableIndex", "__iter__" , "__contains__", 
+                        "__len__", "__getitem__","__setitem__","__delitem__",
+                        "count","extend","insert","append" ]
 
     def _elementkeys(self):
         ##Returns the elements of the array - remove any special parts
@@ -106,7 +106,7 @@ class MMListAttribute(MMAttributeValue):
 
     def extend(self, iter , obj = None):
         for i in iter:
-            self.append(i)
+           self.append(i,obj)
 
     def insert(self,index,item , obj = None):
         klist = sorted(self._elementkeys())
@@ -116,13 +116,14 @@ class MMListAttribute(MMAttributeValue):
             key_a = None 
         key_b = klist[index]
         key   = str(_Key(key_a).between(key_b))
-        self._write(key,item,obj)
+
+        if obj is not None: obj[key] = item
+        else: self._write(key,item,obj)
+
+
 
     def append(self,item, obj = None):
-        key = self._key_append()
-        self._write(key,item,obj)
 
-    def _key_append(self):
         lastkey = None
         try:
             lastkey = sorted(self._elementkeys(),reverse=True)[0]
@@ -131,8 +132,10 @@ class MMListAttribute(MMAttributeValue):
  
         lastkey = _Key(lastkey)
         lastkey = lastkey.next()
+        lastkey = str(lastkey)
 
-        return str(lastkey)
+        if obj is not None: obj[lastkey] = item
+        else: self._write(lastkey,item,obj)
 
     def _write(self,key,value,obj = None):
         self.parts[key] = self._convert_to_str(key,value,obj)
@@ -156,6 +159,7 @@ class MMListAttribute(MMAttributeValue):
         data = v.split(":",2)
         return MakeAttributeValue(data[0],
                                   parts= { data[1]: data[2]} )
+
 
 
 class _Key(object):
