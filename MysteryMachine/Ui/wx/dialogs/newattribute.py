@@ -44,6 +44,11 @@ def NewUI_ID():
 def _apply_default(name,default,kwargs):
     if name not in kwargs: kwargs[name] = default
 
+def _get_arg(args,name,default = None):
+    rv = args.get(name,default)
+    if name in args:
+        del args[name]
+    return rv
 
 class NewAttributeDialog(wx.Dialog):
     """This dialog get the initial values for a new attribute.
@@ -55,8 +60,11 @@ class NewAttributeDialog(wx.Dialog):
 
     def __init__(self,parent,id,*args,**kwargs):
         _apply_default('size',(400,400),kwargs)
-        self.parent_node = kwargs.get("owner")
-        del kwargs["owner"]
+        self.parent_node   = _get_arg(kwargs,"owner")
+        self.writemethod   = _get_arg(kwargs,"write",default = "set_value")
+        if self.writemethod not in ("set_value","insert","append"):
+            raise ValueError("write value `%s' not known"%self.writemethod)
+
         super(NewAttributeDialog,self).__init__(parent,id,**kwargs)
         self.typepanels = {}
         self.current_type = None
@@ -70,6 +78,8 @@ class NewAttributeDialog(wx.Dialog):
     
         self.namefield =wx.TextCtrl(self,wx.ID_ANY)       
         self.sizer.Add(self.namefield,0,wx.EXPAND)
+
+        self.namefield.Show(self.writemethod == "set_value")
 
         self.typechoice = wx.Choice(self,self.__class__.ID_CHOICE,choices =sorted(GetAttributeTypeList()) )
         self.sizer.Add(self.typechoice,0,wx.EXPAND)
@@ -116,7 +126,11 @@ class NewAttributeDialog(wx.Dialog):
     def onOK(self,event):
         attribute , currentpanel = self.typepanels[self.current_type]
         attribute_name = self.namefield.GetValue()
-        self.parent_node[attribute_name] = attribute
+        if self.writemethod == "set_value": self.parent_node[attribute_name] = attribute
+        if self.writemethod == "append": self.parent_node.append(attribute)
+        #TODO
+        #if self.writemethod == "insert": self.parent_node.insert(XXX,attribute)
+
         self.Close()
         self.Destroy()
 

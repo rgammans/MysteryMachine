@@ -21,7 +21,6 @@
 import wx
 import functools
 
-from dialogs.objectpicker import ObjectPicker, EVT_OBJECTPICKED_EVENT
 
 _Factory = {}
 
@@ -104,11 +103,21 @@ _Factory["simple_utf8"] = simple_wx_widget
 
 
 class _list_wx_widget(wx.PyPanel):
+    ID_APPENDBUTTON = NewUI_ID()
     def __init__(self,parent,attribute):
         super(_list_wx_widget,self).__init__(parent,-1)
+        self.attribute = attribute
         self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
-        sizer = wx.FlexGridSizer(wx.VERTICAL,3,len(attribute))
+        sizer = wx.FlexGridSizer(wx.VERTICAL,5,len(attribute))
         self.SetSizer(sizer) 
+        self.newbutton = wx.Button(self,self.__class__.ID_APPENDBUTTON,label="Append")
+        sizer.Add(self.newbutton)
+        wx.EVT_BUTTON(self,self.__class__.ID_APPENDBUTTON,self.onAppend)
+        sizer.Add(wx.Panel(self,wx.ID_ANY))
+        sizer.Add(wx.Panel(self,wx.ID_ANY))
+        sizer.Add(wx.Panel(self,wx.ID_ANY))
+        sizer.Add(wx.Panel(self,wx.ID_ANY))
+
         i = 0
         for element in attribute:
             index_label = wx.StaticText(self,ID_LABEL)
@@ -120,7 +129,15 @@ class _list_wx_widget(wx.PyPanel):
             sizer.Add(index_label)
             sizer.Add(stable_idx)
             sizer.Add(data)
+            sizer.Add(wx.Button(self,wx.ID_ANY,label="Insert After"))
+            sizer.Add(wx.Button(self,wx.ID_ANY,label="Delete"))
             i += 1
+
+    def onAppend(self,evt):
+       from dialogs.newattribute import NewAttributeDialog
+       dlg = NewAttributeDialog(self,-1,owner = self.attribute ,title ="Enter initial value",
+                                write = "append")
+       dlg.Show()
 
 _Factory["list"]      = _list_wx_widget
 
@@ -170,6 +187,7 @@ class _ref_wx_widget(wx.PyPanel):
         wx.EVT_BUTTON(self,self.__class__.ID_OPENBUTTON,self.onOpenTarget)
     
     def onChangeTarget(self,evt): 
+        from dialogs.objectpicker import ObjectPicker
         dlg = ObjectPicker(self,-1,title ="Chose new target",system = self.attribute.get_root(),
                             action = self.GetValidator().UpdateValue)
         dlg.Show()
