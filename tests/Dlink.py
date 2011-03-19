@@ -207,8 +207,26 @@ class DlinkTests(unittest.TestCase):
         self.assertEquals(self.object2["usobjlink1"].get_object(),self.object1)
         self.assertEquals(self.dummyparent["usobjlink1"].get_object(),None)
         self.assertEquals(self.dummyparent["usobjlink1"].get_anchor(),self.dummyparent)
+    
+    def testSetValueMovingAnchor(self):
+        self.dummyparent["anchor"] = dlk.CreateAnchorPoint(self.dummyparent)
+        self.assertEquals(self.dummyparent["anchor"].get_anchor(),self.dummyparent)
+        self.dummyparent["anchor"].set_value(dlk.CreateAnchorPoint(self.system["Template"]))
+        self.assertEquals(self.dummyparent["anchor"].get_anchor(),self.system["Template"])
+        self.dummyparent["anchor"].set_value(dlk.CreateAnchorPoint(self.dummyparent["anchor"]))
+        self.assertEquals(self.dummyparent["anchor"].get_anchor(),self.dummyparent["anchor"])
+        self.dummyparent["anchor"].set_value(dlk.CreateAnchorPoint(self.dummyparent))
+        self.assertEquals(self.dummyparent["anchor"].get_anchor(),self.dummyparent)
 
-
+    def testSetValueMovingAnchorInUnstorable(self):
+        attr = MMUnstorableAttribute("foo", dlk.CreateAnchorPoint(self.object1) , self.object1)
+        self.assertEquals(attr.get_anchor(),self.object1)
+        attr.set_value(dlk.CreateAnchorPoint(self.system["Dummy"]))
+        self.assertEquals(attr.get_anchor(),self.system["Dummy"])
+        attr.set_value(dlk.CreateAnchorPoint(self.object1))
+        self.assertEquals(attr.get_anchor(),self.object1)
+        
+        
 
 def getTestNames():
 	return [ 'Dlink.DlinkTests' ] 

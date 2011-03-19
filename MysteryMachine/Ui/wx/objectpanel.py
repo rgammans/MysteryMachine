@@ -164,7 +164,7 @@ class _attribute_section(wx.PyPanel):
         self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
         self.attribute = attribute
         self.top = top_object
-        at_top = self.attribute.get_owner() is top_object
+        at_top = self.attribute.get_ancestor() is top_object
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         label = wx.StaticText(self,-1,label = self.attribute.name)
@@ -181,7 +181,7 @@ class _attribute_section(wx.PyPanel):
     def onDelete(self,evt):
         print "on-delete"
         name = self.attribute.name
-        owner =self.attribute.get_owner()
+        owner =self.attribute.get_ancestor()
         del owner[name]
         self.GetParent().GetParent().TransferDataToWindow()
 

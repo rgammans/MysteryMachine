@@ -263,7 +263,7 @@ class MMAttributeValue (MMBase ):
         if attr is None:
             grammar.parse(self.get_raw_rst())
         else:
-            attr.owner.parser.ProcessRawRst(self.get_raw_rst())
+            attr.get_ancestor().parser.ProcessRawRst(self.get_raw_rst())
     except:
         ok = False
     return ok

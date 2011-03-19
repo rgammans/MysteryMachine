@@ -74,6 +74,16 @@ class MMObject (MMAttributeContainer):
     self.parser = MMParser(self)
     self.logger = logging.getLogger("MysteryMachine.schema.MMObject")
 
+
+  def get_ancestor(self):
+    """Return the object category node
+
+    Technically objects are 'owned' by the system, but category
+    nodes are their ancestor.
+    """
+    category, id = self.name.split(":")
+    return self.owner[category]
+
   def _make_attr(self,name):
       attrval = self.store.GetAttribute(name)
       t,p = attrval

@@ -108,7 +108,16 @@ class complexValTest(unittest.TestCase):
         obj = None
         self.system =None
         shutil.rmtree(path)
- 
+
+    def UnstorableLinkList(self): 
+        attr = MMUnstorableAttribute(".temp",[],self.object)
+        self.assertEquals(attr.get_type(),"list")
+        attr.append(dlk.CreateAnchorPoint(self.object))
+        self.assertRaises(KeyError,self.object.__getitem__,".temp")
+        self.object2["link2"] = dlk.CreateAnchorPoint(self.object2)
+        attr[0] = dlk.ConnectTo (self.object2["link2"])
+        self.assertRaises(KeyError,self.object.__getitem__,".temp")
+        self.assertEqual(self.object2["link"].get_partner(),None)
 
 def getTestNames():
     return [ 'complexValueBugs.complexValTest' ]

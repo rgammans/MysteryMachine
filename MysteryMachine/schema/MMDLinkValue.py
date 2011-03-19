@@ -166,7 +166,9 @@ def _container_walk(root,path):
 
 
 def _walk_back(obj,dist):
-    for i in range(dist): obj = obj.owner
+    #FIXME Fails in the case of categories, as an object's owner is the system not it's
+    #      category. Hmm.
+    for i in range(dist): obj = obj.get_ancestor()
     return obj 
 
 def CreateBiDiLink(obj1,attrname1,obj2,attrname2):
@@ -300,8 +302,12 @@ class MMDLinkValue(MMAttributeValue):
             self.partner_path=attributename
        else:
             self.partner_path = None
+            if "anchor" in self.parts:
+                self.anchordist = None
+                if repr(self.anchorp) != self.parts["anchor"]: self.anchorp = None
             if "anchordist" in self.parts:
                 self.anchordist   = int(self.parts["anchordist"])
+
 
     def _compose(self,obj = None ):
         if self.valid: return
@@ -406,9 +412,9 @@ class MMDLinkValue(MMAttributeValue):
 
         Returns None if disconnected.
         """
-        if not self.obj:
+        if self.obj is None:
             self.obj = self.get_partner(obj)
-            if self.obj: self.obj =self.obj.get_anchor()
+            if self.obj is not None: self.obj =self.obj.get_anchor()
         return self.obj
             
 
@@ -436,7 +442,7 @@ class MMDLinkValue(MMAttributeValue):
         (if we have one) should point. If not the item to which we refer out partner
         to when we connect."""
         if obj is None: raise ValueError("Anchor is now relative - must pass home object")
-        if not self.anchordist:
+        if self.anchordist is None:
             if self.anchorp is not None: return self.anchorp
             else: return _container_walk(obj.get_root(),self.parts["anchor"].split(":"))
         return _walk_back(obj,self.anchordist)

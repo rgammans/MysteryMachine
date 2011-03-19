@@ -97,6 +97,13 @@ class MMBase(object):
         root = root.owner
     return root
 
+  def get_ancestor(self):
+    """Return the ancestor node in the schema heirachy.
+
+    This is usually the owner.
+    """
+    return self.owner
+
   def canonicalise(self,name):
     ##This keeps it synchronized with the definition
     # of identifier in parsetools/grammar.py
