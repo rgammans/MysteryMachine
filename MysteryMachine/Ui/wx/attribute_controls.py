@@ -148,15 +148,15 @@ class MMRefAttributeValidator(wx.PyValidator):
         self.attribute = kwargs.get('attribute')
 
     def Clone(self): 
-       return MMRefAttributeValidator(attribute = self.attribute )
+       return self.__class__(attribute = self.attribute )
 
     def Validate(self): 
         return True 
 
     def TransferToWindow(self):
         print "link update"
-        self.GetWindow().label.SetLabel("Reference to " + str(self.attribute.getSelf()))
-        self.GetWindow().Layout()
+        self.GetWindow().SetLabel("Reference to " + str(self.attribute.getSelf()))
+        self.GetWindow().GetParent().Layout()
         return True 
 
     def UpdateValue(self,new_value):
@@ -170,11 +170,14 @@ class _ref_wx_widget(wx.PyPanel):
     ID_EXPANDBUTTON = NewUI_ID()
     def __init__(self,parent,attribute):
         super(_ref_wx_widget,self).__init__(parent,wx.ID_ANY)
+        self.attribute = attribute
+        self.buildUI()
+
+    def buildUI(self):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.SetSizer(sizer)
-        self.attribute = attribute
         self.label = wx.StaticText(self,-1)
-        self.SetValidator(MMRefAttributeValidator( attribute = self.attribute))
+        self.label.SetValidator(MMRefAttributeValidator( attribute = self.attribute))
         sizer.Add(self.label)
     
         openbutton = wx.Button(self,self.__class__.ID_OPENBUTTON,label="Open")
@@ -189,7 +192,7 @@ class _ref_wx_widget(wx.PyPanel):
     def onChangeTarget(self,evt): 
         from dialogs.objectpicker import ObjectPicker
         dlg = ObjectPicker(self,-1,title ="Chose new target",system = self.attribute.get_root(),
-                            action = self.GetValidator().UpdateValue)
+                            action = self.label.GetValidator().UpdateValue)
         dlg.Show()
 
     def onOpenTarget(self,evt):
@@ -198,6 +201,92 @@ class _ref_wx_widget(wx.PyPanel):
 
 _Factory["ref"]      = _ref_wx_widget
 
-#Bidi could do with a better widget that understands anchor points,
-# but this will do for now. 
-_Factory["bidilink"]      = _ref_wx_widget
+
+class BidiAnchorValidator(wx.PyValidator):
+    def __init__(self,*args,**kwargs):
+        super(BidiAnchorValidator,self).__init__(*args)
+        self.attribute = kwargs.get('attribute')
+
+    def Clone(self): 
+       return self.__class__(attribute = self.attribute )
+
+    def Validate(self):
+        return True
+
+    def TransferToWindow(self):
+        anchor = self.attribute.get_anchor()
+        print "bidi anc - TFW %s"%anchor.name
+        if anchor is not None:
+            self.GetWindow().SetStringSelection(anchor.name)
+            self.GetWindow().Layout()
+        return True
+   
+    def TransferFromWindow(self):
+        name = self.GetWindow().GetStringSelection()
+        print "TFW , %s"%name        
+        node = self.attribute
+        while node is not None:
+            if name == node.name:
+                import MysteryMachine.schema.MMDLinkValue as dlk
+                self.attribute.set_value(dlk.CreateAnchorPoint(node))
+                break
+            try:
+                node = node.get_ancestor()
+            except AttributeError: node = None
+        self.TransferToWindow()
+
+class BidiDestValidator(MMRefAttributeValidator):
+    def TransferToWindow(self):
+        super(BidiDestValidator,self).TransferToWindow()
+        #Disable the anchor movement of the reference is set.
+        self.GetWindow().GetParent().anchors.Enable(self.attribute.get_object() is None)
+
+    def UpdateValue(self,new_value):
+        print "bdi-UV. %r"%new_value
+        import MysteryMachine.schema.MMDLinkValue as dlk
+        self.attribute.set_value( dlk.ConnectTo(new_value))
+        self.TransferToWindow()
+ 
+class _bidi_wx_widget(_ref_wx_widget):
+    ID_ANCHORCHOICE = NewUI_ID()
+    def __init__(self,parent,attribute):
+        super(_bidi_wx_widget,self).__init__(parent,attribute)
+        #sizer = self.GetSizer()
+
+    def SetSizer(self,sizer):
+        if not self.GetSizer():
+            super(_bidi_wx_widget,self).SetSizer(sizer)
+        else:
+            self.GetSizer().Add(sizer,0,wx.EXPAND)
+
+    def buildUI(self):
+        bidisizer   = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(bidisizer)
+        anchorsizer = wx.BoxSizer(wx.HORIZONTAL)
+        bidisizer.Add(anchorsizer)
+        
+        valid_anchors = self._get_valid_anchors()
+        self.anchors = wx.Choice(self,self.__class__.ID_ANCHORCHOICE,choices = valid_anchors , 
+                                 validator = BidiAnchorValidator(attribute = self.attribute))
+
+        wx.EVT_CHOICE(self,self.__class__.ID_ANCHORCHOICE,functools.partial(_writeback,self.anchors))
+        anchorsizer.Add(wx.StaticText(self,wx.ID_ANY,"Anchor:"))
+        anchorsizer.Add(self.anchors)
+        super(_bidi_wx_widget,self).buildUI()
+        #Change validator for the link dest for one that know how to update Bidi attr's 
+        self.label.SetValidator(BidiDestValidator( attribute = self.attribute))
+        
+
+    def _get_valid_anchors(self):
+        anchors = []
+        node = self.attribute
+        while node is not None:
+            anchors += [ node.name ]
+            try:
+                node = node.get_ancestor()
+            except AttributeError: node = None
+
+        return anchors
+
+
+_Factory["bidilink"]      = _bidi_wx_widget
