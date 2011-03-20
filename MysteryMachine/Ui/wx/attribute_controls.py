@@ -44,31 +44,45 @@ def _null(parent,attribute):
     return wx.Panel(parent,-1)
 _Factory["null"] = _null
 
-class BasicMMAttributeValidator(wx.PyValidator):
+
+class MysterySchemaValidatorBase(wx.PyValidator):
     def __init__(self,*args,**kwargs):
-        super(BasicMMAttributeValidator,self).__init__(*args)
+        super(MysterySchemaValidatorBase,self).__init__(*args)
         self.attribute = kwargs.get('attribute')
+        if self.attribute is not None: self.attribute.register_notify(self.notifychange)        
+
+
+    def __del__(self):
+        if self.attribute is not None: self.attribute.unregister_notify(self.notifychange)        
+
+    def notifychange(self,attribute):
+        assert attribute == self.attribute,"Misrouted notify"
+        print "notified for %r"%self.attribute
+        self.TransferToWindow()
 
     def Clone(self): 
-       return BasicMMAttributeValidator(attribute = self.attribute )
+       return self.__class__(attribute = self.attribute )
 
     def Validate(self): 
         return True 
 
+
+
+class BasicMMAttributeValidator(MysterySchemaValidatorBase):
+    def __init__(self,*args,**kwargs):
+        super(BasicMMAttributeValidator,self).__init__(*args,**kwargs)
+
     def TransferToWindow(self):
-        print "TTW"
         self.GetWindow().SetValue(str(self.attribute))
         return True 
 
     def TransferFromWindow(self):
+        print "text TFW"
         if self.GetWindow().IsModified():
-            print "TFW"
             self.attribute.set_value(self.GetWindow().GetValue())
         return True 
 
-
 def _writeback(ctrl,event): 
-    print "_Writeback"
     ctrl.GetValidator().TransferFromWindow()
 
 ID_ATTRTEXTCTRL = NewUI_ID()
@@ -142,19 +156,11 @@ class _list_wx_widget(wx.PyPanel):
 _Factory["list"]      = _list_wx_widget
 
 
-class MMRefAttributeValidator(wx.PyValidator):
+class MMRefAttributeValidator(MysterySchemaValidatorBase):
     def __init__(self,*args,**kwargs):
-        super(MMRefAttributeValidator,self).__init__(*args)
-        self.attribute = kwargs.get('attribute')
-
-    def Clone(self): 
-       return self.__class__(attribute = self.attribute )
-
-    def Validate(self): 
-        return True 
+        super(MMRefAttributeValidator,self).__init__(*args,**kwargs)
 
     def TransferToWindow(self):
-        print "link update"
         self.GetWindow().SetLabel("Reference to " + str(self.attribute.getSelf()))
         self.GetWindow().GetParent().Layout()
         return True 
@@ -202,20 +208,12 @@ class _ref_wx_widget(wx.PyPanel):
 _Factory["ref"]      = _ref_wx_widget
 
 
-class BidiAnchorValidator(wx.PyValidator):
+class BidiAnchorValidator(MysterySchemaValidatorBase):
     def __init__(self,*args,**kwargs):
-        super(BidiAnchorValidator,self).__init__(*args)
-        self.attribute = kwargs.get('attribute')
-
-    def Clone(self): 
-       return self.__class__(attribute = self.attribute )
-
-    def Validate(self):
-        return True
+        super(BidiAnchorValidator,self).__init__(*args,**kwargs)
 
     def TransferToWindow(self):
         anchor = self.attribute.get_anchor()
-        print "bidi anc - TFW %s"%anchor.name
         if anchor is not None:
             self.GetWindow().SetStringSelection(anchor.name)
             self.GetWindow().Layout()
@@ -223,7 +221,6 @@ class BidiAnchorValidator(wx.PyValidator):
    
     def TransferFromWindow(self):
         name = self.GetWindow().GetStringSelection()
-        print "TFW , %s"%name        
         node = self.attribute
         while node is not None:
             if name == node.name:
@@ -242,7 +239,6 @@ class BidiDestValidator(MMRefAttributeValidator):
         self.GetWindow().GetParent().anchors.Enable(self.attribute.get_object() is None)
 
     def UpdateValue(self,new_value):
-        print "bdi-UV. %r"%new_value
         import MysteryMachine.schema.MMDLinkValue as dlk
         self.attribute.set_value( dlk.ConnectTo(new_value))
         self.TransferToWindow()
