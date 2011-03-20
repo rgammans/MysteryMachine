@@ -118,8 +118,8 @@ class MMAttributeContainer(MMContainer):
             #need this but DLink very much does!. This fixup should then occur
             #before anythini is written to the store.
             attrobj._compose()
-            
             return attrobj
+
         except:
             #Roll back any have complete changes
             (t1, e1, tb1 ) =sys.exc_info()
@@ -256,6 +256,7 @@ class MMAttribute (MMAttributeContainer):
         if str(e): self.logger.warn(e)
         self.valueobj = CreateAttributeValue(val,copy)
      if writeback: self._writeback()
+     self._do_notify()
 
   #This is intend for method lookup
   def __getattr__(self,name):

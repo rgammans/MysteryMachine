@@ -107,13 +107,29 @@ class attribTest(unittest.TestCase):
     def testAttrParentStuff(self):
        p = fakeParent()
        attr=MMAttribute("document","test\n----\n\n\nA Message",p)
-       self.assertTrue(p is attr.get_owner())
-       v = attr.get_value()
 
        attr.set_value("diff")
        self.assertTrue(p.Updated())
        v1 = attr.get_value()
        self.assertEquals("diff",str(v1))
+
+
+    def testNotify(self):
+       def update(obj):
+            print "in_update"
+            update.count+=1
+       update.count = 0
+
+       p = fakeParent()
+       attr=MMAttribute("document","test\n----\n\n\nA Message",p)
+       attr.register_notify(update)
+       self.assertEquals(update.count,0)
+       attr.set_value("diff")
+       self.assertEquals(update.count,1)
+
+       attr.unregister_notify(update)
+       attr.set_value("baz")
+       self.assertEquals(update.count,1)
 
     def testAttribContainer(self):
         m = container()

@@ -33,6 +33,7 @@ import logging
 #For the container base class
 import weakref
 
+
 class MMBase(object):
 
   """
@@ -52,6 +53,7 @@ class MMBase(object):
     @author
     """
     self.logger = logging.getLogger("MysteryMachine.schema")
+    self.notify = []
 
   def getRequiredVersions(self):
     """
@@ -143,6 +145,33 @@ class MMBase(object):
     ##Actually a NULL op in the general case. Overriden where it matters. 
     return self
 
+  def register_notify(self,a_callable):
+    print "register %r"%a_callable
+    if a_callable not in self.notify:
+        self.notify.append(a_callable)
+
+  def unregister_notify(self,a_callable):
+    print "unregister %r"%a_callable
+    self.notify.remove(a_callable)
+
+  def _do_notify(self):
+        #print "running notify"
+        nones = 0
+        to_remove = []
+        for fn in self.notify:
+            #print "Calling %r"%fn
+            #Pass as back to the notify function so it can be shared.
+            if fn is not None:
+                try:
+                    fn(self)
+                #A reference error will occur in fn no longer exists.
+                except ReferenceError, e:
+                    to_remove += [ fn ]
+                #Eat any exceptions from notify.
+                except: pass
+        for entry in to_remove:
+            self.notify.remove(entry)
+                
 
 class MMContainer(MMBase):
     """
@@ -162,6 +191,7 @@ class MMContainer(MMBase):
         try:
             del self.cache[item]
         except KeyError: pass
+        self._do_notify()
 
     def _get_item(self,key,func,*args):
         try:
@@ -172,6 +202,7 @@ class MMContainer(MMBase):
         return item
 
     def _set_item(self,k,v):
+        self._do_notify()
         self.cache[k] = v
-
+    
 

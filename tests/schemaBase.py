@@ -88,6 +88,20 @@ class BaseTest(unittest.TestCase):
             self.assertRaises(KeyError ,m.cache.__getitem__,1)
             self.assertFalse(m._get_item(1,bar,"one") is v)
          
+    def testNotify(self):
+        def update(obj):
+            print "in_update"
+            update.count+=1
+        update.count = 0
+        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml"]) as g:
+            m = MMContainer()
+            v = bar("one")
+            m.register_notify(update)
+            m._set_item(1,v)
+            self.assertEquals(update.count,1)
+            m.unregister_notify(update)
+            m._set_item(1,v)
+            self.assertEquals(update.count,1)
 
 
 def getTestNames():
