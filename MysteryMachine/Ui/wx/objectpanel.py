@@ -30,6 +30,7 @@ from MysteryMachine.schema.MMObject import MMObject
 from MysteryMachine.schema.MMSystem import MMSystem
 
 from attribute_controls import *
+from widgets import NotifyClosure
 
 Ui_Id = wx.ID_HIGHEST
 def NewUI_ID():
@@ -70,6 +71,12 @@ class ObjectPanel(scrolled.ScrolledPanel):
             #Hide empty panel - but leave them to simply our sync algorithm
             if not included:  panel.Show(False)
             current = current.get_parent()
+        
+        self.notify = NotifyClosure(self,self.node_changed)
+        self.notify.register(self.obj)
+
+    def node_changed(self,node):
+        self.TransferDataToWindow()
 
     def _syncUi(self):
         current = self.obj
