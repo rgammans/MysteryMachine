@@ -146,20 +146,28 @@ class MMBase(object):
     return self
 
   def register_notify(self,a_callable):
-    print "register %r"%a_callable
+    """Register a callable to be invoke when the node changes.
+
+    This is intended for use by users of the schema, rather than in-tree
+    users. Added a registration DOES NOT add a refcount to the schema
+    node's object and registrations are not (guaranteed to be) persistent
+    across object rebuilds.
+
+    As a result you _must_ maintain a seperate reference to any node that
+    you register notifies on.
+
+    An example application is include timely Ui update."""
     if a_callable not in self.notify:
         self.notify.append(a_callable)
 
   def unregister_notify(self,a_callable):
-    print "unregister %r"%a_callable
+    """Unregister a callable to be invoke when the node changes."""
     self.notify.remove(a_callable)
 
   def _do_notify(self):
-        #print "running notify"
         nones = 0
         to_remove = []
         for fn in self.notify:
-            #print "Calling %r"%fn
             #Pass as back to the notify function so it can be shared.
             if fn is not None:
                 try:
@@ -167,11 +175,21 @@ class MMBase(object):
                 #A reference error will occur in fn no longer exists.
                 except ReferenceError, e:
                     to_remove += [ fn ]
-                #Eat any exceptions from notify.
-                except: pass
+                #warn about any exceptions from notify.
+                except Exception, e: 
+                    self.logger.warn(e)
         for entry in to_remove:
             self.notify.remove(entry)
                 
+
+  def __del__(self):
+      #Provide a warning if there are still remaining registrations
+      #when this object is destroyed.
+      #
+      #This occurs when a client has follow the instructions in
+      # register_notify.__doc__  and kept their own reference.
+      if hasattr(self,"notify") and self.notify: self.logger.warn("Notify still active at del:%s"%self.notify)
+
 
 class MMContainer(MMBase):
     """
@@ -202,7 +220,6 @@ class MMContainer(MMBase):
         return item
 
     def _set_item(self,k,v):
-        self._do_notify()
         self.cache[k] = v
     
 

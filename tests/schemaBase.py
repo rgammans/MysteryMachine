@@ -96,13 +96,16 @@ class BaseTest(unittest.TestCase):
         with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml"]) as g:
             m = MMContainer()
             v = bar("one")
+            self.val = v
             m.register_notify(update)
             m._set_item(1,v)
+            m._invalidate_item(1)
             self.assertEquals(update.count,1)
             m.unregister_notify(update)
             m._set_item(1,v)
+            m._invalidate_item(1)
             self.assertEquals(update.count,1)
-
+  
 
 def getTestNames():
 	return [ 'schemaBase.BaseTest' ] 

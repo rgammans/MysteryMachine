@@ -115,6 +115,14 @@ class attribTest(unittest.TestCase):
 
 
     def testNotify(self):
+       def testexpect(obj):
+            self.exception = None
+            try:
+                self.assertEquals(str(obj) , self.val)
+            except Exception, e:
+                self.exception =e
+
+
        def update(obj):
             print "in_update"
             update.count+=1
@@ -123,13 +131,20 @@ class attribTest(unittest.TestCase):
        p = fakeParent()
        attr=MMAttribute("document","test\n----\n\n\nA Message",p)
        attr.register_notify(update)
+       attr.register_notify(testexpect)
        self.assertEquals(update.count,0)
-       attr.set_value("diff")
-       self.assertEquals(update.count,1)
 
-       attr.unregister_notify(update)
-       attr.set_value("baz")
+       self.val = "diff"
+       attr.set_value(self.val)
        self.assertEquals(update.count,1)
+       if self.exception: raise self.exception
+
+       self.val = "diff"
+       attr.unregister_notify(update)
+       self.val ="baz" 
+       attr.set_value(self.val)
+       self.assertEquals(update.count,1)
+       if self.exception: raise self.exception
 
     def testAttribContainer(self):
         m = container()

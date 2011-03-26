@@ -144,6 +144,7 @@ class MMObject (MMAttributeContainer):
     #Get AttributeValue type object - so it is ready for the storage engine.
     attrvalue = attrobj.get_value()
     self.store.SetAttribute(attrname,attrvalue.get_type(),attrvalue.get_parts())    
+    self._do_notify()
 
   def __delitem__(self, attrname):
     """
@@ -158,12 +159,12 @@ class MMObject (MMAttributeContainer):
     # - we can do this by pulling the ref out of the cache.
    
     attrname = self.canonicalise(attrname) 
-    #Remove from cache 
-    self._invalidate_item(attrname)
     #Remove from backing store. 
     if self.store.HasAttribute(attrname):
         self.store.DelAttribute(attrname)    
- 
+    #Remove from cache 
+    self._invalidate_item(attrname)
+
   def iteritems(self):
         for a in self.store.EnumAttributes():
             if a[0] != '.': yield (a ,self[a])  

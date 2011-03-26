@@ -177,6 +177,46 @@ class ObjectTests(unittest.TestCase):
             self.assertTrue(a in names)
 
 
+
+    def testNotify(self):
+       def testexpect(obj):
+            self.exception = None
+            try:
+                attr = [ x.name for x in obj]
+                for k,v in self.val.iteritems():
+                    self.assertTrue(k in attr,"%s not in attributes"%k)
+                    self.assertEquals(str(obj[k]),v)
+            except Exception, e:
+                self.exception =e
+
+       def update(obj):
+            print "in_update"
+            update.count+=1
+       update.count = 0
+       lastcount = update.count 
+
+       self.object["name"]  = "fred blogs"
+       self.object.register_notify(update)
+       self.object.register_notify(testexpect)
+       self.assertEquals(update.count,lastcount)
+       self.val ={ 'newname':'value'} 
+       self.object['newname']='value'
+       self.assertTrue(update.count > lastcount)
+       lastcount = update.count 
+
+       self.object["name"]  = "fred blogs2"
+       self.assertTrue(update.count > lastcount)
+       if self.exception: raise self.exception
+
+       lastcount = update.count 
+
+       self.object.unregister_notify(update)
+       self.val["another"] ="brick in the wall"
+       self.object["another"] ="brick in the wall"
+       self.assertEquals(update.count,lastcount)
+       if self.exception: raise self.exception
+
+
 def getTestNames():
 	return [ 'Object.ObjectTests' ] 
 

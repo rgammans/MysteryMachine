@@ -118,6 +118,7 @@ class MMAttributeContainer(MMContainer):
             #need this but DLink very much does!. This fixup should then occur
             #before anythini is written to the store.
             attrobj._compose()
+            self._do_notify()
             return attrobj
 
         except:

@@ -200,7 +200,45 @@ class sysTests(unittest.TestCase):
         self.assertEquals(repr(self.sys),rname)
         self.assertEquals(str(self.sys[".defname"]),testname)
 
- 
+
+    def testNotify(self):
+       def testexpected_cats(obj):
+            self.exception = None
+            try:
+                attr = list( obj.EnumCategories())
+                for k in self.cats:
+                    self.assertTrue(k in attr,"%s not in categories"%k)
+            except Exception, e:
+                self.exception =e
+
+       def update(obj):
+            print "in_update"
+            update.count+=1
+       update.count = 0
+       lastcount = update.count
+
+       cats=list(self.sys.EnumCategories())
+       self.assertEqual(len(cats),0)
+       self.sys.register_notify(update)
+       self.sys.register_notify(testexpected_cats)
+       self.cats = ["one","two"]
+       self.sys.NewCategory("one",None)
+       self.sys.NewCategory("two",None)
+       self.assertTrue(update.count > lastcount, "Update not detected")
+       if self.exception: raise self.exception
+       lastcount = update.count
+       #Notify are guaranteed to be preserved if we don't keep
+       # reference to the schema node. So lets inc it refcount.
+       c=self.sys["one"]  
+       self.sys["one"].register_notify(update)
+       o11=self.sys.NewObject("One")
+       self.assertTrue(update.count > lastcount, "Update not detected")
+       lastcount = update.count
+
+       o21=self.sys.NewObject("Two")
+       self.assertEqual(update.count , lastcount, "Update  detected")
+
+
 def getTestNames():
     	return [ 'mmsystemTest.sysTests' ] 
 

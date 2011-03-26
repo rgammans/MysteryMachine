@@ -124,6 +124,7 @@ class MMSystem (MMContainer):
     objlist = list(self.EnumObjects(cat))
     if len(objlist) == 0:
         self.store.DeleteCategory(cat)
+        self._do_notify()
     else: raise "Can't delete non-empty category"
  
   def DeleteObject(self,object):
@@ -202,6 +203,7 @@ class MMSystem (MMContainer):
     CategoryName = self.canonicalise(CategoryName)
     self.store.NewCategory(CategoryName)
     self[CategoryName][".parent"] = defaultparent
+    self._do_notify()
 
   def NewObject(self, category, parent = None , formathelper = None):
     """
@@ -224,6 +226,7 @@ class MMSystem (MMContainer):
         except KeyError: pass
         
     if parent is not None: obj.set_parent(parent)
+    self[category]._do_notify()
     return obj
 
   
