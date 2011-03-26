@@ -31,6 +31,7 @@ from MysteryMachine.schema.MMSystem import MMSystem
 from MysteryMachine.schema.MMAttribute import MMAttribute
 from MysteryMachine.schema.MMObject import MMObject
 
+import functools
 
 
 
@@ -55,6 +56,59 @@ def _node_name(node):
     else:return str(node) 
 
 
+def _pop(seq):
+    try:
+        return seq.pop()
+    except IndexError: pass
+    return None
+
+def _none_guard(value,fn):
+    if value is None: return None
+    return fn(value)
+
+
+class NotifyClosure(object):
+    """Check the target of the notify is non-zero at notify time.
+
+    This object can hold be registered on multiple nodes as
+    a notify target, but it forwards the notify request to a callable
+    passed to __init__.
+
+    The callable should also have a sentinel object (usually self) which
+    evalutes to false in a boolean context if the notify is no logner valid.
+
+    In this case the Closure automatically unregisters itself from all
+    it's nodes.
+
+    The primary use of this is to wrap calls into wx widgets which will
+    become false when the are tidied (deleted) away by the C++ code.
+    """
+    def __init__(self,sentinel,a_callable):
+        self.sentinel = sentinel
+        self.target   = a_callable
+        self.registrations = []
+
+    def __del__(self):
+        assert self.registrations == [] ,"Registration exists at del in %s"%self
+
+    def register(self,node):
+        node.register_notify(self)
+        self.registrations += [ node ]
+
+    def unregister(self,node):
+        node.unregister_notify(self)
+        self.regsitrations.remove(node)
+
+    def unregister_all(self):
+        for node in self.registrations:
+            node.unregister_notify(self)
+        self.registrations = []
+
+    def __call__(self,obj):
+        if self.sentinel:
+            self.target(obj)
+        else: self.unregister_all()
+
 
 class MMTreeView(wx.TreeCtrl):
     def __init__(self,parent,id,*args,**kwargs):
@@ -63,28 +117,105 @@ class MMTreeView(wx.TreeCtrl):
         super(MMTreeView,self).__init__(parent,id,**kwargs)
         self.id = id
 
+        self.notifyclosure = NotifyClosure(self,self.node_notifier)
+
         self.rootItem = self.AddRoot(str(self.system),-1,-1,wx.TreeItemData(obj=self.system))
+        self.notifyclosure.register(self.system)
+        #Use the empty string as the db path for the root node.
+        self.nodes = { '' : self.rootItem }
         self.SetItemHasChildren(self.rootItem,True)
 
         wx.EVT_TREE_ITEM_EXPANDING(self ,self.id,  self.onExpanding )
+        
 
-
+    def __del__(self):
+        print "eek - dangling notifies for %s"%self.nodes.keys()
+ 
+    def Destroy(self):
+        print "in destroy"
+        super(MMTreeView,self).Destroy()
+         
     def onExpanding(self,evt):
         itemid = evt.GetItem()
         localroot = self.GetItemData(itemid).GetData()
         self.updateNode(itemid,localroot)
+    
+    def node_notifier(self,node):
+        print "\tnode_notisy %r"%node
+        if node is self.system:
+            print "\t updating root"
+            return self.updateNode(self.rootItem,self.system)
+
+        node_addr = repr(node)
+        try:
+            itemid = self.nodes[node_addr]
+        except KeyError, e:
+            self.logger.warn("ignoring notify on unknown node %s"%node_addr)
+            print "ignoring notify on unknown node %s"%node_addr
+        else:
+            self.updateNode(itemid,node) 
+    
 
     def updateNode(self,itemid,localroot):
+        print "\t updating item %s"%repr(localroot)
         self.SetItemHasChildren(itemid,False)
-        self.DeleteChildren(itemid)
+        
+        #self.DeleteChildren(itemid)
+        display_items = sorted(self.child_iter(itemid),key = self.GetItemText )
 
         if itemid == self.rootItem:
             iterator = object_iter(localroot,localroot.EnumCategories())
         else:
             iterator = localroot.__iter__()
 
-        try:
-            for element in sorted(iterator,key=_node_name):
-                tmpid = self.AppendItem(itemid,_node_name(element),-1,-1,wx.TreeItemData(obj =element))
+        schema_nodes = sorted(iterator,key=_node_name)
+ 
+        ##Walk both lists backward until they are empty,
+        # each list pass should remove an elemnt from one or both lists
+        # which guarantee we terminate.
+        #
+        # Because the lists are sorted we should meet the matching nodes
+        # in matching order, not doing so means we find insertions and deletions.
+        print "sn %s"%schema_nodes
+        print "di %s"%display_items
+        element = _pop(schema_nodes)
+        child   = _pop(display_items)
+        while (element is not None) or (child is not None):
+       
+            #We now know there is at least one child entry.
+            if element is not None: self.SetItemHasChildren(itemid,True)
+
+            nname = _none_guard(element, _node_name ) 
+            cname = _none_guard(child, self.GetItemText )
+
+            print "%r <->%r = (%s,%s)"%(nname,cname,nname==cname,nname<cname)
+            if nname == cname:
+                #Node in place in tree already, move on to next
+                element = _pop(schema_nodes)
+                child   = _pop(display_items)
+
+            elif nname < cname:
+               #Remove item.
+                oldname = repr(self.GetItemData(child).GetData())
+                self.Delete(child)
+                del self.nodes[oldname] 
+                #move on to next display item
+                child   = _pop(display_items)
+ 
+            else: # nname > cname 
+                #Insert node 
+                if child: 
+                    tmpid = self.InsertItem(itemid,child,nname,-1,-1,wx.TreeItemData(obj =element))
+                else:
+                    tmpid = self.InsertItemBefore(itemid,0,nname,-1,-1,wx.TreeItemData(obj =element))
+                self.nodes[repr(element)] = tmpid
+                self.notifyclosure.register(element)
                 self.SetItemHasChildren(tmpid,True)
-        except TypeError:  pass
+                element = _pop(schema_nodes)
+
+      
+    def child_iter(self,itemid):
+        child, cookie = self.GetFirstChild(itemid)
+        while child.IsOk():
+            yield child
+            child,cookie = self.GetNextChild(itemid,cookie)

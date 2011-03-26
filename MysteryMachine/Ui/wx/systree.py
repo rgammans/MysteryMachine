@@ -139,11 +139,9 @@ class TreePanel(wx.Panel):
                 self.menu_on_item.NewCategory(newstr)
             except BaseException , e:
                 wx.MessageBox(str(e))
-        self.tree.updateNode(self.menu_on_itemid,self.menu_on_item)
         
     def onNewObject(self,evt):
         self.system.NewObject(repr(self.menu_on_item))
-        self.tree.updateNode(self.menu_on_itemid,self.menu_on_item)
         
     def onNewAttribute(self,evt):
         dlg = NewAttributeDialog(self,-1,owner = self.menu_on_item ,title ="Enter initial value")
