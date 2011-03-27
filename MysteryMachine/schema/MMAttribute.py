@@ -40,7 +40,7 @@ class MMAttributeContainer(MMContainer):
     This is specialisation of MMContainer for objects which contain 
     MMAttributes
     """
-    def _set_item(self,attrname  , attrvalue ):
+    def _set_item(self,attrname  , attrvalue , notify = True):
 
         """
         Handle MMAttribute assignment.
@@ -118,7 +118,7 @@ class MMAttributeContainer(MMContainer):
             #need this but DLink very much does!. This fixup should then occur
             #before anythini is written to the store.
             attrobj._compose()
-            self._do_notify()
+            if notify: self._do_notify()
             return attrobj
 
         except:
@@ -306,7 +306,7 @@ class MMAttribute (MMAttributeContainer):
      if '__setitem__' not in self.valueobj.exports:
         raise TypeError("%s is not indexable (MM)" % self.valueobj.__class__)
      
-     attr = self._set_item(name,value)
+     attr = self._set_item(name,value,notify= False)
      self.valueobj.__setitem__(name,attr.get_value(), obj = self)
      self._writeback()
 
@@ -317,6 +317,7 @@ class MMAttribute (MMAttributeContainer):
      self._invalidate_item(name)
      self.valueobj.__delitem__(name,obj = self )
      self._writeback()
+
   def __contains__(self,name):
      if '__contains__' not in self.valueobj.exports:
        raise TypeError("%s is not iterable (MM)" % self.valueobj.__class__)

@@ -240,6 +240,46 @@ class ListValTest(unittest.TestCase):
 
 
 
+    def testNotify(self):
+       def testexpect(obj):
+            self.exception = None
+            try:
+                self.assertEquals(str(obj[-1]) , self.val)
+            except Exception, e:
+                self.exception =e
+
+
+       def update(obj):
+            update.count+=1
+       update.count = 0
+
+       attr  = MMListAttribute(value =  [ "first" , "second" , "third" ] )
+       obj  = ObjectProxy()
+       obj["list"] = attr
+       #keep mandantory ref
+       attrobj = obj["list"]
+       obj["list"].register_notify(update)
+       obj["list"].register_notify(testexpect)
+       self.assertEquals(update.count,0)
+
+       self.val = "diff"
+       attrobj.append(self.val)
+       self.assertEquals(update.count,1)
+       if self.exception: raise self.exception
+        
+       self.val ="third" 
+       del attrobj[-1]
+       self.assertEquals(update.count,3)
+       if self.exception: raise self.exception
+
+       attrobj.unregister_notify(update)
+       self.val ="baz" 
+       attrobj.append(self.val)
+       self.assertEquals(update.count,3)
+       if self.exception: raise self.exception
+       attrobj.unregister_notify(testexpect)
+
+
     def testValueCopy(self):
         #Test appending to a non-emptylist
         val  = MMListAttribute(value =  [ "first" , "second" , "third" ] )

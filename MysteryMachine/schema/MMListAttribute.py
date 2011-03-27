@@ -91,6 +91,7 @@ class MMListAttribute(MMAttributeValue):
     def __delitem__(self,index ,obj = None):
         key = self.GetStableIndex(index,obj)
         del self.parts[key]
+        if obj is not None: obj._do_notify()
 
     def __getitem__(self,index , obj = None):
         key = self.GetStableIndex(index,obj)
@@ -117,7 +118,9 @@ class MMListAttribute(MMAttributeValue):
         key_b = klist[index]
         key   = str(_Key(key_a).between(key_b))
 
-        if obj is not None: obj[key] = item
+        if obj is not None:
+             obj[key] = item
+             obj._do_notify()
         else: self._write(key,item,obj)
 
 
@@ -134,7 +137,9 @@ class MMListAttribute(MMAttributeValue):
         lastkey = lastkey.next()
         lastkey = str(lastkey)
 
-        if obj is not None: obj[lastkey] = item
+        if obj is not None:
+             obj[lastkey] = item
+             obj._do_notify()
         else: self._write(lastkey,item,obj)
 
     def _write(self,key,value,obj = None):
