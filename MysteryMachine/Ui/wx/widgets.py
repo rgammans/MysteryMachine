@@ -111,6 +111,7 @@ class NotifyClosure(object):
 
 
 class MMTreeView(wx.TreeCtrl):
+    """Treectrl widget show a complete MMSystem"""
     def __init__(self,parent,id,*args,**kwargs):
         self.system = _get_argument('system',kwargs)
 
@@ -126,24 +127,18 @@ class MMTreeView(wx.TreeCtrl):
         self.SetItemHasChildren(self.rootItem,True)
 
         wx.EVT_TREE_ITEM_EXPANDING(self ,self.id,  self.onExpanding )
-        
+        wx.EVT_WINDOW_DESTROY(self,self.onDestroy)
 
-    def __del__(self):
-        print "eek - dangling notifies for %s"%self.nodes.keys()
+    def onDestroy(self,event):
+        self.notifyclosure.unregister_all()
  
-    def Destroy(self):
-        print "in destroy"
-        super(MMTreeView,self).Destroy()
-         
     def onExpanding(self,evt):
         itemid = evt.GetItem()
         localroot = self.GetItemData(itemid).GetData()
         self.updateNode(itemid,localroot)
     
     def node_notifier(self,node):
-        print "\tnode_notisy %r"%node
         if node is self.system:
-            print "\t updating root"
             return self.updateNode(self.rootItem,self.system)
 
         node_addr = repr(node)
@@ -151,13 +146,11 @@ class MMTreeView(wx.TreeCtrl):
             itemid = self.nodes[node_addr]
         except KeyError, e:
             self.logger.warn("ignoring notify on unknown node %s"%node_addr)
-            print "ignoring notify on unknown node %s"%node_addr
         else:
             self.updateNode(itemid,node) 
     
 
     def updateNode(self,itemid,localroot):
-        print "\t updating item %s"%repr(localroot)
         self.SetItemHasChildren(itemid,False)
         
         #self.DeleteChildren(itemid)
@@ -176,8 +169,6 @@ class MMTreeView(wx.TreeCtrl):
         #
         # Because the lists are sorted we should meet the matching nodes
         # in matching order, not doing so means we find insertions and deletions.
-        print "sn %s"%schema_nodes
-        print "di %s"%display_items
         element = _pop(schema_nodes)
         child   = _pop(display_items)
         while (element is not None) or (child is not None):
@@ -188,7 +179,6 @@ class MMTreeView(wx.TreeCtrl):
             nname = _none_guard(element, _node_name ) 
             cname = _none_guard(child, self.GetItemText )
 
-            print "%r <->%r = (%s,%s)"%(nname,cname,nname==cname,nname<cname)
             if nname == cname:
                 #Node in place in tree already, move on to next
                 element = _pop(schema_nodes)
