@@ -93,10 +93,8 @@ class ObjectPanel(scrolled.ScrolledPanel):
             else:
                 done_in_current =  [ ]
                 for attrib_panel in base_panel.GetChildren():
-                    print "P",attrib_panel
                     if not isinstance(attrib_panel,_attribute_section): continue
                     attribute = attrib_panel.attribute
-                    print "C",repr(attribute), done_in_current
                     #If the attribute has been removed or overridden remove the panel.
                     if (attribute.name not in current) or (attribute.name in done):
                         base_panel.remove(attrib_panel)
@@ -104,7 +102,6 @@ class ObjectPanel(scrolled.ScrolledPanel):
                 #Add panels for new attributes..
                 done += done_in_current
                 for attrib_obj in current:
-                    print "I",repr(attrib_obj), done
                     if attrib_obj.name in done: continue
                     base_panel.add(_attribute_section(base_panel,-1,attrib_obj,self.obj))
 
