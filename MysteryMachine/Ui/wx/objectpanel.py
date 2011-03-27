@@ -108,7 +108,6 @@ class ObjectPanel(scrolled.ScrolledPanel):
             current = current.get_parent()
 
     def TransferDataToWindow(self):
-        print "Op-TDTW"
         #TODO: Walk thru attributes and hide/show  overridden and new sections
         self._syncUi()
         super(ObjectPanel,self).TransferDataToWindow()

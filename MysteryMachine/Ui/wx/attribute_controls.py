@@ -72,7 +72,6 @@ class MysterySchemaValidatorBase(wx.PyValidator):
 
     def notifychange(self,attribute):
         assert attribute == self.attribute,"Misrouted notify"
-        print "notified for %r"%self.attribute
         self.TransferToWindow()
 
     def Clone(self): 
@@ -92,7 +91,6 @@ class BasicMMAttributeValidator(MysterySchemaValidatorBase):
         return True 
 
     def TransferFromWindow(self):
-        print "text TFW"
         if self.GetWindow().IsModified():
             self.attribute.set_value(self.GetWindow().GetValue())
         return True 
@@ -132,7 +130,7 @@ _Factory["simple_utf8"] = simple_wx_widget
 
 
 class _listitem_wx_widget(wx.PyPanel):
-
+    ID_DELETE = NewUI_ID()
     def __init__(self,parent,item,index):
         super(_listitem_wx_widget,self).__init__(parent,-1)
         self.item = item
@@ -149,8 +147,13 @@ class _listitem_wx_widget(wx.PyPanel):
         sizer.Add(self.stable_idx)
         sizer.Add(self.data,3,wx.EXPAND)
         sizer.Add(wx.Button(self,wx.ID_ANY,label="Insert After"))
-        sizer.Add(wx.Button(self,wx.ID_ANY,label="Delete"))
-        
+        sizer.Add(wx.Button(self,self.__class__.ID_DELETE,label="Delete"))
+        wx.EVT_BUTTON(self,self.__class__.ID_DELETE,self.onDelete)
+
+    def onDelete(self,evt):
+        attr = self.item.get_ancestor()
+        del attr[self.item.name]
+ 
     def get_index(self):
         return int(self.index_label.GetLabel())
  
@@ -180,16 +183,12 @@ class _list_wx_widget(wx.PyPanel):
             i += 1
 
     def node_changed(self,obj):
-        print "list noded changed"
         i =0 
         sizer = self.GetSizer()
         #Use list comprehension to copy elements into a list
         # - ignore the first (append button) element of the list display objects
         display_items = [ x.GetWindow() for x in sizer.GetChildren()][1:]
         index_elements = [x for x in self.attribute]
-
-        print "sn %s"%index_elements
-        print "di %s"%display_items
 
         element = _pop(index_elements)
         child   = _pop(display_items)
@@ -202,7 +201,6 @@ class _list_wx_widget(wx.PyPanel):
             nname = element
             if element is not None: nname = nname.name
 
-            print "%r <->%r = (%s,%s)"%(nname,cname,nname==cname,_compare_names_lt(nname,cname))
             if nname == cname:
                 #Node in place in tree already, move on to next
                 # but we may need to update it's index positions.
@@ -219,7 +217,9 @@ class _list_wx_widget(wx.PyPanel):
                 element = _pop(index_elements)
             else:
                 # Remove item.
-                sizer.Remove(i)
+                child.Destroy()
+                child   = _pop(display_items)
+                    
         self.GetTopLevelParent().Layout()
 
  
