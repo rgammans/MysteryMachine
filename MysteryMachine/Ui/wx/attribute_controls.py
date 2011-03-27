@@ -21,6 +21,7 @@
 import wx
 import functools
 
+from widgets import  NotifyClosure
 
 _Factory = {}
 
@@ -31,6 +32,20 @@ def NewUI_ID():
   return Ui_Id 
 
 ID_LABEL        = NewUI_ID()
+
+
+def _pop(seq):
+    try:
+        return seq.pop(0)
+    except IndexError: pass
+    return None
+
+
+def _compare_names_lt(a,b):
+    """A comparsion function which treats None as the largest possible value"""
+    if a is None: return False
+    if b is None: return True
+    return a < b
 
 def GetWidgetFor(attribute, parent = None):
     """Creates an appropriate bound attribute for the passed widget"""
@@ -116,37 +131,98 @@ _Factory["simple"]      = simple_wx_widget
 _Factory["simple_utf8"] = simple_wx_widget
 
 
+class _listitem_wx_widget(wx.PyPanel):
+
+    def __init__(self,parent,item,index):
+        super(_listitem_wx_widget,self).__init__(parent,-1)
+        self.item = item
+        self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.SetSizer(sizer)
+        self.index_label = wx.StaticText(self,ID_LABEL)
+        self.index_label.SetLabel(str(index))
+        self.stable_idx  = wx.StaticText(self,ID_LABEL)
+        self.stable_idx.SetLabel(item.name)
+        self.data        = GetWidgetFor(item, parent = self)
+
+        sizer.Add(self.index_label)
+        sizer.Add(self.stable_idx)
+        sizer.Add(self.data,3,wx.EXPAND)
+        sizer.Add(wx.Button(self,wx.ID_ANY,label="Insert After"))
+        sizer.Add(wx.Button(self,wx.ID_ANY,label="Delete"))
+        
+    def get_index(self):
+        return int(self.index_label.GetLabel())
+ 
+    def get_stableindex(self):
+        return self.stable_idx.GetLabel()
+ 
+    def set_index(self,idx):
+        self.index_label.SetLabel(str(idx)) 
+
 class _list_wx_widget(wx.PyPanel):
     ID_APPENDBUTTON = NewUI_ID()
     def __init__(self,parent,attribute):
         super(_list_wx_widget,self).__init__(parent,-1)
         self.attribute = attribute
         self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
-        sizer = wx.FlexGridSizer(wx.VERTICAL,5,len(attribute))
-        self.SetSizer(sizer) 
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(sizer)
         self.newbutton = wx.Button(self,self.__class__.ID_APPENDBUTTON,label="Append")
         sizer.Add(self.newbutton)
         wx.EVT_BUTTON(self,self.__class__.ID_APPENDBUTTON,self.onAppend)
-        sizer.Add(wx.Panel(self,wx.ID_ANY))
-        sizer.Add(wx.Panel(self,wx.ID_ANY))
-        sizer.Add(wx.Panel(self,wx.ID_ANY))
-        sizer.Add(wx.Panel(self,wx.ID_ANY))
+        self.notifyclosure = NotifyClosure(self,self.node_changed)
+        self.notifyclosure.register(self.attribute)
 
         i = 0
         for element in attribute:
-            index_label = wx.StaticText(self,ID_LABEL)
-            index_label.SetLabel(str(i))
-            stable_idx  = wx.StaticText(self,ID_LABEL)
-            stable_idx.SetLabel(element.name)
-            data        = GetWidgetFor(element, parent = self)
-
-            sizer.Add(index_label)
-            sizer.Add(stable_idx)
-            sizer.Add(data)
-            sizer.Add(wx.Button(self,wx.ID_ANY,label="Insert After"))
-            sizer.Add(wx.Button(self,wx.ID_ANY,label="Delete"))
+            sizer.Add(_listitem_wx_widget(self,element,i))
             i += 1
 
+    def node_changed(self,obj):
+        print "list noded changed"
+        i =0 
+        sizer = self.GetSizer()
+        #Use list comprehension to copy elements into a list
+        # - ignore the first (append button) element of the list display objects
+        display_items = [ x.GetWindow() for x in sizer.GetChildren()][1:]
+        index_elements = [x for x in self.attribute]
+
+        print "sn %s"%index_elements
+        print "di %s"%display_items
+
+        element = _pop(index_elements)
+        child   = _pop(display_items)
+        while (element is not None) or (child is not None):
+       
+            cname = child and child.get_stableindex()
+            #Can't use the boolean eval trick to protect elements
+            # against None, because they may test as false for their own
+            # reasonns . Or may have no boolean conversion
+            nname = element
+            if element is not None: nname = nname.name
+
+            print "%r <->%r = (%s,%s)"%(nname,cname,nname==cname,_compare_names_lt(nname,cname))
+            if nname == cname:
+                #Node in place in tree already, move on to next
+                # but we may need to update it's index positions.
+                child.set_index(i)
+                element = _pop(index_elements)
+                child   = _pop(display_items)
+                i += 1
+            elif _compare_names_lt(nname,cname):
+               #Insert item
+                newpanel=_listitem_wx_widget(self,element,i)
+                sizer.Insert(i+1,newpanel)
+                newpanel.TransferDataToWindow()
+                i+=1
+                element = _pop(index_elements)
+            else:
+                # Remove item.
+                sizer.Remove(i)
+        self.GetTopLevelParent().Layout()
+
+ 
     def onAppend(self,evt):
        from dialogs.newattribute import NewAttributeDialog
        dlg = NewAttributeDialog(self,-1,owner = self.attribute ,title ="Enter initial value",
