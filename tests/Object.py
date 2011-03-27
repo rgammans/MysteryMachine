@@ -190,7 +190,6 @@ class ObjectTests(unittest.TestCase):
                 self.exception =e
 
        def update(obj):
-            print "in_update"
             update.count+=1
        update.count = 0
        lastcount = update.count 

@@ -124,7 +124,6 @@ class attribTest(unittest.TestCase):
 
 
        def update(obj):
-            print "in_update"
             update.count+=1
        update.count = 0
 
