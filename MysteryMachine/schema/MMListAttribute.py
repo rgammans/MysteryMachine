@@ -110,12 +110,14 @@ class MMListAttribute(MMAttributeValue):
            self.append(i,obj)
 
     def insert(self,index,item , obj = None):
+        key_b = self.GetStableIndex(index)
         klist = sorted(self._elementkeys())
+        index = klist.index(key_b)
         if index >0:
             key_a = klist[index-1]
         else:
             key_a = None 
-        key_b = klist[index]
+    
         key   = str(_Key(key_a).between(key_b))
 
         if obj is not None:

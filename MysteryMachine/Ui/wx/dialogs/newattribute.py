@@ -62,6 +62,7 @@ class NewAttributeDialog(wx.Dialog):
         _apply_default('size',(400,400),kwargs)
         self.parent_node   = _get_arg(kwargs,"owner")
         self.writemethod   = _get_arg(kwargs,"write",default = "set_value")
+        self.name          = _get_arg(kwargs,"item",default = "")
         if self.writemethod not in ("set_value","insert","append"):
             raise ValueError("write value `%s' not known"%self.writemethod)
 
@@ -78,9 +79,9 @@ class NewAttributeDialog(wx.Dialog):
     
         self.namefield =wx.TextCtrl(self,wx.ID_ANY)       
         self.sizer.Add(self.namefield,0,wx.EXPAND)
-
+        self.namefield.SetValue(str(self.name))
         self.namefield.Show(self.writemethod == "set_value")
-
+        
         self.typechoice = wx.Choice(self,self.__class__.ID_CHOICE,choices =sorted(GetAttributeTypeList()) )
         self.sizer.Add(self.typechoice,0,wx.EXPAND)
 
@@ -128,8 +129,7 @@ class NewAttributeDialog(wx.Dialog):
         attribute_name = self.namefield.GetValue()
         if self.writemethod == "set_value": self.parent_node[attribute_name] = attribute
         if self.writemethod == "append": self.parent_node.append(attribute)
-        #TODO
-        #if self.writemethod == "insert": self.parent_node.insert(XXX,attribute)
+        if self.writemethod == "insert": self.parent_node.insert(attribute_name,attribute)
 
         self.Close()
         self.Destroy()

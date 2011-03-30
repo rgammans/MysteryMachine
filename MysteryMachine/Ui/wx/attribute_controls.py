@@ -131,6 +131,7 @@ _Factory["simple_utf8"] = simple_wx_widget
 
 class _listitem_wx_widget(wx.PyPanel):
     ID_DELETE = NewUI_ID()
+    ID_INSERT = NewUI_ID()
     def __init__(self,parent,item,index):
         super(_listitem_wx_widget,self).__init__(parent,-1)
         self.item = item
@@ -146,13 +147,20 @@ class _listitem_wx_widget(wx.PyPanel):
         sizer.Add(self.index_label)
         sizer.Add(self.stable_idx)
         sizer.Add(self.data,3,wx.EXPAND)
-        sizer.Add(wx.Button(self,wx.ID_ANY,label="Insert After"))
+        sizer.Add(wx.Button(self,self.__class__.ID_INSERT,label="Insert Before"))
         sizer.Add(wx.Button(self,self.__class__.ID_DELETE,label="Delete"))
         wx.EVT_BUTTON(self,self.__class__.ID_DELETE,self.onDelete)
+        wx.EVT_BUTTON(self,self.__class__.ID_INSERT,self.onInsert)
 
     def onDelete(self,evt):
         attr = self.item.get_ancestor()
         del attr[self.item.name]
+
+    def onInsert(self,evt):
+       from dialogs.newattribute import NewAttributeDialog
+       dlg = NewAttributeDialog(self,-1,owner = self.item.get_ancestor() ,title ="Enter initial value",
+                                write = "insert",item = self.get_stableindex())
+       dlg.Show()
  
     def get_index(self):
         return int(self.index_label.GetLabel())
