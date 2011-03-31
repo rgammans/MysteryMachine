@@ -93,11 +93,12 @@ class NotifyClosure(object):
 
     def register(self,node):
         node.register_notify(self)
-        self.registrations += [ node ]
+        if node not in self.registrations:
+            self.registrations += [ node ]
 
     def unregister(self,node):
         node.unregister_notify(self)
-        self.regsitrations.remove(node)
+        self.registrations.remove(node)
 
     def unregister_all(self):
         for node in self.registrations:
