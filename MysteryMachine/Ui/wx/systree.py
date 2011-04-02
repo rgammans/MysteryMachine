@@ -149,7 +149,7 @@ class TreePanel(wx.Panel):
 
     def onItemActivated(self,evt):
         node = self.tree.GetItemData(evt.GetItem()).GetData()
-        self.parent.NewSchemaView(node) 
+        self.GetTopLevelParent().NewSchemaView(node) 
 
     def onRightClick(self,evt):
         itemid = evt.GetItem()
