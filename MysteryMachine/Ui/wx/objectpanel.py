@@ -23,8 +23,6 @@ Provides an editor pane for objects
 """
 
 import wx
-import  wx.lib.scrolledpanel as scrolled
-
 
 from MysteryMachine.schema.MMObject import MMObject
 from MysteryMachine.schema.MMSystem import MMSystem
@@ -39,7 +37,7 @@ def NewUI_ID():
   return Ui_Id 
 
 
-class ObjectPanel(scrolled.ScrolledPanel):
+class ObjectPanel(wx.PyPanel):
     def __init__(self,parent,obj):
         super(ObjectPanel,self).__init__(parent,-1,wx.DefaultPosition,wx.Size(0,0))
         self.obj = obj
@@ -48,7 +46,6 @@ class ObjectPanel(scrolled.ScrolledPanel):
         self.TransferDataToWindow()
         self.Layout()
         self.SetAutoLayout(True)
-        self.SetupScrolling()
 
     def getPanelName(self):
         return repr(self.obj)

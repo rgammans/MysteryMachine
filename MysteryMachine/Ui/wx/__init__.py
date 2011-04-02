@@ -34,6 +34,7 @@ import tempfile
 
 import wx
 import wx.aui
+import  wx.lib.scrolledpanel as scrolled
 
 #Change to read this out of the generated file , created from mercurial data.
 DEVELOPERS = [ "Roger Gammans" ]
@@ -120,6 +121,30 @@ class OpenUriDialog(wx.Dialog):
     def onDirBrowse(self,event):
         chosendir = wx.DirSelector("Select system directory")
         self.textctrl.SetValue(chosendir)
+
+
+class ScrolledTab(scrolled.ScrolledPanel):
+    pass
+    def __init__(self,parent,*args,**kwargs):
+        
+        super(scrolled.ScrolledPanel,self).__init__(parent,*args,**kwargs)
+        self.sizer = wx.GridSizer()
+        self.SetSizer(self.sizer)
+        self.innerpanel = None
+
+    def Add(self,panel):
+        self.innerpanel =panel
+        self.GetSizer().Add(panel,1,wx.EXPAND)
+        self.innerpanel.FitInside()
+        self.innerpanel.Show(True)
+        self.Layout()
+        self.SetAutoLayout(True)
+        self.SetupScrolling()
+
+    def getPanelName(self):    
+        return self.innerpanel.getPanelName()
+
+
 
 def _create_new(uri):
     return wx.GetApp().ctx.CreateNew(uri = uri)
@@ -267,8 +292,8 @@ class MainWindow(wx.Frame):
         self.nb.AddPage(panel,panel.getPanelName())
 
 
-    def NewSchemaView(self,schema_node):
-        """Creates a new tab showing schema_node.
+    def GetNewNodePanel(self,parent,schema_node):
+        """Returns a panel for the passed in schema node
 
         schema_node must be a node in a MysteryMachine.schema.
         """
@@ -278,16 +303,30 @@ class MainWindow(wx.Frame):
  
         if isinstance(schema_node,MMAttribute):
             import attributepanel
-            panel = attributepanel.AttributePanel(self, schema_node )
+            panel = attributepanel.AttributePanel(parent, schema_node )
         
         if isinstance(schema_node,MMObject):
             import objectpanel
-            panel = objectpanel.ObjectPanel(self, schema_node )
+            panel = objectpanel.ObjectPanel(parent, schema_node )
 
         if isinstance(schema_node,MMSystem):
             import systree
-            panel = systree.TreePanel(self,schema_node)
+            panel = systree.TreePanel(parent,schema_node)
+        return panel
  
+    def NewSchemaView(self,schema_node):
+        """Creates a new tab showing schema_node.
+
+        schema_node must be a node in a MysteryMachine.schema.
+        """
+        
+        panel = ScrolledTab(self,-1)
+        innerpanel = self.GetNewNodePanel(panel,schema_node)
+        if innerpanel is None:
+             panel.Destroy()
+             return
+        panel.Add(innerpanel)
+        
         if panel: self.AddPanel(panel)
  
 
