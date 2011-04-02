@@ -260,12 +260,19 @@ class _ref_wx_widget(wx.PyPanel):
     ID_EXPANDBUTTON = NewUI_ID()
     def __init__(self,parent,attribute):
         super(_ref_wx_widget,self).__init__(parent,wx.ID_ANY)
-        self.attribute = attribute
+        self.attribute = attribute  
+        self.sizer     = None
         self.buildUI()
 
+    def setupSizer(self):
+        if self.sizer is None:
+            self.sizer = wx.BoxSizer(wx.VERTICAL)
+            self.SetSizer(self.sizer)
+
     def buildUI(self):
+        self.setupSizer()
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.SetSizer(sizer)
+        self.sizer.Add(sizer)
         self.label = wx.StaticText(self,-1)
         self.label.SetValidator(MMRefAttributeValidator( attribute = self.attribute))
         sizer.Add(self.label)
@@ -274,11 +281,35 @@ class _ref_wx_widget(wx.PyPanel):
         openbutton.Enable(hasattr(self.GetTopLevelParent(),"NewSchemaView"))
         sizer.Add(openbutton)
         sizer.Add(wx.Button(self,self.__class__.ID_CHANGEBUTTON,label="Change.."))
-        sizer.Add(wx.Button(self,self.__class__.ID_EXPANDBUTTON,label="Expand"))
-
+        self.expandbutton = wx.Button(self,self.__class__.ID_EXPANDBUTTON,label="Expand")
+        self.exp_panel =None
+        sizer.Add(self.expandbutton)
+            
         wx.EVT_BUTTON(self,self.__class__.ID_CHANGEBUTTON,self.onChangeTarget)
         wx.EVT_BUTTON(self,self.__class__.ID_OPENBUTTON,self.onOpenTarget)
-    
+        wx.EVT_BUTTON(self,self.__class__.ID_EXPANDBUTTON,self.onExpandTarget)
+   
+    def setupTargetPanel(self):
+        if self.exp_panel is not None: return
+
+        myframe = self.GetTopLevelParent()
+        if hasattr(myframe,"GetNewNodePanel"):
+            self.exp_panel = myframe.GetNewNodePanel(self,self.attribute.get_object())
+            self.sizer.Add(self.exp_panel)
+        else: print "error: %s is not what i expected"%myframe
+
+    def onExpandTarget(self,evt):  
+ 
+        if self.expandbutton.GetLabel() == "Expand":
+            self.expandbutton.SetLabel("Collapse")
+            self.setupTargetPanel()
+            self.exp_panel.Show(True)
+        else:
+            self.expandbutton.SetLabel("Expand")
+            self.exp_panel.Show(False)
+
+        self.GetTopLevelParent().Layout()
+     
     def onChangeTarget(self,evt): 
         from dialogs.objectpicker import ObjectPicker
         dlg = ObjectPicker(self,-1,title ="Chose new target",system = self.attribute.get_root(),
@@ -333,17 +364,10 @@ class _bidi_wx_widget(_ref_wx_widget):
         super(_bidi_wx_widget,self).__init__(parent,attribute)
         #sizer = self.GetSizer()
 
-    def SetSizer(self,sizer):
-        if not self.GetSizer():
-            super(_bidi_wx_widget,self).SetSizer(sizer)
-        else:
-            self.GetSizer().Add(sizer,0,wx.EXPAND)
-
     def buildUI(self):
-        bidisizer   = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(bidisizer)
+        self.setupSizer()
         anchorsizer = wx.BoxSizer(wx.HORIZONTAL)
-        bidisizer.Add(anchorsizer)
+        self.sizer.Add(anchorsizer)
         
         valid_anchors = self._get_valid_anchors()
         self.anchors = wx.Choice(self,self.__class__.ID_ANCHORCHOICE,choices = valid_anchors , 
