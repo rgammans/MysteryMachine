@@ -215,7 +215,8 @@ class MainWindow(wx.Frame):
         self.status=wx.StatusBar(self)
         self.status.Enable()
         self.status.Show()
-        
+        self.SetStatusBar(self.status)       
+ 
         #Variable to store references to view objects
         self.nextViewId=ID_VIEW_BASE
 
