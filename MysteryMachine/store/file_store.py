@@ -42,19 +42,32 @@ CATEGORY_SENTINEL_NAME="..attrfile_category"
 OBJECT_SENTINEL_NAME="..attrfile_object"
 
 
-if True:
-        #
+if sys.platform != "win32":
+        # 
         # We don't use this class as it creates more problems than
-        # it solves. We don't need to be sure that the files have
+        # it solves under windows.
+        #
+        # We don't need to be sure that the files have
         # truly hit the disk in any way - except when we save a pack
         # file.
         #
         # The exception to this is when we expect to be unable to 
         # recover using these temporary files after a crash.
         #
-        # At this stage (03/01/2010) this is an additional place
-        # obscure bugs can creep in - so lets disable it..
+        # This has been enable by default for over a year and any
+        # problems under linux have been safely found to be elsewhere,
+        # it is however currently an issue under windows as the final
+        # rename fails as opposed to clobbering the sentinel/previous 
+        # file.
         #
+        # Under windows there is Transactional I/O Api which provides 
+        # MoveFileTransacted() which if called directly allows to replace
+        # the file *and* guarantee atomcity, but is only available on
+        # on Vista and greater.
+        #
+        # Or the Safe file update algorithm for windows is 
+        # docuemnted here:
+        # http://blogs.msdn.com/b/adioltean/archive/2005/12/28/507866.aspx
         class SafeFile(file):
             """
             This class implements Tytso's safe update mechanism.
@@ -397,6 +410,14 @@ class filestore(Base):
             if items[0] == "":
                 items = items[1:]
                 items[0] = "."+items[0]
+            if len(items) < 3: 
+                #If there aren't two periods in the filename then it isn't
+                # an attribute part- they might be objects or sentinel files
+                # unless we are on windows and
+                # someone tried to use and empty part name. Which is
+                # why we don't use empty part names, as they cause trailing 
+                # periods. which windows doesn't like
+                continue
             self.logger.debug( "GA:Candiate-items:%s" %items)
             if items[0] == attrele[-1]:
                 if attrtype == None:

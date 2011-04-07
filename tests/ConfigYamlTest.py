@@ -29,6 +29,7 @@ import unittest
 import types
 import logging
 import sys
+import tempfile
 
 ########################################
 ## DANGER, Will Robinson,  DANGER 
@@ -90,26 +91,30 @@ class ConfigYamlTest(unittest.TestCase):
             self.assertFalse(self.cfg["testlist"] is i)       
 
     def testNoFile(self):
+        tstfile = tempfile.NamedTemporaryFile(suffix=".yaml")
+        tstfile = tstfile.name
         try:
-            os.remove("/tmp/mmtest.yaml") 
+            os.remove(tstfile) 
         except:
             pass
         cfg= ConfigYaml()
-        cfg.read("/tmp/mmtest.yaml")
+        cfg.read(tstfile)
         cfg['test1'] ="foo"
         cfg['test2'] = {'a':'2' }
         cfg.write()
         cfg = None
         cfg1 = ConfigYaml()
-        cfg1.read("/tmp/mmtest.yaml")
+        cfg1.read(tstfile)
         self.assertEquals(cfg1['test1'],"foo")
         self.assertEquals(cfg1['test2'],{'a':'2' })
      
 
     def testTestMode(self):
+        tstfile = tempfile.NamedTemporaryFile(suffix=".yaml")
+        tstfile = tstfile.name
         #Set testmode
         cfg= ConfigYaml()
-        cfg.read("/tmp/mmtest.yaml")
+        cfg.read(tstfile)
         cfg.testmode()
         #Make change
         cfg["new"]="Really!"

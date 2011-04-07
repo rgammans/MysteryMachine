@@ -52,7 +52,7 @@ class filestoreTests(storeTests,unittest.TestCase):
 
     def testCanonicalise(self):
         import os
-        self.assertEqual(self.store.GetCanonicalUri("."),os.getcwd())
+        self.assertEqual(self.store.GetCanonicalUri("."),os.path.normcase(os.getcwd()))
         try:
             import posix
             #Skip test on non posix OS.
@@ -60,19 +60,24 @@ class filestoreTests(storeTests,unittest.TestCase):
         except ImportError:
             pass
         path= tempfile.mkdtemp()
+        symname = tempfile.NamedTemporaryFile()
+        symname = symname.name
         try:
-            os.remove("/tmp/mys-mac-test-symlink")
+            os.remove(symname)
         except OSError:
             pass
-        os.symlink(path,"/tmp/mys-mac-test-symlink")
-        parentpath = os.path.realpath(path+os.sep+"..")
-        self.assertEqual(self.store.GetCanonicalUri("/tmp/mys-mac-test-symlink"),path)
-        self.assertEqual(self.store.GetCanonicalUri("/tmp/mys-mac-test-symlink/.."),parentpath)
-        newpath  = path+os.path.sep+"test"
-        os.mkdir(newpath)
-        self.assertEqual(self.store.GetCanonicalUri("/tmp/mys-mac-test-symlink/test"),newpath)
-        self.assertEqual(self.store.GetCanonicalUri("/tmp/mys-mac-test-symlink/test/.."),path)
-        self.assertEqual(self.store.GetCanonicalUri("/tmp/mys-mac-test-symlink/../test/.."),parentpath)
+        try:
+            os.symlink(path,symname)
+        except AttributeError: pass #Ignore system where os doesn't provide symlink
+        else:
+            parentpath = os.path.realpath(path+os.sep+"..")
+            self.assertEqual(self.store.GetCanonicalUri(symname),path)
+            self.assertEqual(self.store.GetCanonicalUri(symname + os.sep + ".."),parentpath)
+            newpath  = path+os.path.sep+"test"
+            os.mkdir(newpath)
+            self.assertEqual(self.store.GetCanonicalUri(symname + os.sep + "test"),newpath)
+            self.assertEqual(self.store.GetCanonicalUri(symname + os.sep + "test" + os.sep + ".."),path)
+            self.assertEqual(self.store.GetCanonicalUri(symname + os.sep + ".." + os.sep + "test" + os.sep + ".."),parentpath)
 
 
     def test_should_tell_the_difference_between_categories_and_random_dirs(self):
@@ -150,7 +155,8 @@ class test2(filestoreTests):
         self.mpath = prefix + tempfile.mkdtemp(prefix="mysmac")
         self.parentpath = os.path.normpath(os.path.expanduser(self.mpath+os.path.sep+".."))
         self.tmpexists = os.path.exists(self.parentpath)
-        os.makedirs(os.path.expanduser(self.mpath))
+        if not self.tmpexists:
+            os.makedirs(os.path.expanduser(self.mpath))
        
         self.store=filestore("attrfile:"+self.mpath,create = False)
         self.store.set_owner(DummySystem)

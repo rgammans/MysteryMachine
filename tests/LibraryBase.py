@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#   			tests/LibraryBase.py - Copyright Roger Gammans
+#   			grammarTest.py - Copyright Roger Gammans
 # 
 #
 #    This program is free software; you can redistribute it and/or modify
@@ -18,140 +18,115 @@
 #
 # 
 """
-Tests for the MysteryMachine base module.
+Tests for the MysteryMachine.Schema AttributeValue module
 """
 
-from __future__ import with_statement
-
-from MysteryMachine.schema.MMSystem import MMSystem
-from MysteryMachine import *
+from MysteryMachine.ConfigYaml import *
+#Use our own hash class to test for modification.
+from MysteryMachine.ExtensionSecureID import *
 import unittest
 
-import MysteryMachine.utils.path as path
+import types
+import logging
+import sys
 import tempfile
-import zipfile
 
-import mercurial
-import mercurial.verify 
-from mercurial import hg
+########################################
+## DANGER, Will Robinson,  DANGER 
+########################################
+## This test is pretty naff - it
+## depends critically on the current
+## implementation of the yaml module return native dict and lists,
+## rather than another implemantion of them.
+## but the test was quickly copied from the 
+## ConfigDict tests
 
+## I suspect just commenting out the type tests
+## will still leave the a valuable test - as all the 
+## dict actions are sepearatley tested... But still
 
+logging.getLogger("").addHandler(logging.StreamHandler(sys.stderr)) 
 
-class MyUi(object):
-    def mercurial_ui(self):
-        return "MercurialUi"
-
-
-class LibBaseTest(unittest.TestCase):
-
-    def testOptParsing(self):
-        #TODO
-        # write option parsing tests.
+class ConfigYamlTest(unittest.TestCase):
+    def setUp(self):
+        self.id = ExtensionSecureID.fromPathName("tests/test.yaml")
+        self.cfg= ConfigYaml(False)
+        self.cfg.read("tests/test.yaml")
         pass
+    
+    def testRead(self):
+        self.assertEqual(type(self.cfg["testsection"]),dict)
+        self.assertEqual(int(self.cfg["testsection"]["test"]),1)
+        #TODO test __iter__    
+   
+    def testWrite(self):
+        self.assertEqual(type(self.cfg["testsection"]),dict)
+        self.cfg["testsection"]["newval"]=1
+        self.assertEqual(type(self.cfg["testsection"]),dict)
+        self.assertEqual(int(self.cfg["testsection"]["newval"]),1)
 
-    def testExtLibFns(self):
-        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/libtest.yaml", "--testmode"]) as g:
-            #Check correct type.
-            el = g.GetExtLib()
-            self.assertTrue(isinstance(el,ExtensionLib))
-            #Check returns a consistent instance
-            self.assertTrue(el is g.GetExtLib())
+    def testDelete(self):
+        self.assertEqual(type(self.cfg["testsection"]),dict)
+        self.assertEqual(int(self.cfg["testsection"]["test"]),1)
+        del self.cfg["testsection"]["test"]
+        self.assertRaises(KeyError,lambda : self.cfg["testsection"]["test"])
 
-    def testLoadSave0(self):
-        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/libtest.yaml", "--testmode"]) as g:
-            #Load example pack file and test attributes
+    def testDict(self):
+        self.assertEqual(type(self.cfg["extensions"]),dict)
+        self.assertEqual(type(self.cfg["extensions"]["testsection"]),dict)
+        self.assertEqual(int(self.cfg["extensions"]["testsection"]["test"]),1)
+        self.assertEqual(int(self.cfg["extensions"]["value"]),1)
 
-            test1 = g.OpenPackFile("examples/test1.mmpack")
-            for rev in test1.getChangeLog():
-                head = rev
+    def testList(self):
+        self.assertEqual(type(self.cfg["testlist"]),list)
+        self.assertEqual(int(self.cfg["testlist"][0]),1)
+        self.assertEqual(type(self.cfg["testlist"][1]),dict)
+    
+    def testiter(self):
+        for i in self.cfg:
+            self.assertFalse(self.cfg is i)
+        for i in self.cfg["testsection"]:
+            self.assertFalse(self.cfg["testsection"] is i)
+        for i in self.cfg["testlist"]:
+            self.assertFalse(self.cfg["testlist"] is i)       
 
-            self.assertTrue(isinstance(test1,MMSystem))
-            self.assertEqual(len(list(test1.EnumObjects("Items"))),2)
-            self.assertEqual(len(list(test1.getChangeLog())),2)
-        
-            
-            test1.SaveAsPackFile("/tmp/test1.mmpack")
+    def testNoFile(self):
+        tstfile = tempfile.NamedTemporaryFile(suffix=".yaml")
+        tstfile = tstfile.name
+        try:
+            os.remove(tstfile) 
+        except:
+            pass
+        cfg= ConfigYaml()
+        cfg.read(tstfile)
+        cfg['test1'] ="foo"
+        cfg['test2'] = {'a':'2' }
+        cfg.write()
+        cfg = None
+        cfg1 = ConfigYaml()
+        cfg1.read(tstfile)
+        self.assertEquals(cfg1['test1'],"foo")
+        self.assertEquals(cfg1['test2'],{'a':'2' })
+     
 
-            #Open new and old pack files up and compare.
-            newpack = zipfile.ZipFile("/tmp/test1.mmpack","r")
-            dest = tempfile.mkdtemp()
-            path.zunpack(newpack,dest) 
-            # -  This following code assumes a mercurial scm based pack file.
-            ##Unpack the new files...(0
-            repo = hg.repository(g.GetMercurialUi() , dest ) 
-            self.assertTrue(mercurial.verify.verify(repo) is None)
-            #This breaks if our example file has multiple heads! So it must not.
-            #If the repo verifies and the nodeid's are the same , the repo MUST
-            # contain the same data . (Guarantee here are as strong or as weak as SHA1).
-            self.assertEquals(repo.heads(None)[0],head.node())
-
-    def testCreate(self):
-        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/libtest.yaml", "--testmode"]) as g:
-            system = g.CreateNew(scheme = "dict")
-            self.assertFalse(system is None)
-            import MysteryMachine.schema.MMSystem
-            self.assertEquals(type(system),MysteryMachine.schema.MMSystem.MMSystem)
-            self.assertEquals(system.getUri()[0:5] , "dict:")
-            system = g.CreateNew(scheme = "foo", uri="dict:uritest")
-            self.assertFalse(system is None)
-            self.assertEquals(system.getUri() , "dict:uritest")
-            system = g.CreateNew(scheme = "hgafile")
-            system = g.CreateNew(uri = "dict:foo")
-
-    def testLoad1(self):
-        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/libtest.yaml", "--testmode"]) as g:
-            #Load example pack file and test attributes
-
-            test1 = g.OpenPackFile("examples/format1.mmpack")
-            for rev in test1.getChangeLog():
-                head = rev
-
-            self.assertTrue(isinstance(test1,MMSystem))
-            self.assertEqual(len(list(test1.EnumObjects("Items"))),2)
-            self.assertEqual(len(list(test1.getChangeLog())),3)
-        
-            
-            test1.SaveAsPackFile("/tmp/format1.mmpack")
-
-            ##Open new and old pack files up and compare.
-            newpack = zipfile.ZipFile("/tmp/format1.mmpack","r")
-            dest = tempfile.mkdtemp()
-            path.zunpack(newpack,dest) 
-            # -  This following code assumes a mercurial scm based pack file.
-            #Unpack the new files...(0
-            repo = hg.repository(g.GetMercurialUi() , dest ) 
-            self.assertTrue(mercurial.verify.verify(repo) is None)
-            #This breaks if our example file has multiple heads! So it must not.
-            #If the repo verifies and the nodeid's are the same , the repo MUST
-            # contain the same data . (Guarantee here are as strong or as weak as SHA1).
-            self.assertEquals(repo.heads(None)[0],head.node())
-
-
-    def test_should_be_able_to_load_two_systems_concurrently(self):
-        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/libtest.yaml", "--testmode"]) as g:
-            test1 = g.OpenPackFile("examples/format1.mmpack")
-            test2 = g.OpenPackFile("examples/format1.mmpack")
-
-
-    def testContxtMan(self):
-        pass
-
-    def testUi(self):
-        MysteryMachine.MyUi = MyUi
-        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/libtest.yaml", "--testmode",
-                       "--ui=MyUi"]) as g:
-            self.assertNotEquals(g.Ui,None)
-            self.assertEquals(g.GetMercurialUi(),"MercurialUi")
+    def testTestMode(self):
+        tstfile = tempfile.NamedTemporaryFile(suffix=".yaml")
+        tstfile = tstfile.name
+        #Set testmode
+        cfg= ConfigYaml()
+        cfg.read(tstfile)
+        cfg.testmode()
+        #Make change
+        cfg["new"]="Really!"
+        #Release the handle
+        cfg = None
+        cfg1=ConfigYaml()
+        cfg1.read("/tmp.mmtest.yaml")
+        self.assertRaises(KeyError,lambda x:cfg1[x],"new")
 
 def getTestNames():
-	return [ 'LibraryBase.LibBaseTest' ] 
+	return [ 'ConfigYamlTest.ConfigYamlTest' ] 
 
 if __name__ == '__main__':
-    import sys
-    if "--debug" in sys.argv:
-        import logging
-
-        logging.getLogger("MysteryMachine").setLevel(logging.DEBUG)
-        sys.argv.remove("--debug")
     unittest.main()
 
