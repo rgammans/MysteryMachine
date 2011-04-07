@@ -352,15 +352,12 @@ class filestore(Base):
     def HasAttribute(self,attr):
         attrele = self.canonicalise(attr) 
         basepath = os.path.join(self.path,*attrele[:-1])
-        for candidate in os.listdir(basepath):
+        for candidate in glob.iglob(os.path.join(basepath,attrele[-1]+".*")):
             candidate_path = os.path.join(basepath,candidate)
             if not os.path.isfile(candidate_path):
                  continue
             items = candidate.split(".")
-            if items[0] == "":
-                items = items[1:]
-                items[0] = "."+items[0]
-            if items[0] == attrele[-1]: return True
+            return True
 
         return False
 
@@ -405,7 +402,8 @@ class filestore(Base):
         workuri = os.path.join(self.path,*(attrele[:-1]))
         files = {}
         attrtype = None
-        for candidate in os.listdir(workuri):
+        for candidate in glob.iglob(os.path.join(workuri,attrele[-1]+".*")):
+            adir, candidate =os.path.split(candidate)
             items = candidate.split(".")
             if items[0] == "":
                 items = items[1:]
