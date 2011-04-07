@@ -43,19 +43,19 @@ class SystGlobalTest(unittest.TestCase):
         with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/libtest.yaml", "--testmode"]) as g:
 
             packfname = tempfile.NamedTemporaryFile()
+            packfname = packfname.name
             #Create copy of an mmpack file to load.
-            shutil.copy("examples/format1.mmpack",packfname.name)
-            
+            shutil.copy("examples/format1.mmpack",packfname)
             
             #Load example pack file and test attributes
-            test1 = g.OpenPackFile(packfname.name)
+            test1 = g.OpenPackFile(packfname)
           
             #Delete the file 
-            os.unlink(packfname.name)
+            os.unlink(packfname)
             #Do default save which should save it with the orignal filename
             test1.SaveAsPackFile()
             # - check file is recreated.
-            self.assertTrue(os.path.exists(packfname.name))
+            self.assertTrue(os.path.exists(packfname))
 
     def test_should_raise_if_doesnt_have_a_filename_to_save_with(self):
         with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/libtest.yaml", "--testmode"]) as g:
@@ -67,23 +67,25 @@ class SystGlobalTest(unittest.TestCase):
         with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/libtest.yaml", "--testmode"]) as g:
 
             packfname = tempfile.NamedTemporaryFile()
+            packfname = packfname.name
             packfname2 = tempfile.NamedTemporaryFile()
+            packfname2 = packfname2.name 
             #Create copy of an mmpack file to load.
-            shutil.copy("examples/format1.mmpack",packfname.name)
+            shutil.copy("examples/format1.mmpack",packfname)
             
             
             #Load example pack file and test attributes
-            test1 = g.OpenPackFile(packfname.name)
+            test1 = g.OpenPackFile(packfname)
           
             #Delete the file 
-            os.unlink(packfname.name)
+            os.unlink(packfname)
             #Do default save which should save it with the orignal filename
             test1.SaveAsPackFile()
             # - check file is recreated.
-            self.assertTrue(os.path.exists(packfname.name))
+            self.assertTrue(os.path.exists(packfname))
 
-            test1.SaveAsPackFile(packfname2.name)
-            self.assertTrue(os.path.exists(packfname2.name))
+            test1.SaveAsPackFile(packfname2)
+            self.assertTrue(os.path.exists(packfname2))
 
            ## This is commented out until I decide it is
            # correct behaviour..
