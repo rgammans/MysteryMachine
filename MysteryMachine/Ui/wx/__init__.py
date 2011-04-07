@@ -50,7 +50,7 @@ Public License as published by the Free Software Foundation; either version
 """
 
 NAME   =    "MysteryMachine"
-VERSION   = "0.14pre"
+VERSION   = "0.14"
 WEBSITE   = "http://trac.backslashat.org/mysterymachine"
 
 ID_NEW=wx.ID_NEW

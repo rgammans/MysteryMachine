@@ -52,7 +52,9 @@ except ImportError:
 
 DIST_PACKAGES = [ "yapsy" , "MysteryMachine","MysteryMachine.schema",
                  "MysteryMachine.store","MysteryMachine.parsetools",
-                 "MysteryMachine.Ui","MysteryMachine.utils",
+                 "MysteryMachine.Ui",
+                 "MysteryMachine.Ui.wx","MysteryMachine.Ui.wx.dialogs",
+                 "MysteryMachine.utils",
                  "MysteryMachine.policies" , "MysteryMachine.document"  ]
 
 PY_MODULES  = [ 'pyparsing' ]
@@ -60,7 +62,7 @@ PY_MODULES  = [ 'pyparsing' ]
 #Mercurial and pyaprsing (as of 1.5.2 ) don't install with easy_install. 
 EZ_PACKAGES   = ["docutils" , 
 #                 "mercurial" ,
-                 "bpython" , 
+#                 "bpython" ,    # We add bpython back in later...
 #                 "pyparsing > 1.5" ,
                  "PyYaml"]
 
@@ -168,8 +170,10 @@ def test():
 
 @task
 def test_installed():
-    """Run MysteryMachine units tests on the Install MysteryMachine distribution
-        with the default python"""
+    """Run MysteryMachine units tests on the Installed MysteryMachine distribution
+        with the current python"""
+    global PYTHONS
+    PYTHONS = [ sys.executable ]
     _do_test()
 
 def _do_test(path_prefix=[]):
@@ -252,13 +256,6 @@ def src_environ(options):
         #**** NEVER GETS HERE - Relaunch DOES NOT RETURN****
    
     if sys.platform[:3] == 'win':
-        #Bpython doesn't work under windows to remove it from the
-        # deps list
-        if 'bpython' in  options.virtualenv.packages_to_install:
-            options.virtualenv.packages_to_install.remove('bpython')
-        if 'bpython' in options.setup.install_requires:
-            options.setup.install_requires.remove('bpython')
-      
         try:
             ##This is a workaround for issue 40 in virtualenv
             import FixTk
@@ -272,7 +269,11 @@ def src_environ(options):
             options.setup.py_modules += ['FixTk']
         except ImportError:
             pass            
-
+    else:
+        #Bpython is worth install on the Unix & Macs.
+        if 'bpython' not in  options.virtualenv.packages_to_install:
+            options.virtualenv.packages_to_install.append('bpython')
+ 
 @task
 @needs('dst_environ')
 def install_here():
@@ -347,7 +348,7 @@ setup(name ="MysteryMachine",
       packages = DIST_PACKAGES ,
       scripts  = SCRIPTS ,
       py_modules =PY_MODULES,
-      version  = "0.1.3pre", 
+      version  = "0.1.4", 
       install_requires = EZ_PACKAGES,
       url="http://trac.backslashat.org/MysteryMachine",
       author="Roger Gammans",
@@ -355,7 +356,8 @@ setup(name ="MysteryMachine",
       license = "GPLv2",
       entry_points={ 'console_scripts': [
                          "mysterymachine = MysteryMachine.Main:main",
-                         "mmcli          = MysteryMachine.Ui.cli:main"
+                         "mmcli         = MysteryMachine.Ui.cli:main",
+                         "mmwx          = MysteryMachine.Ui.wx:main"
                    ]},
       package_data= paver.setuputils.find_package_data(".", package="paver",
                                             only_in_packages=False),

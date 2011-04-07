@@ -28,6 +28,11 @@ a patched version of yapsy (patch is in the patches directory) and paver then us
 
 to build you own source distribution and install from that.
 
+You will also find it useful to install wxPython and mercurial (at least 1.3) 
+seperately . Similiary bpython is recommended for cli affiondadios on platforms
+which support it.
+
+
 Windows Install Quick Reference
 -------------------------------
 
@@ -36,21 +41,23 @@ other applications want more control I suggest you read all of this README befor
 doing this
 
     1. Download a recent Python (2.6.x is recommended) from www.python.org and install it.
-    2. Download mercurial from  http://bitbucket.org/tortoisehg/thg-winbuild/downloads/ and install it. 
-    3. From the MysteryMachine zip file run 
-            python install -d c:\mysterymachine
+    2. Download a recent wxPython (2.8.10 is recommoned) from www.wxpython.org and install it.
+    3. Download mercurial from  http://bitbucket.org/tortoisehg/thg-winbuild/downloads/ and install it. 
+    4. From the MysteryMachine zip file run 
+            python setup.py install -d c:\mysterymachine
 
-    4. Find where your TCL scripts are stored , this will normally by c:\pythonXX\tcl\tclY.Y
-       then edit c:\mysterymachine\scripts\activate to add this following line at
-       the beginning:-
-            set TCL_LIBRARY=c:\pythonXX\tcl\tclY,Z
-        
-        where X,Y are version numbers in the file names, eg if you have a folder of yout
-        computer called c:\python26\tcl\tcl8.5 you woud add this line:=
-            set TCL_LIBRARY=c:\python26\tcl\tcl8.5
+    5 Add a Link to the mmcli.exe and mmwx.exe scripts to your Start Menu.
 
-    5. Run c:\mysterymachine\scripts\activate
-    6. You ready to go - make sure you  
+
+Installation on Debian/Unbuntu
+------------------------------
+
+    1. Run 'aptitude install python2.6  python-wxgtk2.8 mercurial'
+    2. From the MysteryMachine zip file run 
+            python setup.py install -d /opt/mysterymachine
+
+    3 Add a Link to the /opt/mysterynachine/mmcli and /opt/mysterymachine/binmmwx
+        to your desktop
 
 
 Libraries Required
@@ -59,21 +66,15 @@ Libraries Required
 You will need to install the following Python packages to use the 
 MysteryMachine .
 
-Yapsy > 1.7 : A Patch for versions lower than this can be found patches
 pyparsing > 1.5.0
+mercurial > 1.3.1 
 
 Yapsy 
 '''''
-Yapsy does not currently meet our python3 requirements, and in fact the use of 
-exec, rather than execfile creates a small security race hazard. Wether
-our application's useis sensitive enough to worry about this is a moot point
-though. 
+Yapsy does not currently meet our python3 or other requirements.
 
-Having said that since for python3 we need to fix yapsy - changing it to be
-secure as well strikes me as a good idea.
-
-Additionall MysteryMachine ships with a patched ersion of Yapsy which should
-be backwardly compatible with 1.7 - but add a filter mechanism which is currently
+MysteryMachine ships with a patched version of Yapsy which should
+be backwardly compatible with 1.7 - but adds a filter mechanism which is currently
 used so we ignore UnTrusted plugins.
 
 Pyparsing
@@ -101,7 +102,7 @@ if this  doesn't work, `easy_install mercurial` will download it for you but
 it require python2.X-dev and working C toolchain installed . But that is quite
 common on Unix machines.
 
-I haven't yet worked out the best to get Mercurial installed appropriately on windows,
+I haven't yet worked out the best to get Mercurial installed automatically on windows,
 due to the common lack of Visual Studio , which is required to build the C extension
 parts. However a binary version which can be used a a library can be downloaded from
 http://bitbucket.org/tortoisehg/thg-winbuild/downloads/
@@ -174,3 +175,13 @@ Ui can be started like this:-
 Similiarily this supports auto-completion and pop-up documentation but
 where as Bpython will show the complete docstring, Idle tries to 
 shorten it.
+
+
+GUI
+'''
+
+Your more likely to be interested in running the New MysteryMachine GUI 
+and this can be starting by running the mmwx binary from either the bin
+or scripts directory depending on your platform.
+
+
