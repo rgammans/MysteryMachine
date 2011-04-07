@@ -179,6 +179,15 @@ class MMObject (MMAttributeContainer):
 
   itervalues = __iter__
 
+   
+  def EnumAttributes(self):
+        for key in self.iterkeys():
+            yield key
+        parent = self.get_parent()
+        if parent is not None:
+            for key in self.get_parent().iterkeys():
+                yield key
+
   def __contains__(self,name):
        a = self.store.HasAttribute(name) 
        self.logger.debug( "** %s does %s exist** ", name , ("" if a else "not"))

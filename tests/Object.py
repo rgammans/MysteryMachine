@@ -172,9 +172,20 @@ class ObjectTests(unittest.TestCase):
 
         for k,v in itertools.izip(attrk,attrv):
             self.assertEquals(self.object[k],v)
-
+        
+        #Check contains and iter are consistent.
         for a in attrk:
             self.assertTrue(a in names)
+
+        p=self.object.get_parent()
+        p["attr_none"]="fooo"
+        attrk = list(self.object.EnumAttributes())
+        self.assertEqual(len(attrk),3)
+        #Check contains is false for inherited
+        ok =False
+        for a in attrk:
+            if a not in names: ok = True
+        self.assertTrue(ok,"__contains__ is true for inherited (should be false)")
 
 
 
