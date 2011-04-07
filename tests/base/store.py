@@ -93,7 +93,7 @@ class storeTests(object):
         #   require this to work.
         ##Test deletion if an attribute is applied.
         ##Set an attribute.
-        #attrtuple = ( "simple",{ "":"fred" }  )
+        #attrtuple = ( "simple",{ "a":"fred" }  )
         #self.store.SetAttribute("Two"+":"+o21+":name",*attrtuple)
 
         self.store.DeleteObject("Two"+":"+o21)
@@ -114,11 +114,11 @@ class storeTests(object):
         o21=self.store.NewObject(".Two")
 
         #Set an attribute.
-        attrtuple = ( "simple",{ "":"fred" }  )
+        attrtuple = ( "simple",{ "a":"fred" }  )
         self.store.SetAttribute("One"+":"+o12+":name",*attrtuple)
     
         #Set an another attribute - with a leading dot!
-        attrtupled = ( "simple",{ "":"tom cobbley" }  )
+        attrtupled = ( "simple",{ "a":"tom cobbley" }  )
         self.store.SetAttribute("One"+":"+o12+":.dotfile",*attrtupled)
 
         #Set Attribute in a category
@@ -162,7 +162,7 @@ class storeTests(object):
         self.assertEqual(len(cat1),0)
         
         #Set an attribute - leave attribut set for SCM Interagtion tests
-        attrtuple = ( "simple",{ "":"fred" }  )
+        attrtuple = ( "simple",{ "a":"fred" }  )
         self.store.SetAttribute("One"+":"+o12+":name",*attrtuple)
         self.attrnames =  { "One:"+o12+":name": attrtuple }
            
@@ -196,7 +196,7 @@ class storeTests(object):
         o21store = self.store.GetObjStore("Two:"+o21)
 
         #Set an attribute.
-        attrtuple = ( "simple",{ "":"fred" })
+        attrtuple = ( "simple",{ "a":"fred" })
         o12store.SetAttribute("name",*attrtuple)
 
         #Count attributes.
@@ -238,7 +238,7 @@ class storeTests(object):
         self.store.NewCategory("One")
         self.store.NewCategory("Two")
         self.store.NewCategory("Two:Three")
-        attrtuple = ( "simple",{ "":"fred" }  )
+        attrtuple = ( "simple",{ "a":"fred" }  )
         self.store.SetAttribute("Five",*attrtuple)
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
@@ -275,7 +275,7 @@ class storeTests(object):
         #   require this to work.
         ##Test deletion if an attriibute is applied.
         ##Set an attribute.
-        attrtuple = ( "simple",{ "":"fred" }  )
+        attrtuple = ( "simple",{ "a":"fred" }  )
         #self.store.SetAttribute("Two"+":"+o21+":name",*attrtuple)
 
     

@@ -121,7 +121,7 @@ class filestoreTests(storeTests,unittest.TestCase):
         #   require this to work.
         ##Test deletion if an attribute is applied.
         ##Set an attribute.
-        #attrtuple = ( "simple",{ "":"fred" }  )
+        #attrtuple = ( "simple",{ "a":"fred" }  )
         #self.store.SetAttribute("Two"+":"+o21+":name",*attrtuple)
 
         self.store.DeleteObject("Two"+":"+o21)
