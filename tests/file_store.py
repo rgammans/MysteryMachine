@@ -48,7 +48,7 @@ class filestoreTests(storeTests,unittest.TestCase):
         self.store.lock()
         shutil.rmtree(self.mpath)
         self.store.unlock()
-#        os.rmdir(self.mpath)
+        os.rmdir(self.mpath)
 
     def testCanonicalise(self):
         import os

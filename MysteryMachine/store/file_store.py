@@ -33,6 +33,7 @@ import sys
 import thread
 import threading
 import glob
+import errno
 from contextlib import closing
  
 
@@ -286,9 +287,10 @@ class filestore(Base):
         catpath = os.path.join(self.path , *catpath)
         try:
             os.mkdir(catpath)
-        except OSError:
-            ##FIXME Only discard file exist, still raise perm errors.
-            pass #Eat file exists becuase we it can happen
+        except OSError, e:
+            #Ignore Directory already exists errors .
+            if e.errno != errno.EEXIST:
+                raise
         else:
             sentinel = os.path.join(catpath ,CATEGORY_SENTINEL_NAME )
             #Don't bother with safe file for this - a journalled FS
