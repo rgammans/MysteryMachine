@@ -110,7 +110,7 @@ http://bitbucket.org/tortoisehg/thg-winbuild/downloads/
 
 Bpython
 '''''''
-This package os no longer considerer required as it doesn't work on windows, 
+This package is no longer considerer required as it doesn't work on windows, 
 however it is recommended on those platforms where it does work.
 
 Use easy_install or your OS package manager

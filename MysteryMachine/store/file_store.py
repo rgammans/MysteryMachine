@@ -27,6 +27,7 @@ from MysteryMachine.Exceptions import *
 from MysteryMachine.store.Base import Base
 from MysteryMachine.utils.locks import RRwLock
 from MysteryMachine.utils.path import make_rel 
+from MysteryMachine.store.FileLogger import FileLogger
 
 import os
 import sys
@@ -43,174 +44,6 @@ CATEGORY_SENTINEL_NAME="..attrfile_category"
 OBJECT_SENTINEL_NAME="..attrfile_object"
 
 
-if sys.platform != "win32":
-        # 
-        # We don't use this class as it creates more problems than
-        # it solves under windows.
-        #
-        # We don't need to be sure that the files have
-        # truly hit the disk in any way - except when we save a pack
-        # file.
-        #
-        # The exception to this is when we expect to be unable to 
-        # recover using these temporary files after a crash.
-        #
-        # This has been enable by default for over a year and any
-        # problems under linux have been safely found to be elsewhere,
-        # it is however currently an issue under windows as the final
-        # rename fails as opposed to clobbering the sentinel/previous 
-        # file.
-        #
-        # Under windows there is Transactional I/O Api which provides 
-        # MoveFileTransacted() which if called directly allows to replace
-        # the file *and* guarantee atomcity, but is only available on
-        # on Vista and greater.
-        #
-        # Or the Safe file update algorithm for windows is 
-        # docuemnted here:
-        # http://blogs.msdn.com/b/adioltean/archive/2005/12/28/507866.aspx
-        class SafeFile(file):
-            """
-            This class implements Tytso's safe update mechanism.
-
-            It can also take an R/W lock which it holds as a reader() until complete.
-            The rationale for the reader lock is that multiple SafeFile() can share
-            the lock . Then when you need the filesystem to be quesient stable and
-            in a known state you acquire a writer lock.
-
-            Taking a writer lock is also an effective filesystem barrier.
-            
-            See:
-            http://thunk.org/tytso/blog/2009/03/12/delayed-allocation-and-the-zero-length-file-problem/#comment-1986http://thunk.org/tytso/blog/2009/03/12/delayed-allocation-and-the-zero-length-file-problem/#comment-1986
-             
-            """
-
-            active   = { }
-            dictlock = threading.Semaphore()
-
-            def __init__(self,*args,**kwargs):
-                self.finalname = args[0]
-                (path , file ) = os.path.split(self.finalname)
-                self.realname  = os.path.join(path,"..new."+file)
-                self.lock      = kwargs.get('lock')
-                self.active    = self.__class__.active
-                self.dictlock  = self.__class__.dictlock
-                self.locksync  = threading.Semaphore(0)
-                
-                self.logger = logging.getLogger("MysteryMachine.Store.file_store.SafeFile")
-                #FS Consistency.       
-                try:
-                    os.stat(self.finalname)
-                except:
-                    #Create sentinel file to ensure HasAttribute uptodate.
-                    f = open(self.finalname,"w")
-                    f.close()
-
-                #FIXME
-                # - what happens if realname already exists?
-                   
-               #Keep track of the 'most recent' SafeFile for each
-                # final file. This is to stop us clobbering a later
-                # version with an earlier version in a racing close situation. 
-                #
-                # We also use this dict to maintain a consisent atomic filesystem
-                # view to users who use our open_read() and/or unlink class methods.
-                with self.dictlock:
-                    self.active[ self.finalname] = self
-                newargs = [ self.realname ]
-                newargs.append( *args[1:]) 
-                super(SafeFile,self).__init__(*newargs)
-
-            
-            def threadFn(self):
-                if self.lock:
-                    self.lock.acquire_read()
-                #Let close() complete.
-                self.locksync.release()
-                os.fsync(self.fileno())
-                super(SafeFile,self).close()
-                with self.dictlock:
-                    #Are we still the most recent update to this file.
-                    try:
-                        #Attribute as been deleted before fsync completed.
-                        if self.active[self.finalname] == "unlink":
-                            os.unlink(self.realname) 
-                            #Leave the dict entry in case of multiple outstanding 
-                            # updates.
-                        if self.active[self.finalname] == self:
-                            os.rename(self.realname,self.finalname)
-                            del self.active[self.finalname]
-                    except KeyError, e: pass
-                if self.lock:
-                    self.lock.release()
-            
-            def close(self):
-                #Before we hand of to another thread ensure we have passed
-                #all the data to the OS, so parallel file open()s get the 
-                #correct data.
-                self.flush()
-                #Launch real close() in a thread.
-                thread.start_new_thread(self.threadFn, () )
-                #Wait for thread to claim reader lock before releasing it here.
-                self.locksync.acquire()
-                #Release the lock in the main thread
-                if self.lock:
-                    self.lock.release()
-
-            @classmethod
-            def open_read(cls,filename):
-                """
-                Open a file for reading. Normally opens filename - unless it is the process
-                of being updated in which case you get the update file - so you should 
-                see the most recent updates sent to the filesystem.
-                """
-                #With Posix file semantics we don't need to protect the actual reads as
-                # the file handle stays bound to the actual inode.
-                with cls.dictlock:
-                    if filename in cls.active:
-                        if cls.active[filename] == "unlink": raise IOError("File deleted")
-                        try:
-                            #There is a chance of a race here between testing
-                            # if this file is still active and opening it's
-                            # working file. - If Opening it working file fails
-                            # we fail back to the mainfile.
-                            rfile = open(cls.active[filename].realname)
-                        except IOError, e:
-                            self.logger.debug("%s - Failling back to main file %s"%(e,filename))
-                            rfile = open(filename)
-                        return rfile
-                    else:
-                        return open(filename)
-
-            @classmethod
-            def unlink(cls,filename):
-                """
-                Ensure we don't create a file called fileame if there is outstanding
-                update for it  -  unlink the file if possible
-                """
-                with cls.dictlock:
-                    if filename in cls.active:
-                        cls.active[filename] = "unlink"
-
-else:
-    class SafeFile(file):
-          """
-          This is a NULL class which implements the same API as above,
-          except forwards the queries to the usual pyhton places
-          """
-          def __init__(self,*args,**kwargs):
-               del kwargs['lock']
-               super(SafeFile,self).__init__(*args,**kwargs)
-        
-          @classmethod
-          def open_read(cls,filename):
-                return open(filename)
-
-          @classmethod
-          def unlink(cls,filename):
-               pass
- 
-
 #We may want to change this to a subclass later 
 # but at the moment factory method suffices.
 #
@@ -220,7 +53,7 @@ def FileStoreAttributePart(filename,partname):
     """
     Create a MMAttributePart from a filename
     """
-    with closing(SafeFile.open_read(filename)) as infile:
+    with closing(open(filename,"r")) as infile:
         data = infile.read()
         infile.close()
         logging.getLogger("MysteryMachine.Store.file_store").debug("APi:data:%s",data)
@@ -233,9 +66,14 @@ class filestore(Base):
 
     There are no SCM methods attached to this store - will we
     create a mixin for the SCM actions.
+
+
+    Reading data during a transaction yields undefined values. It can 
+    return pre-xaction values or current balues.
     """
     
     uriScheme = "attrfile"
+    supports_txn = True
 
     invalidobj = re.compile("^\.")
 
@@ -254,12 +92,38 @@ class filestore(Base):
         self._lock = RRwLock()
         if create:
           os.mkdir(self.path) 
-    
+
+        #Create a transaction Log object
+        self.tlog = FileLogger(self.path, track_state = False)
+        self.newobjs = []
+        self.newcat  = []
+        self.newattr = {} 
+       
+    def close(self,):
+        self.tlog.close()
+ 
     def get_path(self):
         return self.path
 
-    def _getpath(self,expr):
-        return expr.replace(":",os.sep )
+    def start_store_transaction(self,):
+        self._lock.acquire_read()
+        try:
+            self.tx = self.tlog.start_transaction()
+        except: self._lock.release()
+
+    def commit_store_transaction(self,):
+        self.tlog.commit_transaction(self.tx)
+        self.newobjs = []
+        self.newcat  = []
+        self.newattr = {} 
+        self._lock.release()
+
+    def abort_store_transaction(self,):
+        self.tlog.abort_transaction(self.tx)
+        self.newobjs = []
+        self.newcat  = []
+        self.newattr = {} 
+        self._lock.release()
 
     def EnumCategories(self):
         for dentry in os.listdir(self.path):
@@ -275,68 +139,83 @@ class filestore(Base):
 
     def EnumObjects(self,category):
         catpath = self.canonicalise(category)
-        for dentry in os.listdir(os.path.join(self.path,*catpath)):
-            objpath = catpath + [ dentry ]
-            if not os.path.isdir(os.path.join(self.path,*objpath)) : continue
-            sentinelpath = objpath + [ OBJECT_SENTINEL_NAME ]
-            if not os.path.isfile(os.path.join(self.path,*sentinelpath)): continue
-            yield dentry
-  
+
+        if catpath not in self.newcat:
+            for dentry in os.listdir(os.path.join(self.path,*catpath)):
+                objpath = catpath + [ dentry ]
+                if not os.path.isdir(os.path.join(self.path,*objpath)) : continue
+                sentinelpath = objpath + [ OBJECT_SENTINEL_NAME ]
+                if not os.path.isfile(os.path.join(self.path,*sentinelpath)): continue
+                yield dentry
+
+        for obj in self.newobjs:
+            #Search for obj created this txn, in this category.
+            if obj[:len(catpath)] == catpath:
+                yield obj[len(catpath)]
+
+ 
     def NewCategory(self,category):
-        catpath = self.canonicalise(category)
-        catpath = os.path.join(self.path , *catpath)
+        can_catpath = self.canonicalise(category)
+        catpath = os.path.join( *can_catpath)
         try:
-            os.mkdir(catpath)
+            self.tlog.Create_Dir(self.tx,catpath)
         except OSError, e:
             #Ignore Directory already exists errors .
             if e.errno != errno.EEXIST:
                 raise
         else:
             sentinel = os.path.join(catpath ,CATEGORY_SENTINEL_NAME )
-            #Don't bother with safe file for this - a journalled FS
-            # should be enough, since there is no data. 
-            f=file(sentinel,"w")
-            sentinel,  = make_rel(self.path,sentinel)
+            self.tlog.Add_File(self.tx,sentinel,"")
             self.Add_file(sentinel)
+            self.newcat.append(can_catpath)
 
     def NewObject(self,category):
+        can_catpath = self.canonicalise(category)
         objs = list(self.EnumObjects(category))
         Id = policy.NewId(objs)
-        catpath = os.path.join(self.path , category , Id)
-        os.mkdir(catpath)
+        can_catpath.append(Id)
+        catpath = os.path.join( *can_catpath )
         sentinel = os.path.join(catpath ,OBJECT_SENTINEL_NAME )
-        #Don't bother with safe file for this - a journalled FS
-        # should be enough, since there is no data. 
-        f=file(sentinel,"w")
-        sentinel, = make_rel(self.path,sentinel)
+
+        self.tlog.Create_Dir(self.tx,catpath)
+        self.tlog.Add_File(self.tx,sentinel,"")
         self.Add_file(sentinel)
+        self.newobjs.append(can_catpath)
         return Id
 
     def HasCategory(self,cat):
         objele = self.canonicalise(cat)
+        if objele in self.newcat: return True
+
         path = os.path.join(self.path,*objele)
         sentinel = os.path.join(path ,CATEGORY_SENTINEL_NAME )
         return os.path.isdir(path) and os.path.isfile(sentinel)
 
     def HasObject(self,obj):
         objele = self.canonicalise(obj)
+        if objele in self.newobjs: return True
+
         path = os.path.join(self.path,*objele)
         sentinel = os.path.join(path ,OBJECT_SENTINEL_NAME )
         return os.path.isdir(path) and os.path.isfile(sentinel)
     
-    def DeleteObject(self,object):
-        dir = os.path.join(self.path,self._getpath(object))
-        sentinel = os.path.join(dir ,OBJECT_SENTINEL_NAME )
-        os.unlink(sentinel)
+    def DeleteObject(self,obj):
+        objele = self.canonicalise(obj)
+        dirname = os.path.join(*(objele))
+
+        sentinel = os.path.join(dirname ,OBJECT_SENTINEL_NAME )
+        self.tlog.Delete_File(self.tx,sentinel)
         self.Remove_file(sentinel)
-        os.rmdir(dir)
+        self.tlog.Delete_Dir(self.tx,dirname)
+        if objele in self.newobjs: self.newobjs.remove(objele)
 
     def DeleteCategory(self,cat):
-        catpath = os.path.join(self.path , cat)
+        catpath = os.path.join( cat)
         sentinel = os.path.join(catpath ,CATEGORY_SENTINEL_NAME )
-        os.unlink(sentinel)
+        self.tlog.Delete_File(self.tx,sentinel)
         self.Remove_file(sentinel)
-        os.rmdir(catpath)
+        self.tlog.Delete_Dir(self.tx,catpath)
+        if cat in self.newcat: self.newcat.remove(cat)
 
     def EnumAttributes(self,object):
         objpath = self.canonicalise(object) 
@@ -353,6 +232,8 @@ class filestore(Base):
     
     def HasAttribute(self,attr):
         attrele = self.canonicalise(attr) 
+        if tuple(attrele) in self.newattr: return True
+
         basepath = os.path.join(self.path,*attrele[:-1])
         for candidate in glob.iglob(os.path.join(basepath,attrele[-1]+".*")):
             candidate_path = os.path.join(basepath,candidate)
@@ -371,33 +252,43 @@ class filestore(Base):
         @author
         """
 
-        pathparts = list(self.canonicalise(attr))
+        pathparts = self.canonicalise(attr)
+        filename_base = os.path.join(*pathparts)
         #Remove existing objects
         self.DelAttribute(attr)
+        attrkey = tuple(pathparts)
+        self.newattr[attrkey] = []
         for partname,value in parts.items():
             if not isinstance(value,basestring): 
                 raise StoreApiViolation("%s has part %s of type %s"%(attr,partname,type(value)))
-            filename = os.path.join(self.path,*pathparts)
-            filename = "%s.%s.%s" % (filename,attrtype,partname)
-            self._lock.acquire_read()
-            with closing(SafeFile(filename,"w",lock = self._lock)) as file:
-                file.write(value)
-
+            filename = "%s.%s.%s" % (filename_base,attrtype,partname)
+            self.tlog.Add_File(self.tx,filename,value)
             #Ensure any RCS knows about the file.
-            file , = make_rel(self.path,filename)
-            self.Add_file(file)
+            self.newattr[attrkey].append(filename)
+            self.Add_file(filename)
+
+        if not len(self.newattr[attrkey]):
+            del self.newattr[attrkey]
 
 
     def DelAttribute(self,attr):
         attrele = self.canonicalise(attr)
-        workuri= os.path.join(self.path,*(attrele))
-        for f in glob.glob(workuri + ".*" ):
+        workuri= os.path.join(self.path, *(attrele))
+        attrkey = tuple(attrele)
+
+        if attrkey in self.newattr:
+            parts_files = self.newattr[attrkey]
+            del self.newattr[attrkey]
+        else:
+            parts_files = glob.glob(workuri + ".*" )
+
+        for f in parts_files:
                 #TODO Ensure python can't reorder 
                 #     these two calls.
-                SafeFile.unlink(f)
-                os.remove(f)
-                f , = make_rel(self.path,f)
-                self.Remove_file(f)
+                fname, = make_rel(self.path,f)
+                self.tlog.Delete_File(self.tx,fname)
+                self.Remove_file(fname)
+        
 
     def GetAttribute(self,attr):
         attrele = self.canonicalise(attr)

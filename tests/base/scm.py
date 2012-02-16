@@ -39,10 +39,12 @@ def getfiles_and_changelog(store):
 
 
 def WriteFile(store,name,content):
+     if store.supports_txn: store.start_store_transaction()
      f = file(os.path.join(store.get_path(),name),"w")
      f.write(content)
      f.close()
      store.Add_file(name)
+     if store.supports_txn: store.commit_store_transaction()
 
 def ReadFile(store,name):
      f = file(os.path.join(store.get_path(),name),"r")

@@ -48,7 +48,7 @@ class filestoreTests(storeTests,unittest.TestCase):
         self.store.lock()
         shutil.rmtree(self.mpath)
         self.store.unlock()
-        os.rmdir(self.mpath)
+        #os.rmdir(self.mpath)
 
     def testCanonicalise(self):
         import os
@@ -83,31 +83,39 @@ class filestoreTests(storeTests,unittest.TestCase):
     def test_should_tell_the_difference_between_categories_and_random_dirs(self):
         cats=list(self.store.EnumCategories())
         self.assertEqual(len(cats),0)
+        self.store.start_store_transaction()
         self.store.NewCategory("One")
         self.store.NewCategory("Two")
         self.store.NewCategory(".Three")
+        self.store.commit_store_transaction()
         cats=list(self.store.EnumCategories())
         os.mkdir(os.path.expanduser(self.mpath) + os.path.sep + "Four")
         self.assertEqual(len(cats),2)
+        self.store.start_store_transaction()
         self.store.DeleteCategory("One")
+        self.store.commit_store_transaction()
         cats=list(self.store.EnumCategories())
         self.assertEqual(len(cats),1)
  
     def test_should_be_able_tell_the_difference_between_objects_categories_and_random_dirs(self):
         #Check empty categories are..
+        self.store.start_store_transaction()
         self.store.NewCategory("One")
         self.store.NewCategory("Two")
         self.store.NewCategory("Two:Three")
+        self.store.commit_store_transaction()
         os.mkdir(os.path.expanduser(self.mpath) + os.path.sep + "Four")
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
         self.assertEqual(len(objs1),0)
         self.assertEqual(len(objs2),0)
         
+        self.store.start_store_transaction()
         o11=self.store.NewObject("One")
         o12=self.store.NewObject("One")
         o21=self.store.NewObject("Two")
         os.mkdir(os.path.join(os.path.expanduser(self.mpath),"One","FakeObject"))
+        self.store.commit_store_transaction()
 
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
@@ -115,11 +123,14 @@ class filestoreTests(storeTests,unittest.TestCase):
         self.assertEqual(len(objs2),1)
    
         #Recreate cateogory - should have no effect.
+        self.store.start_store_transaction()
         self.store.NewCategory("Two")
+        self.store.commit_store_transaction()
         objs2=list(self.store.EnumObjects("Two"))
         self.assertEqual(len(objs2),1)
        
         #Test deletion 
+        self.store.start_store_transaction()
         self.store.DeleteObject("One"+":"+o12)
 
         # - Commented out next 4 lines as currently we don't
@@ -130,6 +141,7 @@ class filestoreTests(storeTests,unittest.TestCase):
         #self.store.SetAttribute("Two"+":"+o21+":name",*attrtuple)
 
         self.store.DeleteObject("Two"+":"+o21)
+        self.store.commit_store_transaction()
 
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
@@ -155,9 +167,8 @@ class test2(filestoreTests):
         self.mpath = prefix + tempfile.mkdtemp(prefix="mysmac")
         self.parentpath = os.path.normpath(os.path.expanduser(self.mpath+os.path.sep+".."))
         self.tmpexists = os.path.exists(self.parentpath)
-        if not self.tmpexists:
-            os.makedirs(os.path.expanduser(self.mpath))
-       
+        os.makedirs(os.path.expanduser(self.mpath))
+
         self.store=filestore("attrfile:"+self.mpath,create = False)
         self.store.set_owner(DummySystem)
         self.has_scm = False

@@ -86,14 +86,18 @@ class ObjectTests(unittest.TestCase):
         tmppath = tempfile.mkdtemp()
         os.rmdir(tmppath)
         self.sys2 = MMSystem.Create("attrfile:" + tmppath)
+        self.sys2.store.start_store_transaction()
         self.sys2.NewCategory( "Dummy" )
         obj  = self.sys2.NewObject("Dummy")
         obj["data"] = "soemdata"
+        self.sys2.store.commit_store_transaction()
         self.assertEquals(str(obj["data"]),"soemdata")
         self.assertEquals(str(obj["DATa"]),"soemdata")
         self.assertRaises(KeyError,noAttrTst,obj) 
 
+        self.sys2.store.start_store_transaction()
         obj["atref"]=obj["data"].getRef()
+        self.sys2.store.commit_store_transaction()
         self.assertEquals(obj,obj.getRef())
         self.assertEquals(obj["data"],obj["atref"].getSelf())
 

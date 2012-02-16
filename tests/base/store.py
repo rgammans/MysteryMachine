@@ -42,7 +42,9 @@ class storeTests(object):
 
     def testCreate(self):
         myclass = type(self.store)
+        self.store.start_store_transaction()
         self.store.NewCategory("Test")
+        self.store.commit_store_transaction()
         from MysteryMachine.store import CreateStore
         try:
             #This must create an empty store or raise an exception
@@ -54,39 +56,77 @@ class storeTests(object):
     def testCategories(self):
         cats=list(self.store.EnumCategories())
         self.assertEqual(len(cats),0)
+        self.store.start_store_transaction()
         self.store.NewCategory("One")
         self.store.NewCategory("Two")
         self.store.NewCategory(".Three")
+        self.store.commit_store_transaction()
         cats=list(self.store.EnumCategories())
         self.assertEqual(len(cats),2)
+
+        self.store.start_store_transaction()
         self.store.DeleteCategory("One")
+        self.store.commit_store_transaction()
         cats=list(self.store.EnumCategories())
         self.assertEqual(len(cats),1)
 
+        #Create and delete in the same txn.
+        self.store.start_store_transaction()
+        self.store.NewCategory("Four")
+        self.store.DeleteCategory("Four")
+        self.store.commit_store_transaction()
+        self.assertEqual(len(cats),1)
+        self.assertFalse(self.store.HasCategory("Four")) 
+
+        if False:
+            #This behaviour is currently undefined, but below
+            # is a test snippet for a some error handling
+            # which I might not be part of the store spec.
+
+            # Ideally I'd like schema to guarantee never
+            # to generate call tracess like the below.
+ 
+            self.store.start_store_transaction()
+            self.store.NewCategory("Four")
+            self.store.commit_store_transaction()
+ 
+            self.store.start_store_transaction()
+            self.store.DeleteCategory("Four")
+            self.assertRaises(Exception,self.store.DeleteCategory,"Four")
+            self.store.abort_store_transaction()
+
+
     def testObjects(self):
         #Check empty categories are..
+        self.store.start_store_transaction()
         self.store.NewCategory("One")
         self.store.NewCategory("Two")
+        self.store.commit_store_transaction()
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
         self.assertEqual(len(objs1),0)
         self.assertEqual(len(objs2),0)
         
+        self.store.start_store_transaction()
         o11=self.store.NewObject("One")
         o12=self.store.NewObject("One")
         o21=self.store.NewObject("Two")
 
+        self.store.commit_store_transaction()
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
         self.assertEqual(len(objs1),2)
         self.assertEqual(len(objs2),1)
    
         #Recreate cateogory - should have no effect.
+        self.store.start_store_transaction()
         self.store.NewCategory("Two")
+        self.store.commit_store_transaction()
         objs2=list(self.store.EnumObjects("Two"))
         self.assertEqual(len(objs2),1)
        
         #Test deletion 
+        self.store.start_store_transaction()
         self.store.DeleteObject("One"+":"+o12)
 
         # - Commented out next 4 lines as currently we don't
@@ -98,14 +138,24 @@ class storeTests(object):
 
         self.store.DeleteObject("Two"+":"+o21)
 
+        self.store.commit_store_transaction()
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
         self.assertEqual(len(objs1),1)
         self.assertEqual(len(objs2),0)
 
+        #Create and delete in the same txn.
+        self.store.start_store_transaction()
+        o2 = self.store.NewObject("Two")
+        self.store.DeleteObject("Two:" + o2 )
+        self.store.commit_store_transaction()
+        self.assertEqual(len(list(self.store.EnumObjects("Two"))),0)
+        self.assertFalse(self.store.HasObject("Two:"+o2)) 
+
     #TODO Seperate out the bits which use the internal if.
     def testAttribute(self):
         #Create some cats and objs.
+        self.store.start_store_transaction()
         self.store.NewCategory("One")
         self.store.NewCategory(".Two")
 
@@ -123,6 +173,8 @@ class storeTests(object):
 
         #Set Attribute in a category
         self.store.SetAttribute("One"+":"+".dummyattr",*attrtuple)
+
+        self.store.commit_store_transaction()
 
         #Count attributes.
         objs1=list(self.store.EnumAttributes("One:"+o12))
@@ -149,9 +201,11 @@ class storeTests(object):
         self.assertEquals(self.store.GetAttribute("One:.dummyattr"),attrtuple)
         
         #Delete it.
+        self.store.start_store_transaction()
         self.store.DelAttribute("One:"+o12+":name")
         self.store.DelAttribute("One:"+o12+":.dotfile")
         self.store.DelAttribute("One:.dummyattr")
+        self.store.commit_store_transaction()
  
         #Count attributes.
         objs1=list(self.store.EnumAttributes("One:"+o12))
@@ -162,6 +216,7 @@ class storeTests(object):
         self.assertEqual(len(cat1),0)
         
         #Set an attribute - leave attribut set for SCM Interagtion tests
+        self.store.start_store_transaction()
         attrtuple = ( "simple",{ "a":"fred" }  )
         self.store.SetAttribute("One"+":"+o12+":name",*attrtuple)
         self.attrnames =  { "One:"+o12+":name": attrtuple }
@@ -169,9 +224,15 @@ class storeTests(object):
         #Check that removed parts get removed from the store
         self.store.SetAttribute("One"+":"+o12+":overwrite", "test1", { 'first':"this should dissappear" })
         self.store.SetAttribute("One"+":"+o12+":overwrite", "test1", { 'second':"this should be all thats left"})
+        self.store.commit_store_transaction()
+
         self.assertEquals(len(self.store.GetAttribute("One:"+o12+":overwrite")[1]),1)
 
+        #Test again in a seperate txn
+        self.store.start_store_transaction()
         self.store.SetAttribute("One"+":"+o12+":overwrite", "test2", { 'third':"this should be all thats left"})
+        self.store.commit_store_transaction()
+
         self.assertEquals(self.store.GetAttribute("One:"+o12+":overwrite")[0],"test2")
         self.assertEquals(len(self.store.GetAttribute("One:"+o12+":overwrite")[1]),1)
     
@@ -186,6 +247,7 @@ class storeTests(object):
         start with  
         """
         #Create some cats and objs.
+        self.store.start_store_transaction()
         self.store.NewCategory("One")
         self.store.NewCategory("Two")
         o11=self.store.NewObject("One")
@@ -198,6 +260,7 @@ class storeTests(object):
         #Set an attribute.
         attrtuple = ( "simple",{ "a":"fred" })
         o12store.SetAttribute("name",*attrtuple)
+        self.store.commit_store_transaction()
 
         #Count attributes.
         objs1=list(o12store.EnumAttributes())
@@ -214,7 +277,9 @@ class storeTests(object):
         self.assertEquals(o12store.GetAttribute("name"),attrtuple)
         
         #Delete it.
+        self.store.start_store_transaction()
         o12store.DelAttribute("name")
+        self.store.commit_store_transaction()
  
         #Count attributes.
         objs1=list(o12store.EnumAttributes())
@@ -235,19 +300,24 @@ class storeTests(object):
 
     def test_should_be_able_tell_the_difference_between_objects_categories_and_attribs(self):
         #Check empty categories are..
+        self.store.start_store_transaction()
         self.store.NewCategory("One")
         self.store.NewCategory("Two")
         self.store.NewCategory("Two:Three")
         attrtuple = ( "simple",{ "a":"fred" }  )
         self.store.SetAttribute("Five",*attrtuple)
+        self.store.commit_store_transaction()
+
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
         self.assertEqual(len(objs1),0)
         self.assertEqual(len(objs2),0)
         
+        self.store.start_store_transaction()
         o11=self.store.NewObject("One")
         o12=self.store.NewObject("One")
         o21=self.store.NewObject("Two")
+        self.store.commit_store_transaction()
         
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
@@ -263,12 +333,16 @@ class storeTests(object):
         self.assertTrue(self.store.HasAttribute("Five"))
         self.assertFalse(self.store.HasObject("One"))
         self.assertFalse(self.store.HasAttribute("One"))
+
         #Recreate cateogory - should have no effect.
+        self.store.start_store_transaction()
         self.store.NewCategory("Two")
+        self.store.commit_store_transaction()
         objs2=list(self.store.EnumObjects("Two"))
         self.assertEqual(len(objs2),1)
        
         #Test deletion 
+        self.store.start_store_transaction()
         self.store.DeleteObject("One"+":"+o12)
 
         # - Commented out next 4 lines as currently we don't
@@ -280,11 +354,46 @@ class storeTests(object):
 
     
         self.store.DeleteObject("Two"+":"+o21)
-
+        self.store.commit_store_transaction()
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
         self.assertEqual(len(objs1),1)
         self.assertEqual(len(objs2),0)
 
+    def test_rollback(self,):   
+        if self.store.supports_txn:
+            
+                self.store.start_store_transaction()
+                self.store.NewCategory("One")
+                self.store.NewCategory("Two")
+                self.store.NewCategory("Two:Three")
+                attrtuple = ( "simple",{ "a":"fred" }  )
+                self.store.SetAttribute("Five",*attrtuple)
+                self.store.commit_store_transaction()
 
-
+                objs1=list(self.store.EnumObjects("One"))
+                objs2=list(self.store.EnumObjects("Two"))
+                self.assertEqual(len(objs1),0)
+                self.assertEqual(len(objs2),0)
+                
+                self.store.start_store_transaction()
+                o11=self.store.NewObject("One")
+                o12=self.store.NewObject("One")
+                o21=self.store.NewObject("Two")
+                self.store.abort_store_transaction()
+ 
+                objs1=list(self.store.EnumObjects("One"))
+                objs2=list(self.store.EnumObjects("Two"))
+                self.assertEqual(len(objs1),0)
+                self.assertEqual(len(objs2),0)
+                               
+                self.store.start_store_transaction()
+                o11=self.store.NewObject("One")
+                o12=self.store.NewObject("One")
+                o21=self.store.NewObject("Two")
+                self.store.commit_store_transaction()
+                
+                objs1=list(self.store.EnumObjects("One"))
+                objs2=list(self.store.EnumObjects("Two"))
+                self.assertEqual(len(objs1),2)
+                self.assertEqual(len(objs2),1)

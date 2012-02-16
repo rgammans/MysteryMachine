@@ -58,11 +58,34 @@ class HgStoreMixin(object):
             addobj = self.repo[None]
         return addobj
 
+
+    def start_store_transaction(self,):
+        self.filechanges = []
+        super(HgStoreMixin,self).start_store_transaction()
+
+    def commit_store_transaction(self,):
+        super(HgStoreMixin,self).commit_store_transaction()
+        for op,filename in self.filechanges:
+            if   op == "a":  self._Add_file(filename)
+            elif op == "r":  self._Remove_file(filename)
+
     def Add_file(self,filename):
-       if filename not in self.repo[None]:
-          self._wdir_obj().add( [ filename  ]) 
+        if self.supports_txn:
+            self.filechanges.append(("a",filename,))
+        else:
+            self._Add_file(filename)
+
+    def _Add_file(self,filename):
+        if filename not in self.repo[None]:
+            self._wdir_obj().add( [ filename  ]) 
 
     def Remove_file(self,filename):
+        if self.supports_txn:
+            self.filechanges.append(("r",filename,))
+        else:
+            self._Remove_file(filename)
+
+    def _Remove_file(self,filename):
        if filename in self.repo[None]:
           s = self.repo.status()
           #Is the file got the added status?

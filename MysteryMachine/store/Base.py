@@ -37,10 +37,16 @@ class Base(object):
     see:
         http://trac.backslashat.org/MysteryMachine/wiki/NameSpace
 
-    Behavour is undefined if names outside the NameSpaceare used.
+    Behavour is undefined if names outside the NameSpace are used.
     (With the exception that a leading '.' must be accepted by the store engine)
+
+   
+
+
     """
     __metaclass__ = storeMeta
+
+    supports_txn = False
 
     def canonicalise(self,name):
         """Splits a object or attribute name into it's component parts"""
@@ -85,10 +91,51 @@ class Base(object):
         """
         self.owner = weakref.proxy(v)
 
+    def start_store_transaction(self):
+        """This function is required to be overridden for ACID compliance
+
+        This function doesn't return until the outstanding changes are
+        are in stable store. It *doesn't* require the outstanding
+        changes to be integrated into the main data - they can be stored in
+        some sort of log file - to be written to the main Db in the 
+        background.
+
+        After start_store_transaction the Enum*,Get* and HAs* functio
+        have undefined behaviour until commit_ or abort_ store_transaction
+        is called.
+    
+        You should define support_txn = True in your class if
+        this function is overridden.
+
+        (The schema model guarantees this interleave won't  occurs
+        as schema/transman implements a 2PL scheme.)
+        """
+        pass
+
+    def abort_store_transaction(self):
+        """Discard any data written , until the store state is set
+        to the last created checkpoint"""
+        pass
+
+
+
+    def commit_store_transaction(self,):
+        """This function is required to be overridden for ACID compliance
+        (This should not be confued with commit - see below)
+
+        This function the last part of the ACID complaince functions.
+
+        Calling this function writes out the changes made since
+        start_store_transaction into persistent store.
+        """
+
     def commit(self,msg):
         """
-        Override the to support transactions - usually used in the context
+        Override the to support revisions - usually used in the context
         of version control.
+
+        This function has nothing to do witht he ACID properties, see
+        commit_store_transaction for that.
         """
         return False
 
@@ -101,7 +148,7 @@ class Base(object):
 
     def revert(self,revid):
         """
-        Override this to take the game back to any previous transaction.
+        Override this to take the game back to any previous revision.
         """
         return False
 
@@ -273,7 +320,8 @@ class Base(object):
         function usable by other store mixins.
 
         This function is intended to be called by store modules, so
-        to allow them to commincate to the SCM provider.
+        to allow them to commincate to the SCM provider. A store provider
+        is required to call this if it support interworking with SCM mixins
         """
 
     def Remove_file(self,filename):
@@ -284,7 +332,9 @@ class Base(object):
         function usable by other store mixins.
 
         This function is intended to be called by store modules, so
-        to allow them to commincate to the SCM provider.
+        to allow them to commincate to the SCM provider. A store provider
+        is required to call this if it support interworking with SCM mixins
+
         """
 
     def lock(self):
@@ -297,12 +347,19 @@ class Base(object):
         provide this.
         """
         pass
-    
+   
+  
     def unlock(self):
         """
         Allow updates to continue. see lock()
         """
         pass
+
+    def get_storefiles(self):
+        """Returns a generator, or sequence which walks over the files which 
+        should be placed in a pack file.  
+        """
+        return []
 
 class obj_storeproxy:
     """
