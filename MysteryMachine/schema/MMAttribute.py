@@ -246,6 +246,11 @@ class MMAttribute (MMAttributeContainer):
   def get_value(self):
      return self.valueobj
 
+  def get_type(self,):
+     """return the type of value stored in the attribute"""
+     if valueobj: return valueobj.get_type()
+     else: return None
+
   def set_value(self,val, copy = True , writeback = True ):
      #Quit early in case of No-Op - triggered by _writeback.
      if val is self.valueobj: 
