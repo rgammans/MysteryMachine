@@ -464,6 +464,9 @@ class ShadowAttributeValue(MMAttributeValue):
 
     Note that the class only hold a reference to it's owning object as that
     means it doens't impact on the GC at all.
+
+    Attempts to de-reference Value where it's target has gone away,
+    or no longer contain a matching attribute raise ReferenceError
     """
 
     typename = ".inhertitance_shadow"
@@ -485,7 +488,16 @@ class ShadowAttributeValue(MMAttributeValue):
 
     def _get_target(self):
         p = self._get_parent()
-        t = p[self.attrname]
+        #If there is no parent raise ReferenceError
+        #to indicate invalid attribute. - the same
+        #as would happen if the parent lost
+        #the atribute.
+        if not p: raise ReferenceError(self.attrname)
+
+        try:
+            t = p[self.attrname]
+        except KeyError ,e: raise ReferenceError(e.message)
+
         return t.get_value()
 
     def _get_parent(self):

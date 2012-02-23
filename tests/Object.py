@@ -149,12 +149,29 @@ class ObjectTests(unittest.TestCase):
         self.assertEquals(str(self.object["testattr"]),"somedata")
         self.object.set_parent(MMNullReferenceValue())
         self.assertRaises(KeyError,self.object.__getitem__,"testattr")
+
         myobj = self.system.NewObject("dummy")
         self.assertEquals(str(myobj["testattr"]),"otherdata")
         myobj = self.system.NewObject("dummy",MMNullReferenceValue())
         self.assertRaises(KeyError,myobj.__getitem__,"testattr")
 
+        self.object.set_parent(self.parent)
+        self.assertEquals(str(self.object["testattr"]),"somedata")
+        v = self.object["testattr"]
+        self.object.set_parent(MMNullReferenceValue())
+        #Test fetch of disappeared attribute raises KeyErrpr
+        self.assertRaises(KeyError,self.object.__getitem__,"testattr")
+        
+        #Test de-reference of store but dissapeared aatr raises 
+        # ReferenceError
+        self.assertRaises(ReferenceError,str,v.get_value())
+        
+
+
+
+
     def testIterIf(self):
+        self.assertRaises(KeyError,self.object.__getitem__,"testattr")
         self.object["Attr1"] = "some data"
         self.object["name"]  = "fred blogs"
         self.assertTrue("name" in self.object)

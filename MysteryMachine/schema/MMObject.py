@@ -100,15 +100,25 @@ class MMObject (MMAttributeContainer):
     @author
     """
     attrname = self.canonicalise(attrname)
+    parent = self.get_parent()
 
     try:
-        return self.cache[attrname]
+        attr = self.cache[attrname]
     except KeyError: pass
+    else:
+        if type(attr.get_value()) is ShadowAttributeValue:
+            if not parent or attrname not in list(parent.EnumAttributes()):
+                del self.cache[attrname]
+                # We can raise here without checking the store
+                # hasn't miracliously found a value,
+                # - without going thorought the std set path.
+                raise KeyError(attrname)
+        return attr
+
 
     if self.store.HasAttribute(attrname):
         return self._get_item(attrname,self._make_attr,attrname) 
     else:
-        parent = self.get_parent()
         if parent is None:
            #No Parent so raise no attrname.
            raise KeyError(attrname)
