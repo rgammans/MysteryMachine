@@ -132,7 +132,13 @@ class ObjectTests(unittest.TestCase):
         #Test parent ref
         self.assertEquals(p["name"].GetFullExpansion(), "test")
         self.assertEquals(self.object["name"].GetFullExpansion(), "other")
-
+    
+    def testFetchHiddenfrom_cache(self,):
+        self.parent[".secret"] = "test"
+        #Hold ref , to ensure attr stays in cache,
+        s = self.object[".secret"]
+        self.assertEquals("test",str(self.object[".secret"]))
+ 
 
     def testParentAbuse(self):
         self.object2["attribute"] ="An attribute"

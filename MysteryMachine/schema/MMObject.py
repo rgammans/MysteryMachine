@@ -107,7 +107,9 @@ class MMObject (MMAttributeContainer):
     except KeyError: pass
     else:
         if type(attr.get_value()) is ShadowAttributeValue:
-            if not parent or attrname not in list(parent.EnumAttributes()):
+            #pass
+            #print attrname,parent, list(parent.EnumAttributes())
+            if not parent or not parent.has(attrname):
                 del self.cache[attrname]
                 # We can raise here without checking the store
                 # hasn't miracliously found a value,
@@ -202,6 +204,14 @@ class MMObject (MMAttributeContainer):
        a = self.store.HasAttribute(name) 
        self.logger.debug( "** %s does %s exist** ", name , ("" if a else "not"))
        return a
+
+  def has(self,name):
+       parent = self.get_parent()
+       a = self.store.HasAttribute(name)
+       if not a and parent:
+            parent = parent.has(name)
+       return a or parent
+
 
   def _validate(self):
     """
