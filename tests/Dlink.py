@@ -36,6 +36,7 @@ import logging
 import sys
 
 #logging.basicConfig(level=logging.DEBUG)
+#logging.getLogger("MysteryMachine.schema.MMDLinkValue").setLevel(logging.DEBUG)
 
 class DlinkTests(unittest.TestCase):
     def setUp(self):
@@ -139,6 +140,19 @@ class DlinkTests(unittest.TestCase):
         #Connect two AnchorPoints and test initial state
         self.object1["2link"]=dlk.CreateAnchorPoint(self.object1)
         self.object2["2link"]=dlk.CreateAnchorPoint(self.object2)
+        self.do_actual_connect_to_test()
+
+
+    def testConnectTo_with_local_copy(self):
+        #Connect two AnchorPoints and test initial state
+        self.object1["2link"]=dlk.CreateAnchorPoint(self.object1)
+        self.object2["2link"]=dlk.CreateAnchorPoint(self.object2)
+        ###Make a copy of the values to keep them in the cache...
+        self.attr_o1_2link = self.object1["2link"]
+        self.attr_o2_2link = self.object2["2link"]
+        self.do_actual_connect_to_test()
+
+    def do_actual_connect_to_test(self,):
         self.assertEquals(self.object1["2link"].get_anchor(),self.object1)        
         self.assertEquals(self.object1["2link"].get_partner(),None)        
         self.assertEquals(self.object1["2link"].get_object(),None)        
@@ -154,7 +168,8 @@ class DlinkTests(unittest.TestCase):
         self.assertEquals(self.object2["2link"].get_object(),self.object1) 
         #Use a new anchor point and move / ConnectTo to it.
         self.object2["3link"]=dlk.CreateAnchorPoint(self.object2)
-        self.object1["2link"]=dlk.ConnectTo(self.object2["3link"])
+        link=dlk.ConnectTo(self.object2["3link"])
+        self.object1["2link"]=link
         self.assertEquals(self.object1["2link"].get_anchor(),self.object1)        
         self.assertEquals(self.object1["2link"].get_partner(),self.object2["3link"])        
         self.assertEquals(self.object1["2link"].get_object(),self.object2)        

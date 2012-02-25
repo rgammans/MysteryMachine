@@ -342,8 +342,10 @@ class MMDLinkValue(MMAttributeValue):
             self.anchorp  = self.get_anchor(obj)
             self.logger.debug("new anchordist-> %s" % self.anchordist)
 
-        #If only and anchor point  nothing more is required.
+        #If only and anchor point the only thing left to do is clear the
+        # cached target if it exists.
         if self.partner_path is None:
+            self.obj = None
             self.logger.debug("Completing ap with anchordist %i", self.anchordist)
             return
         elif "target" in self.parts:
