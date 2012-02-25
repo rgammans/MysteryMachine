@@ -272,7 +272,7 @@ class MMDLinkValue(MMAttributeValue):
             not_opassign = True
             if oldpartner is not None: not_opassign = not assign_guard.test(oldpartner.get_value())
             if oldpartner is not None and  not_opassign:
-               oldpartner.set_value(MMDLinkValue(anchor = oldpanchor))
+               oldpartner.set_value(MMDLinkValue(anchor = oldpanchor),copy = False)
 
             if hasattr(oldattr,"get_partner"): 
                 oldattr=oldattr.get_partner()
