@@ -24,30 +24,7 @@ from __future__ import with_statement
 
 from MysteryMachine.schema.Locker import * 
 import unittest
-
-class TransactionManagerStub(object):
-    """A mock transactionmanager so the MystertMachine still 
-     works untl I've tested all the other parts needed"""
-    def __init__(self,):
-        self.writing =set()
-        self.reading = set()
-    def start_write(self,node):
-        self.writing.add(node)
-    def end_write(self,node):
-        self.writing.remove(node)
-    def start_read(self,node):
-        self.reading.add(node)
-    def end_read(self,node):
-        self.reading.remove(node)
-    def maybe_abort(self,xaction):
-        import copy
-        for n in copy.copy(self.reading):
-            n.end_read()
-        for n in copy.copy(self.writing):
-            n.end_write()
-        
-
-
+from mock.schema_top import *
 
 class MockNode(object):
     def __init__(self,):
@@ -186,6 +163,15 @@ class lockerTest(unittest.TestCase):
         self.assertFalse(self.n.done_write)
         self.assertFalse(self.n.in_read)
 
+    def test_test_Write_recusre_decorator(self,):
+        imethod = type(self.n.end_write)
+        self.n.do_something = imethod(Writer(do_something),self.n,type(self.n))
+        self.n.write = imethod(Writer(recurse),self.n,type(self.n))
+        self.n.write()
+        self.assertTrue(self.n.done)
+        self.assertTrue(self.n.done_write)
+        self.assertFalse(self.n.done_read)
+        self.assertFalse(self.n.in_write)
 
 if __name__ == '__main__':
     unittest.main()

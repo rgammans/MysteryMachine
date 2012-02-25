@@ -28,30 +28,24 @@ import unittest
 
 from types import NoneType
 
+from mock.schema_top import *
+
+
 class DummyPart(object):
     def __init__(self,x):
         self.x=x
     def get_value(self):
         return self.x
 
-class fakeParent:
-    def __init__(self):
-        self.updated = False
-    def Updated(self):
-        return self.updated
-
-    def __setitem__(self,name,val):
-        self.updated = True
-    def resetUpdate(self):
-        self.updated = False
-
-
 class container(MMAttributeContainer):
     def __init__(self,*args,**kwargs):
         super(MMAttributeContainer,self).__init__(*args,**kwargs)
         self.parent = kwargs.get('parent',None)
         self.items  = { }
+        self.tm = TransactionManagerStub()
 
+    def get_root(self,):
+        return self
 
     def get_encoding(self):
         return "ascii"
@@ -80,18 +74,23 @@ class container(MMAttributeContainer):
     def get_parent(self):
         return self.parent
 
+    def get_tm(self,):
+        return self.tm 
+
+
 class attribTest(unittest.TestCase):
     def setUp(self):
         StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])    
  
     def testCreate(self):
-       attr=MMAttribute("document","test\n----\n\n\nA Message",None)
+       p = fakeParent()
+       attr=MMAttribute("document","test\n----\n\n\nA Message",p)
        #sys.stderr.write(str(attr.get_raw_rst))
        self.assertEqual(attr.get_raw_rst(),"test\n----\n\n\nA Message")
-       attr2 =MMAttribute("otherdoc",attr.get_value(),None)
+       attr2 =MMAttribute("otherdoc",attr.get_value(),p)
        self.assertEqual(attr.get_value(),attr2.get_value())
        self.assertFalse(attr.get_value() is attr2.get_value())
-       attr3 =MMAttribute("otherdoc",attr.get_value(),None ,copy = False)
+       attr3 =MMAttribute("otherdoc",attr.get_value(),p ,copy = False)
        self.assertEqual(attr.get_value(),attr3.get_value())
        self.assertTrue(attr.get_value() is attr3.get_value())
  

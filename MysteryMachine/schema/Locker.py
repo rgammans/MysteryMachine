@@ -56,6 +56,8 @@ class GenericLock(object):
         self.tm   = n.get_root().get_tm()
         self.lock =   getattr(self.node,"start_"+locktype)
         self.unlock = getattr(self.node,"end_"+locktype)
+        self.abort = getattr(self.tm,"abort_"+locktype)
+
         self.xaction= None
 
     def __enter__(self):
@@ -65,7 +67,7 @@ class GenericLock(object):
         if etype is None:
             self.unlock()
         else:
-            self.tm.maybe_abort(self.xaction)
+            self.abort(self.xaction,self.node)
         return False 
 
 

@@ -26,6 +26,7 @@ from __future__ import with_statement
 from MysteryMachine.schema.MMBase import *
 from MysteryMachine import *
 import unittest
+from mock.schema_top import *
 
 class foo(MMBase):
    def __init__(self):
@@ -56,8 +57,8 @@ class BaseTest(unittest.TestCase):
     def testCanicalise(self):
         with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml"]) as g:
             m  = MMBase()
-            self.assertTrue("hi",m.canonicalise("Hi"))
-            self.assertTrue("hi",m.canonicalise("Hi_world"))
+            self.assertEquals("hi",m.canonicalise("Hi"))
+            self.assertEquals("hi_world",m.canonicalise("Hi_world"))
             self.assertRaises(ValueError,m.canonicalise,";")
             self.assertRaises(ValueError,m.canonicalise,"s ad ")
             self.assertRaises(ValueError,m.canonicalise,"sdas/das;")
@@ -75,8 +76,8 @@ class BaseTest(unittest.TestCase):
     def testContainer(self):
         with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml"]) as g:
             m = MMContainer()
+            m.owner = fakeParent()
             v = bar("one")
-
             m._set_item(1,v)
             #Whitebox test.
             self.assertTrue(m.cache[1] is v)
@@ -94,6 +95,7 @@ class BaseTest(unittest.TestCase):
         update.count = 0
         with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml"]) as g:
             m = MMContainer()
+            m.owner = fakeParent()
             v = bar("one")
             self.val = v
             m.register_notify(update)

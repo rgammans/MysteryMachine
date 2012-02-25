@@ -39,16 +39,9 @@ try:
 except AttributeError:
     izip_longest = functools.partial(map,None)
 
+from mock.schema_top import *
 
-
-class SystemProxy: 
-    def get_object(self,cat,id):
-        return ObjectProxy(cat , id)
-    def getSelf(self):
-        return self
-    def get_encoding(self):
-        return "ascii"
-
+SystemProxy = fakeParent
 
 class DummyParser:
     def GetString(self,string,node):

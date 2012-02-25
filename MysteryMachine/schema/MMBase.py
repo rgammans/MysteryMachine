@@ -27,6 +27,7 @@ from __future__ import with_statement
 
 #We import identifier to allow to ensure consisentcy 
 from MysteryMachine.parsetools.grammar import identifier
+from MysteryMachine.schema.Locker import Reader,Writer
 import pyparsing
 import logging
 
@@ -190,6 +191,17 @@ class MMBase(object):
       # register_notify.__doc__  and kept their own reference.
       if hasattr(self,"notify") and self.notify: self.logger.warn("Notify still active at del:%s"%self.notify)
 
+  def end_write(self):
+    self.get_root().tm.end_write(self)
+
+  def start_write(self):
+    self.get_root().tm.start_write(self)
+
+  def end_read(self):
+    self.get_root().tm.end_read(self)
+
+  def start_read(self):
+    self.get_root().tm.start_read(self)
 
 class MMContainer(MMBase):
     """
@@ -199,18 +211,23 @@ class MMContainer(MMBase):
     This is important as the a MMSystem is supposed to provide a guarantee
     a guaranteee about that an Attribute or instance has a single in-core
     instance. 
+
+    The accessor and mutator helper functions provided here are unlocked
+    to redice the amount of lock recurse. Do not call outside of
+    a start/end_read/write pair.
     """
     def __init__(self,*args,**kwargs):
         super(MMContainer,self).__init__(self,*args,**kwargs)
         self.cache = weakref.WeakValueDictionary()
 
-
+    @Writer
     def _invalidate_item(self,item):
         try:
             del self.cache[item]
         except KeyError: pass
         self._do_notify()
 
+    @Reader
     def _get_item(self,key,func,*args):
         try:
             item = self.cache[key]
@@ -219,6 +236,7 @@ class MMContainer(MMBase):
             self.cache[key] = item
         return item
 
+    @Writer
     def _set_item(self,k,v):
         self.cache[k] = v
     

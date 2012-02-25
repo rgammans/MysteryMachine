@@ -23,6 +23,7 @@
 #
 
 from MMBase import *
+from MysteryMachine.schema.Locker import Reader,Writer
 from MysteryMachine.parsetools.MMParser import MMParser , Grammar
 from MysteryMachine.schema.MMAttribute import * 
 from MysteryMachine.schema.MMAttributeValue import  * 
@@ -89,7 +90,8 @@ class MMObject (MMAttributeContainer):
       t,p = attrval
       a = MMAttribute(name,MakeAttributeValue(t,p),self,copy = False )
       return a 
- 
+
+  @Reader 
   def __getitem__(self, attrname):
     """
     Basic get item handling. Returns 'attribute' of attrname.
@@ -107,8 +109,6 @@ class MMObject (MMAttributeContainer):
     except KeyError: pass
     else:
         if type(attr.get_value()) is ShadowAttributeValue:
-            #pass
-            #print attrname,parent, list(parent.EnumAttributes())
             if not parent or not parent.has(attrname):
                 del self.cache[attrname]
                 # We can raise here without checking the store
@@ -136,6 +136,7 @@ class MMObject (MMAttributeContainer):
     #Haven't found looked for attribute.
     #raise KeyError()
 
+  @Writer
   def __setitem__(self, attrname, attrvalue):
     """
     Implements the basic setting ode for attributes.
@@ -158,6 +159,7 @@ class MMObject (MMAttributeContainer):
     self.store.SetAttribute(attrname,attrvalue.get_type(),attrvalue.get_parts())    
     self._do_notify()
 
+  @Writer
   def __delitem__(self, attrname):
     """
     Ovveride this if you've overridden setattr
@@ -191,7 +193,8 @@ class MMObject (MMAttributeContainer):
 
   itervalues = __iter__
 
-   
+
+  @Reader 
   def EnumAttributes(self):
         for key in self.iterkeys():
             yield key
@@ -200,6 +203,7 @@ class MMObject (MMAttributeContainer):
             for key in self.get_parent().iterkeys():
                 yield key
 
+  @Reader
   def __contains__(self,name):
        a = self.store.HasAttribute(name) 
        self.logger.debug( "** %s does %s exist** ", name , ("" if a else "not"))
@@ -221,6 +225,7 @@ class MMObject (MMAttributeContainer):
     """
     pass
 
+  @Reader
   def get_parent(self):
     """
 
@@ -250,6 +255,7 @@ class MMObject (MMAttributeContainer):
     if parent is self: parent = None
     return parent
 
+  @Writer
   def set_parent(self,parent):
     #We can safely use the basic code to set the parent as it
     #  only uses any inheirted values as a type hint.
@@ -263,6 +269,7 @@ class MMObject (MMAttributeContainer):
 
     self[".parent"]=parent
 
+  @Reader
   def __str__(self):
     # def name attribute contains the instructions for a human
     # readable interpreation of this object. Normally "mm:`:name`"

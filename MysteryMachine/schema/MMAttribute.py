@@ -24,6 +24,7 @@
 
 from MMBase import *
 from MMAttributeValue import MMAttributeValue , CreateAttributeValue , MMAttributeValue_MMRef , ShadowAttributeValue
+from MysteryMachine.schema.Locker import Reader,Writer
 
 import operator
 import functools
@@ -40,6 +41,7 @@ class MMAttributeContainer(MMContainer):
     This is specialisation of MMContainer for objects which contain 
     MMAttributes
     """
+    @Writer
     def _set_item(self,attrname  , attrvalue , notify = True):
 
         """
@@ -145,7 +147,8 @@ class MMAttributeContainer(MMContainer):
         finally:
             self.logger.debug( "completing (%i)"%recurse_count)
             recurse_count = recurse_count-1
-            
+           
+    @Reader 
     def _get_item(self,key,func,*args):
         item = super(MMAttributeContainer,self)._get_item(key,func,*args)
         item._compose()
@@ -194,6 +197,7 @@ class MMAttribute (MMAttributeContainer):
   def get_owner(self):
      return self.owner
 
+  @Reader
   def __str__(self):
      """
 
@@ -210,6 +214,7 @@ class MMAttribute (MMAttributeContainer):
      """
      return repr(self.owner)+":"+self.name
 
+  @Reader
   def GetFullExpansion(self):
      """
      This function returns a Fully expanded string represenation of the Attribute.
@@ -242,10 +247,11 @@ class MMAttribute (MMAttributeContainer):
      @author
      """
      self.valueobj._validate(self)
- 
+
+  @Reader
   def get_value(self):
      return self.valueobj
-
+  @Reader
   def get_type(self,):
      """return the type of value stored in the attribute"""
      if valueobj: return valueobj.get_type()
@@ -275,6 +281,7 @@ class MMAttribute (MMAttributeContainer):
      self.logger.debug("writing back %r - > %s\n"%(self,self.valueobj.parts))
      self.owner[self.name] = self.valueobj
 
+  @Reader
   def getRef(self):
      """
      @returns: A reference to this attribute which can be used
@@ -301,13 +308,14 @@ class MMAttribute (MMAttributeContainer):
   def _makeattr(self,name):
      return MMAttribute(name,self.valueobj.__getitem__(name,obj= self),self,False)
 
-
+  @Reader
   def __getitem__(self,name):
      if '__getitem__' not in self.valueobj.exports:
         raise TypeError("%s is not indexable (MM)" % self.valueobj.__class__)
      
      return self._get_item(self._keymap(name),self._makeattr,self._keymap(name))
   
+  @Writer
   def __setitem__(self,name,value):
      if '__setitem__' not in self.valueobj.exports:
         raise TypeError("%s is not indexable (MM)" % self.valueobj.__class__)
@@ -316,6 +324,7 @@ class MMAttribute (MMAttributeContainer):
      self.valueobj.__setitem__(name,attr.get_value(), obj = self)
      self._writeback()
 
+  @Writer
   def __delitem__(self,name):
      if '__delitem__' not in self.valueobj.exports:
        raise TypeError("%s is not indexable (MM)" % self.valueobj.__class__)
@@ -324,18 +333,21 @@ class MMAttribute (MMAttributeContainer):
      self.valueobj.__delitem__(name,obj = self )
      self._writeback()
 
+  @Reader
   def __contains__(self,name):
      if '__contains__' not in self.valueobj.exports:
        raise TypeError("%s is not iterable (MM)" % self.valueobj.__class__)
      
      return self.valueobj.__contains__(name,obj = self)
-
+ 
+  @Reader
   def __len__(self):
      if '__len__' not in self.valueobj.exports:
        raise TypeError("object of type %s has no len (MM)" % self.valueobj.__class__.__name__)
      
      return self.valueobj.__len__(obj = self)
 
+  @Reader
   def __iter__(self):
      if '__iter__' not in self.valueobj.exports:
        raise TypeError("%s is not iterable (MM)" % self.valueobj.__class__)
