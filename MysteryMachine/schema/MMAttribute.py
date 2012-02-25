@@ -272,6 +272,7 @@ class MMAttribute (MMAttributeContainer):
       else: raise AttributeError("%s not in %s"% ( name,repr(self) ) )
 
   def _writeback(self):
+     self.logger.debug("writing back %r - > %s\n"%(self,self.valueobj.parts))
      self.owner[self.name] = self.valueobj
 
   def getRef(self):
