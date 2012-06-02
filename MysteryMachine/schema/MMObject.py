@@ -156,7 +156,9 @@ class MMObject (MMAttributeContainer):
     attrobj = self._set_item(attrname,attrvalue)
     #Get AttributeValue type object - so it is ready for the storage engine.
     attrvalue = attrobj.get_value()
+    self.store.store.start_store_transaction()
     self.store.SetAttribute(attrname,attrvalue.get_type(),attrvalue.get_parts())    
+    self.store.store.commit_store_transaction()
     self._do_notify()
 
   @Writer

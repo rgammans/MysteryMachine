@@ -35,6 +35,8 @@ import MysteryMachine.Exceptions as Error
 
 from Globals import * 
 
+from MysteryMachine.policies.SequentialId import NewId
+
 import re
 import time
 import weakref
@@ -253,7 +255,9 @@ class MMSystem (MMContainer):
     @author
     """
     CategoryName = self.canonicalise(CategoryName)
+    self.store.start_store_transaction()
     self.store.NewCategory(CategoryName)
+    self.store.commit_store_transaction()
     self[CategoryName][".parent"] = defaultparent
     self._do_notify()
 
@@ -271,7 +275,9 @@ class MMSystem (MMContainer):
     # don't depend on the store to check it's existence for us.
     category = self[category_name]
 
+    self.store.start_store_transaction()
     id = self.store.NewObject(category_name)
+    self.store.commit_store_transaction()
     obj = self.get_object(category_name,id)
     
     if parent is None:
@@ -366,7 +372,9 @@ class MMSystem (MMContainer):
     name_attrib = CreateAttributeValue(name)    
     if hasattr(name_attrib,"_compose"):
         name_attrib._compose(self)   
+    self.store.start_store_transaction()
     self.store.SetAttribute(".defname",name_attrib.get_type(),name_attrib.get_parts())
+    self.store.commit_store_transaction()
 
 
   def get_name(self):
@@ -395,7 +403,9 @@ class MMSystem (MMContainer):
     #must be treated as simply as possibly because all string interpolation
     #depends on it. So we can't run the parser for this value - as the parser
     #may need this value for it's input
+    self.store.start_store_transaction()
     self.store.SetAttribute(".encoding","_raw",{'txt':self.encoding})     
+    self.store.commit_store_transaction()
 
   def _get_encoding(self):
     if self.store.HasAttribute(".encoding"):
@@ -509,8 +519,10 @@ class MMCategory(MMAttributeContainer):
                 return
             
             val = self._set_item(itemname,value).get_value()
+            self.owner.store.start_store_transaction()
             self.owner.store.SetAttribute(self.name + ":"  +itemname,
                                     val.get_type(),val.get_parts())    
+            self.owner.store.commit_store_transaction()
 
         else: raise LookupError("Cannot directly set objects")
 
