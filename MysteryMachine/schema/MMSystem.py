@@ -276,7 +276,8 @@ class MMSystem (MMContainer):
     category = self[category_name]
 
     self.store.start_store_transaction()
-    id = self.store.NewObject(category_name)
+    id = NewId(self.EnumObjects(category_name))
+    self.store.NewObject(category_name + ":" + id)
     self.store.commit_store_transaction()
     obj = self.get_object(category_name,id)
     

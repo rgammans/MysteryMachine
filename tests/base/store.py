@@ -108,9 +108,11 @@ class storeTests(object):
         self.assertEqual(len(objs2),0)
         
         self.store.start_store_transaction()
-        o11=self.store.NewObject("One")
-        o12=self.store.NewObject("One")
-        o21=self.store.NewObject("Two")
+        self.store.NewObject("One:1")
+        self.store.NewObject("One:2")
+        self.store.NewObject("Two:1")
+
+        o11,o12, o21 ="1", "2", "1"
 
         self.store.commit_store_transaction()
         objs1=list(self.store.EnumObjects("One"))
@@ -146,7 +148,8 @@ class storeTests(object):
 
         #Create and delete in the same txn.
         self.store.start_store_transaction()
-        o2 = self.store.NewObject("Two")
+        o2 = "3" 
+        self.store.NewObject("Two:" + o2)
         self.store.DeleteObject("Two:" + o2 )
         self.store.commit_store_transaction()
         self.assertEqual(len(list(self.store.EnumObjects("Two"))),0)
@@ -159,9 +162,11 @@ class storeTests(object):
         self.store.NewCategory("One")
         self.store.NewCategory(".Two")
 
-        o11=self.store.NewObject("One")
-        o12=self.store.NewObject("One")
-        o21=self.store.NewObject(".Two")
+        self.store.NewObject("One:1")
+        self.store.NewObject("One:2")
+        self.store.NewObject(".Two:1")
+
+        o11,o12, o21 ="1", "2", "1"
 
         #Set an attribute.
         attrtuple = ( "simple",{ "a":"fred" }  )
@@ -250,9 +255,11 @@ class storeTests(object):
         self.store.start_store_transaction()
         self.store.NewCategory("One")
         self.store.NewCategory("Two")
-        o11=self.store.NewObject("One")
-        o12=self.store.NewObject("One")
-        o21=self.store.NewObject("Two")
+        self.store.NewObject("One:1")
+        self.store.NewObject("One:2")
+        self.store.NewObject("Two:1")
+
+        o11,o12, o21 ="1", "2", "1"
     
         o12store = self.store.GetObjStore("One:"+o12)
         o21store = self.store.GetObjStore("Two:"+o21)
@@ -314,9 +321,11 @@ class storeTests(object):
         self.assertEqual(len(objs2),0)
         
         self.store.start_store_transaction()
-        o11=self.store.NewObject("One")
-        o12=self.store.NewObject("One")
-        o21=self.store.NewObject("Two")
+        self.store.NewObject("One:1")
+        self.store.NewObject("One:2")
+        self.store.NewObject("Two:1")
+
+        o11,o12, o21 ="1", "2", "1"
         self.store.commit_store_transaction()
         
         objs1=list(self.store.EnumObjects("One"))
@@ -377,9 +386,11 @@ class storeTests(object):
                 self.assertEqual(len(objs2),0)
                 
                 self.store.start_store_transaction()
-                o11=self.store.NewObject("One")
-                o12=self.store.NewObject("One")
-                o21=self.store.NewObject("Two")
+                self.store.NewObject("One:1")
+                self.store.NewObject("One:2")
+                self.store.NewObject("Two:1")
+
+                o11,o12, o21 ="1", "2", "1"
                 self.store.abort_store_transaction()
  
                 objs1=list(self.store.EnumObjects("One"))
@@ -388,9 +399,11 @@ class storeTests(object):
                 self.assertEqual(len(objs2),0)
                                
                 self.store.start_store_transaction()
-                o11=self.store.NewObject("One")
-                o12=self.store.NewObject("One")
-                o21=self.store.NewObject("Two")
+                self.store.NewObject("One:10")
+                self.store.NewObject("One:20")
+                self.store.NewObject("Two:10")
+
+                o11,o12, o21 ="10", "20", "10" 
                 self.store.commit_store_transaction()
                 
                 objs1=list(self.store.EnumObjects("One"))

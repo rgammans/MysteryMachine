@@ -111,9 +111,12 @@ class filestoreTests(storeTests,unittest.TestCase):
         self.assertEqual(len(objs2),0)
         
         self.store.start_store_transaction()
-        o11=self.store.NewObject("One")
-        o12=self.store.NewObject("One")
-        o21=self.store.NewObject("Two")
+        self.store.NewObject("One:1")
+        self.store.NewObject("One:2")
+        self.store.NewObject("Two:1")
+        o11="1"
+        o12="2"
+        o21="1"
         os.mkdir(os.path.join(os.path.expanduser(self.mpath),"One","FakeObject"))
         self.store.commit_store_transaction()
 

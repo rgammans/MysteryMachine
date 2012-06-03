@@ -72,9 +72,10 @@ class dict_store(Base):
 
     def NewObject(self,cat):
         dbpath = self.canonicalise(cat)
-        d = self._walkPath(dbpath)
-        objs = list(self.EnumObjects(cat))
-        newid = NewId(objs)
+        d = self._walkPath(dbpath[:-1])
+        #objs = list(self.EnumObjects(cat))
+        #newid = NewId(objs)
+        newid = dbpath[-1]
         d[newid] = { "..object":None }
         return newid
 
@@ -105,6 +106,7 @@ class dict_store(Base):
         for p,v in parts.iteritems():
             if not isinstance(v,basestring): 
                 raise StoreApiViolation("%s has part %s of type %s"%(attr,p,type(v)))
+
         d[dbpath[-1]]=(attrtype,parts)
 
     DelAttribute = _GenericDelete

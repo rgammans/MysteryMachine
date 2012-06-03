@@ -83,7 +83,7 @@ class filestore(Base):
         return os.path.normcase(os.path.normpath(os.path.realpath(os.path.expanduser(uri))))
 
     def __init__(self,*args,**kwargs):
-        self.logger = logging.getLogger("MysteryMachine.Store.file_store")
+        self.logger = logging.getLogger("MysteryMachine.store.file_store")
         self.logger.debug( args)
         super(filestore,self).__init__(*args,**kwargs)
         uri = args[0]
@@ -109,7 +109,9 @@ class filestore(Base):
         self._lock.acquire_read()
         try:
             self.tx = self.tlog.start_transaction()
-        except: self._lock.release()
+        except:
+            self._lock.release()
+            raise
 
     def commit_store_transaction(self,):
         self.tlog.commit_transaction(self.tx)
@@ -171,9 +173,9 @@ class filestore(Base):
 
     def NewObject(self,category):
         can_catpath = self.canonicalise(category)
-        objs = list(self.EnumObjects(category))
-        Id = policy.NewId(objs)
-        can_catpath.append(Id)
+        #objs = list(self.EnumObjects(category))
+        #Id = policy.NewId(objs)
+        #can_catpath.append(Id)
         catpath = os.path.join( *can_catpath )
         sentinel = os.path.join(catpath ,OBJECT_SENTINEL_NAME )
 
@@ -181,7 +183,7 @@ class filestore(Base):
         self.tlog.Add_File(self.tx,sentinel,"")
         self.Add_file(sentinel)
         self.newobjs.append(can_catpath)
-        return Id
+        #return Id
 
     def HasCategory(self,cat):
         objele = self.canonicalise(cat)
@@ -235,11 +237,13 @@ class filestore(Base):
         if tuple(attrele) in self.newattr: return True
 
         basepath = os.path.join(self.path,*attrele[:-1])
+        self.logger.debug("using glob %s"% os.path.join(basepath,attrele[-1]+".*"))
         for candidate in glob.iglob(os.path.join(basepath,attrele[-1]+".*")):
             candidate_path = os.path.join(basepath,candidate)
+            self.logger.debug("Considering %s as attr file"%candidate_path)
             if not os.path.isfile(candidate_path):
                  continue
-            items = candidate.split(".")
+            #items = candidate.split(".")
             return True
 
         return False
