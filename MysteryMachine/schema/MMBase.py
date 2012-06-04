@@ -55,6 +55,7 @@ class MMBase(object):
     """
     self.logger = logging.getLogger("MysteryMachine.schema")
     self.notify = []
+    self._lock = None
 
   def getRequiredVersions(self):
     """
@@ -201,17 +202,34 @@ class MMBase(object):
       # register_notify.__doc__  and kept their own reference.
       if hasattr(self,"notify") and self.notify: self.logger.warn("Notify still active at del:%s"%self.notify)
 
-  def end_write(self):
-    self.get_root().tm.end_write(self)
+  def end_write(self,xaction):
+    self.get_root().tm.end_write(self,xaction)
+
+  def abort_write(self,xaction):
+    self.get_root().tm.abort_write(self,xaction)
+
+  def abort_read(self,xaction):
+    self.get_root().tm.abort_read(self,xaction)
 
   def start_write(self):
-    self.get_root().tm.start_write(self)
+    return self.get_root().tm.start_write(self)
 
-  def end_read(self):
-    self.get_root().tm.end_read(self)
+  def end_read(self,xaction):
+    self.get_root().tm.end_read(self,xaction)
 
   def start_read(self):
-    self.get_root().tm.start_read(self)
+    return self.get_root().tm.start_read(self)
+
+
+  def _get_lock(self,):
+    if self._lock is None:
+        self._lock = self.get_root().lm.get_lock_object()
+    return self._lock
+    
+  lock = property(_get_lock,None,None)
+  
+
+
 
 class MMContainer(MMBase):
     """

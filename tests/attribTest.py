@@ -28,6 +28,7 @@ import unittest
 
 from types import NoneType
 
+from MysteryMachine.schema.MMSystem import TransactionManagerStub
 from mock.schema_top import *
 
 

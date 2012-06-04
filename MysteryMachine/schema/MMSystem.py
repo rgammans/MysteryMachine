@@ -57,7 +57,7 @@ class TransactionManagerStub(object):
             self.writing[node] = 1
         #print "SWV(%s):"%repr(node),self.writing[node]
 
-    def end_write(self,node):
+    def end_write(self,node,xaction):
         #import traceback
         #traceback.print_stack(None)
         #print "EWV(%s):"%repr(node),self.writing[node]
@@ -72,17 +72,17 @@ class TransactionManagerStub(object):
             self.reading[node] = 1
         #print "SRV:",self.reading[node]
 
-    def end_read(self,node):
+    def end_read(self,node,xaction):
         #print "ERV:",self.reading[node]
         self.reading[node] -= 1
         #print "ERV2:",self.reading[node]
         assert self.reading[node] >= 0, "node over unlocked(read)"
 
-    def abort_read(self,xaction,node):
-        node.end_read()
+    def abort_read(self,node,xaction):
+        self.end_read(node,"abort")
 
-    def abort_write(self,xaction,node):
-        node.end_write()
+    def abort_write(self,node,xaction):
+        self.end_write(node,"abort")
 
 class MMSystem (MMContainer):
 

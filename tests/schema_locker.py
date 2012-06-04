@@ -33,7 +33,11 @@ class MockNode(object):
         self.done = False
         self.done_read = False
         self.done_write = False
-        self.tm =  TransactionManagerStub()
+        fp = fakeParent()
+        self.is_deleted = False
+        self.tm =  fp.tm
+        self.written = False
+        self.discarded = False
 
     def get_tm(self,):
         return self.tm
@@ -42,23 +46,42 @@ class MockNode(object):
         return self
 
     def start_read(self,):
-        self.tm.start_read(self)
+        x = self.tm.start_read(self)
         self.in_read = True
 
-    def end_read(self,):
+    def end_read(self,x):
         #assert self.in_read,"trying to end a read outside in_read"
         self.in_read = False
-        self.tm.end_read(self)
+        self.tm.end_read(self,x)
+
+    def abort_read(self,x):
+        #assert self.in_read,"trying to end a read outside in_read"
+        self.in_read = False
+        self.tm.abort_read(self,x)
+
 
     def start_write(self,):
-        self.tm.start_write(self)
+        x = self.tm.start_write(self)
         self.in_write = True
+        return x
 
-    def end_write(self,):
+    def end_write(self,x):
         #assert self.in_write,"trying to end a write outside in_write"
         self.in_write = False
-        self.tm.end_write(self)
+        self.tm.end_write(self,x)
 
+    def abort_write(self,x):
+        #assert self.in_write,"trying to end a write outside in_write"
+        self.in_write = False
+        self.tm.abort_write(self,x)
+
+    def __setitem__(self,):
+        self.written = True
+
+    def discard(self,):
+        self.discarded = True
+
+    def _do_notify(self,): pass
 
 ##This is not intended to be part of Mock Node,
 # we monkeypatch it in for tests
@@ -67,11 +90,19 @@ def do_something(self):
     if self.in_write: self.done_write =True
     if self.in_read: self.done_read =True
 
+_old_end_write = TransactionManagerStub.end_write
+def end_write(self,node,tx):
+    _old_end_write(self,node,tx)
+    if hasattr(node,"written"):
+        if tx != "abort": node.written = True
+
+TransactionManagerStub.end_write = end_write
 
 def recurse(self,):
     self.do_something()
 
 class DummyException(Exception): pass
+
 
 class lockerTest(unittest.TestCase):
 
@@ -84,12 +115,15 @@ class lockerTest(unittest.TestCase):
         with GenericLock(self.n,"read"):
             self.assertTrue(self.n.in_read)
         self.assertFalse(self.n.in_read)
+        self.assertFalse(self.n.written)
 
         self.assertFalse(self.n.in_write)
         with GenericLock(self.n,"write"):
             self.assertTrue(self.n.in_write)
         self.assertFalse(self.n.in_write)
+        self.assertTrue(self.n.written)
 
+        self.n.written =False
         ##Test abnormal exit.
         self.assertFalse(self.n.in_write)
         raised = False
@@ -100,6 +134,7 @@ class lockerTest(unittest.TestCase):
         except DummyException:
             raised = True
         self.assertFalse(self.n.in_write)
+        self.assertFalse(self.n.written)
         #CHeck exception got propgatied too.
         self.assertTrue(raised)
 
@@ -110,6 +145,7 @@ class lockerTest(unittest.TestCase):
         with ReadLock(self.n):
             self.assertTrue(self.n.in_read)
         self.assertFalse(self.n.in_read)
+        self.assertFalse(self.n.written)
 
         ##Test abnormal exit.
         self.assertFalse(self.n.in_read)
@@ -120,8 +156,10 @@ class lockerTest(unittest.TestCase):
                 raise DummyException()
         except DummyException:
             raised = True
+        self.assertFalse(self.n.written)
         self.assertFalse(self.n.in_read)
         #CHeck exception got propgatied too.
+        self.written = True
         self.assertTrue(raised)
 
     def testWriteLock(self,):
@@ -130,16 +168,19 @@ class lockerTest(unittest.TestCase):
         with WriteLock(self.n):
             self.assertTrue(self.n.in_write)
         self.assertFalse(self.n.in_write)
+        self.assertTrue(self.n.written)
 
         ##Test abnormal exit.
         self.assertFalse(self.n.in_write)
         raised = False
+        self.n.written = False
         try:
             with WriteLock(self.n):
                 self.assertTrue(self.n.in_write)
                 raise DummyException()
         except DummyException:
             raised = True
+        self.assertFalse(self.n.written)
         self.assertFalse(self.n.in_write)
         #CHeck exception got propgatied too.
         self.assertTrue(raised)

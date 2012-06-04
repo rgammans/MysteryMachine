@@ -48,6 +48,9 @@ from __future__ import with_statement
 import threading
 import logging
 
+modlogger = logging.getLogger("MysteryMachine.schema.Locker")
+
+
 
 class GenericLock(object):
     """A context manager type object for handling write locking"""
@@ -56,18 +59,21 @@ class GenericLock(object):
         self.tm   = n.get_root().get_tm()
         self.lock =   getattr(self.node,"start_"+locktype)
         self.unlock = getattr(self.node,"end_"+locktype)
-        self.abort = getattr(self.tm,"abort_"+locktype)
+        self.abort = getattr(self.node,"abort_"+locktype)
 
         self.xaction= None
 
     def __enter__(self):
         self.xaction = self.lock()
+        if not self.xaction:
+            import traceback
+            modlogger.debug("No xaction return:%s"%(traceback.format_stack(limit=4)))
 
     def __exit__(self,etype,evalue,tb):
         if etype is None:
-            self.unlock()
+            self.unlock(self.xaction)
         else:
-            self.abort(self.xaction,self.node)
+            self.abort(self.xaction)
         return False 
 
 
@@ -91,7 +97,6 @@ def Locker(locktype,arg):
                 node = args[arg]
             except TypeError ,e:
                 node = kwargs[arg]
-
             with GenericLock(node,locktype) as l:
                 return f(*args,**kwargs)
 

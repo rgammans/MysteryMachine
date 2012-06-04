@@ -40,8 +40,14 @@ class fakeParent:
     def __init__(self):
         self.updated = False
         self.tm = TransactionManagerStub()
+
     def Updated(self):
         return self.updated
+
+    def get_nodeid(self,): return ""
+
+    def getSelf(self,):
+        return self
 
     def __setitem__(self,name,val):
         self.updated = True
