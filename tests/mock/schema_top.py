@@ -36,10 +36,50 @@ their containers.
 from MysteryMachine.schema.MMSystem import TransactionManagerStub
 from MysteryMachine.schema.MMAttribute import * 
 
+
+class mock_lockman:
+    def wlock(*args): pass
+    def wunlock(*args): pass
+    def rlock(*args): pass
+    def runlock(*args): pass
+
+class mock_store(object):
+    def __init__(self,):
+        self.txns_committed = 0
+        self.txns_aborted = 0
+        self.attrs = {}
+        self.attrs_txn = {}
+        self.in_txn = False
+
+    def start_store_transaction(self,*args):
+        if self.attrs_txn: raise RuntimeError("Previous Txn not complete")
+        if self.in_txn: raise RuntimeError("Previous Txn not complete")
+        self.in_txn = True
+
+    def abort_store_transaction(self,*args):
+        if not self.in_txn: raise RuntimeError("Txn not started")
+        self.attrs_txn = { }
+        self.in_txn = False
+        self.txns_aborted += 1
+
+    def commit_store_transaction(self,*args):
+        if not self.in_txn: raise RuntimeError("Txn not started")
+        self.attrs.update(self.attrs_txn)
+        self.attrs_txn = { }
+        self.in_txn = False
+        self.txns_committed += 1
+
+    def SetAttribute(self,name,attrtype,attrparts):
+        self.attrs_txn[name] = (attrtype,attrparts)
+
+    def lock(*args): pass
+    def unlock(*args): pass
+
 class fakeParent:
     def __init__(self):
         self.updated = False
         self.tm = TransactionManagerStub()
+        self.store = mock_store()
 
     def Updated(self):
         return self.updated
@@ -49,7 +89,7 @@ class fakeParent:
     def getSelf(self,):
         return self
 
-    def __setitem__(self,name,val):
+    def __setitem__(self,k,v):
         self.updated = True
     def resetUpdate(self):
         self.updated = False
