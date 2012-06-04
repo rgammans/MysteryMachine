@@ -30,7 +30,8 @@ import threading
 
 
 class _mylocal(threading.local):
-    rcount = 0
+    def __init__(self):
+        self.rcount = 0
 
 class RRwLock:
   """
@@ -98,6 +99,12 @@ This lock can be acquired recursively.
       self.writer = threading.currentThread()
       self.wcount = 1
       self.rwlock = -1
+
+  def held(self,):
+    """ Primairly used for debugging - as there is no
+    meaning to the test as it responnse is tsale before
+    you can do anything with it"""
+    return self.rwlock != 0
 
   def _promote(self):
     """Promote an already-acquired read lock to a write lock
