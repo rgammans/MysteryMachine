@@ -42,6 +42,8 @@ class MMObject:
         return SystemProxy(self.items["test"])
     def __repr__(self):
         return self.id
+    def get_nodeid(self):
+        return self.id
     def __getitem__(self,name):
         return self.items[name]
 

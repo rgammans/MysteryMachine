@@ -33,6 +33,7 @@ import MysteryMachine.Exceptions as Error
 import weakref
 import logging
 
+
 class MMObject (MMAttributeContainer):
 
   """
@@ -279,16 +280,18 @@ class MMObject (MMAttributeContainer):
     # Fall back to Schema ID if defname attribute doesnot exist
     try:
         name = str(self[".defname"])
-    except KeyError: name=self.name
+    except KeyError: name=self.get_nodeid()
     return self.parser.GetString(name,repr(self))
 
   def __repr__(self):
     """
     Return the internal object name
     """
-    return self.name
+    return self.get_nodeid()
 
-   
+  def get_nodeid(self,)  :
+    return self.name
+ 
   def get_parser(self):
     return self.parser
 

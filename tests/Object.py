@@ -37,8 +37,9 @@ import itertools
 
 class ObjectTests(unittest.TestCase):
     def setUp(self):
-        StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
+        StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode","--logtarget=logging.StreamHandler"]) 
         self.logger = logging.getLogger("")
+
         self.system=MMSystem.Create("dict:ObjectTests")
         self.system.NewCategory( "Template" )
         self.dummyparent             = self.system.NewObject( "Template" )

@@ -74,16 +74,16 @@ def Grammar(home):
         
         #Walk along the attributes
         field = origin
-        canonpath = repr(origin)
+        canonpath = origin.get_nodeid()
         for ele in path:
             if ele != ":": #Skip ':' as grammar noise.
                 if field is None:
                     raise NullReference(canonpath)
-                canonpath ="%r:%s"%(field,ele)
+                canonpath ="%s:%s"%(field.get_nodeid(),ele)
                 try:
                     field = field[ele]
                 except KeyError:
-                    raise NoAttribute("%r has no attribute `%s'"%(field,ele))
+                    raise NoAttribute("%s has no attribute `%s'"%(field.get_nodeid(),ele))
 
                 if hasattr(field,"getSelf"):
                     field = field.getSelf()

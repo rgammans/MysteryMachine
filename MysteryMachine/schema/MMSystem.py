@@ -152,6 +152,9 @@ class MMSystem (MMContainer):
   def get_tm(self,):
     return self.tm
    
+  def get_nodeid(self,):
+    return ""
+  
   @Reader   
   def EnumCategories(self):
     """
@@ -439,6 +442,8 @@ class MMSystem (MMContainer):
   itervalues = __iter__
 
   def __getitem__(self,obj): 
+    self.logger.debug("System asked for %s"%obj)
+
     fullid = ""
     len = 0
     for element in  obj.split(":"):

@@ -122,6 +122,16 @@ class MMBase(object):
     return name.lower()
   
 
+  def get_nodeid(self,):
+     owner = self.get_ancestor()
+     if owner is not None: owner = owner.get_nodeid()
+     if  owner:
+         owner += ":"
+     else: owner = ""
+
+     return owner + self.name
+     
+
   def getSelf(self):
     """
     returns self. 
