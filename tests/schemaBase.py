@@ -101,11 +101,12 @@ class BaseTest(unittest.TestCase):
             m.register_notify(update)
             m._set_item(1,v)
             m._invalidate_item(1)
-            self.assertEquals(update.count,1)
+            self.assertTrue(update.count > 0)
+            last= update.count
             m.unregister_notify(update)
             m._set_item(1,v)
             m._invalidate_item(1)
-            self.assertEquals(update.count,1)
+            self.assertEquals(update.count,last)
   
 
 def getTestNames():

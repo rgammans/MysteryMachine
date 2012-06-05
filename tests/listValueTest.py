@@ -47,19 +47,20 @@ class DummyParser:
     def GetString(self,string,node):
         return string
 
-system = SystemProxy()
-
+system = None
 class ObjectProxy(MMAttributeContainer):
     def __init__(self):
         global system
         super(ObjectProxy,self).__init__(self)
         self.d = {}
         self.owner = system 
-        
+        self.name = "MockObject"
+    
+    def get_nodedid(self,): return ":MockObject"   
     def get_parser(self):
        return DummyParser() 
     def __setitem__(self,k,v):
-        attr = self._set_item(k,v)
+        attr = self._set_attr_item(k,v)
         val = attr.get_value()
         self.d[k] = (val.get_type(), val.get_parts())
 
@@ -74,7 +75,10 @@ class ObjectProxy(MMAttributeContainer):
     
 class ListValTest(unittest.TestCase):
     def setUp(self):
+       global system
        StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
+       system = SystemProxy()
+
     
     def testList(self):
         val  = MMListAttribute(value =  [ "first" , "second" , "third" ] )
@@ -125,7 +129,9 @@ class ListValTest(unittest.TestCase):
     def testAttributeForward(self):
         val  = MMListAttribute(value =  [ "first" , "second" , "third" ] )
         obj  = ObjectProxy()
-        attr = MMAttribute("test",val,obj)
+        #attr = MMAttribute("test",val,obj)
+        obj["test"] = val
+        attr = obj["test"]
         #Check values from initialisation
         self.assertEquals(attr.count() ,3 )        
         self.assertEquals(str(attr.__getitem__(1)) , "second" )        
@@ -143,10 +149,14 @@ class ListValTest(unittest.TestCase):
         self.assertFalse("second" in attr )
         self.assertEquals(str(attr["1"]) ,"third" )
         #Check writeback occurred.
+        #XXX
+        #obj["test"]=attr
         val = attr.get_value()
-        attr = None
-        self.assertEquals(obj["test"].get_value(),val)
-        attr = obj["test"]
+        attr_id = attr.get_nodeid()
+        #attr = None
+        self.assertEquals(system.store.attrs[attr_id],(val.get_type(),val.get_parts()))
+        #Test read from store!.
+        #attr = obj["test"]
         valo = CreateAttributeValue("primary")
         attr["0"] = valo
         
@@ -169,32 +179,29 @@ class ListValTest(unittest.TestCase):
 
         
         
-        #Clear dict so can check writeback again
+        # Check writeback again
         # - array should be  ["primary", "third"].
         val = copy.copy(obj["test"].get_value())
-        del obj["test"]
         # - array should be  ["primary", "second"].
         attr[1]="second"
         val[1]="second"
         self.assertEquals(str(attr["1"]) ,"second" )        
-        self.assertEquals(obj["test"].get_value(),val)
+        self.assertEquals(system.store.attrs[attr_id],(val.get_type(),val.get_parts()))
         #Check walk back thru and find a parser
         self.assertEquals(attr[1].GetFullExpansion(),"second")
 
         val = copy.copy( obj["test"].get_value())
-        del obj["test"]
         # - array should be  ["primary", "second" , "some fate"].
         attr.append("some fate")
         val.append("some fate")
-        self.assertEquals(obj["test"].get_value(),val)
+        self.assertEquals(system.store.attrs[attr_id],(val.get_type(),val.get_parts()))
         self.assertEquals(str(attr["2"]) ,"some fate" )        
 
-        val = obj["test"].get_value()
-        del obj["test"]
+        val = copy.copy( obj["test"].get_value())
         attr.insert(2,"some date")
         val.insert(2,"some date")
         # - array should be  ["primary", "second" ,"some date" ,"some fate"].
-        self.assertEquals(obj["test"].get_value(),val)
+        self.assertEquals(system.store.attrs[attr_id],(val.get_type(),val.get_parts()))
         self.assertEquals(str(attr["2"]) ,"some date" )        
         self.assertEquals(str(attr["3"]) ,"some fate" )        
 
@@ -254,21 +261,25 @@ class ListValTest(unittest.TestCase):
        obj["list"].register_notify(update)
        obj["list"].register_notify(testexpect)
        self.assertEquals(update.count,0)
+       count = update.count
 
        self.val = "diff"
        attrobj.append(self.val)
-       self.assertEquals(update.count,1)
+       self.assertTrue(update.count > count )
+       count = update.count
        if self.exception: raise self.exception
         
        self.val ="third" 
        del attrobj[-1]
-       self.assertEquals(update.count,3)
+       self.assertTrue(update.count > count )
+       count = update.count
+#       self.assertEquals(update.count,3)
        if self.exception: raise self.exception
 
        attrobj.unregister_notify(update)
        self.val ="baz" 
        attrobj.append(self.val)
-       self.assertEquals(update.count,3)
+       self.assertEquals(update.count,count)
        if self.exception: raise self.exception
        attrobj.unregister_notify(testexpect)
 

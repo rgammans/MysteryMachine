@@ -33,7 +33,6 @@ import MysteryMachine.Exceptions as Error
 import weakref
 import logging
 
-
 class MMObject (MMAttributeContainer):
 
   """
@@ -59,7 +58,7 @@ class MMObject (MMAttributeContainer):
 
   """
 
-  def __init__(self, id,owner,store):
+  def __init__(self, id,owner,store,**kwargs):
     """
      Get an object handle on an existing object with id.
 
@@ -67,7 +66,7 @@ class MMObject (MMAttributeContainer):
     @return  :
     @author
     """
-    super(MMObject,self).__init__(self)
+    super(MMObject,self).__init__(self,**kwargs)
 #    self.logger.debug( "Creating %s" % id)
     self.name = id
     #Ensure strong ref to owner.
@@ -75,16 +74,18 @@ class MMObject (MMAttributeContainer):
     self.store = store
     self.parser = MMParser(self)
     self.logger = logging.getLogger("MysteryMachine.schema.MMObject")
+    if kwargs.get('create',False):
+        self._mark_for_update()
 
 
-  def get_ancestor(self):
-    """Return the object category node
-
-    Technically objects are 'owned' by the system, but category
-    nodes are their ancestor.
-    """
-    category, id = self.name.split(":")
-    return self.owner[category]
+#  def get_ancestor(self):
+#    """Return the object category node
+#
+#    Technically objects are 'owned' by the system, but category
+#    nodes are their ancestor.
+#    """
+#    category, id = self.name.split(":")
+#    return self.owner[category]
 
   def _make_attr(self,name):
       attrval = self.store.GetAttribute(name)
@@ -105,22 +106,23 @@ class MMObject (MMAttributeContainer):
     attrname = self.canonicalise(attrname)
     parent = self.get_parent()
 
-    try:
-        attr = self.cache[attrname]
-    except KeyError: pass
-    else:
-        if type(attr.get_value()) is ShadowAttributeValue:
-            if not parent or not parent.has(attrname):
-                del self.cache[attrname]
-                # We can raise here without checking the store
-                # hasn't miracliously found a value,
-                # - without going thorought the std set path.
-                raise KeyError(attrname)
-        return attr
+    attr = self._get_item(attrname , self._do_getitem , attrname, parent)
+    if attr.is_deleted:
+        raise KeyError(attrname)
 
+    if type(attr.get_value()) is ShadowAttributeValue:
+        if not parent or not parent.has(attrname):
+             del self.cache[attrname]
+             # We can raise here without checking the store
+             # hasn't miracliously found a value,
+             # - without going thorought the std set path.
+             raise KeyError(attrname)
+    
+    return attr
 
+  def _do_getitem(self,attrname,parent):
     if self.store.HasAttribute(attrname):
-        return self._get_item(attrname,self._make_attr,attrname) 
+        return self._make_attr(attrname) 
     else:
         if parent is None:
            #No Parent so raise no attrname.
@@ -131,16 +133,13 @@ class MMObject (MMAttributeContainer):
         pattr = parent[attrname]
         attr  = MMAttribute(attrname,ShadowAttributeValue(self,attrname=attrname,object=self),
                             self,copy = False) 
-        self.cache[attrname] = attr
         return attr        
 
-    #Haven't found looked for attribute.
-    #raise KeyError()
 
   @Writer
   def __setitem__(self, attrname, attrvalue):
     """
-    Implements the basic setting ode for attributes.
+    Implements the basic setting code for attributes.
 
     @param string attribute : 
     @param MMAttribute value : 
@@ -153,14 +152,11 @@ class MMObject (MMAttributeContainer):
     if attrvalue is None:
         del self[attrname] 
         return
-    
-    attrobj = self._set_item(attrname,attrvalue)
+    attrobj = self._set_attr_item(attrname,attrvalue)
     #Get AttributeValue type object - so it is ready for the storage engine.
     attrvalue = attrobj.get_value()
-    self.store.store.start_store_transaction()
-    self.store.SetAttribute(attrname,attrvalue.get_type(),attrvalue.get_parts())    
-    self.store.store.commit_store_transaction()
-    self._do_notify()
+    #self.store.SetAttribute(attrname,attrvalue.get_type(),attrvalue.get_parts())    
+    #self._do_notify()
 
   @Writer
   def __delitem__(self, attrname):
@@ -240,7 +236,8 @@ class MMObject (MMAttributeContainer):
     #Bypass inheritance lookup.
     if self.store.HasAttribute(".parent"):
         parent = self._get_item(".parent",self._make_attr,".parent") 
-
+    else:
+        self.logger.debug("no defined parent attr\n")
     #We don't try to get the parent from the category - the 
     # category only store a default parent to be used at creation
     #
@@ -262,6 +259,7 @@ class MMObject (MMAttributeContainer):
   def set_parent(self,parent):
     #We can safely use the basic code to set the parent as it
     #  only uses any inheirted values as a type hint.
+    #parent = parent.getSelf()
     if type(parent) not in (MMObject, MMNullReferenceValue): 
         raise Error.InvalidParent("%s is not an MMObject"%type(parent))
 
@@ -271,6 +269,7 @@ class MMObject (MMAttributeContainer):
         parent_walk = parent_walk.get_parent()
 
     self[".parent"]=parent
+
 
   @Reader
   def __str__(self):
@@ -289,9 +288,24 @@ class MMObject (MMAttributeContainer):
     """
     return self.get_nodeid()
 
-  def get_nodeid(self,)  :
-    return self.name
- 
+   
   def get_parser(self):
     return self.parser
 
+
+  def writeback(self,):
+      if self.is_modified:
+          self.get_root().store.NewObject(self.get_nodeid())
+      if self.is_deleted:
+          self.get_root().store.DeleteObject(self.get_nodeid())
+
+      super(MMObject,self).writeback()
+
+  @staticmethod
+  def delete_callback(system,name):
+      def callback():
+          system.store.DeleteObject(name)
+      return callback
+
+  @Writer
+  def _mark_for_update(self,): pass

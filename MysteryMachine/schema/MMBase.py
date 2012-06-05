@@ -56,6 +56,8 @@ class MMBase(object):
     self.logger = logging.getLogger("MysteryMachine.schema")
     self.notify = []
     self._lock = None
+    self.is_deleted = False
+    self.is_modified = kwargs.get('create',False)
 
   def getRequiredVersions(self):
     """
@@ -228,8 +230,48 @@ class MMBase(object):
     
   lock = property(_get_lock,None,None)
   
+  @Writer
+  def _new(self): pass
+
+  @Writer 
+  def _delete(self,):
+    self.is_deleted = True
+    
+  def discard(self,):
+    self.is_modified = False
+    self.is_deleted = False
+    
+  def writeback(self,):
+    self.is_modified = False
 
 
+
+class MMDeletedNode(MMBase):
+    """A node to occupy to cache location.
+
+    The sole purpose of this item is to sit in the cache an
+    prevent the real object being loaded from the store.
+
+    This allows faster deletes.
+    """
+    def __init__(self,owner,name,callback,*args,**kwargs):
+        super(MMDeletedNode,self).__init__(self,*args,**kwargs)
+        self.owner = owner
+        self.name = name
+        self.is_deleted = True
+        self.callback = callback
+    
+
+    @Writer
+    def _delete(self): pass
+
+    def discard(self,):
+        if hasattr(self.owner,"_invalidate_item_"):
+            self.owner._invalidate_item_(self.name)
+        else:print "cant incvalid"
+
+    def writeback(self,):
+        self.callback()
 
 class MMContainer(MMBase):
     """
@@ -246,14 +288,21 @@ class MMContainer(MMBase):
     """
     def __init__(self,*args,**kwargs):
         super(MMContainer,self).__init__(self,*args,**kwargs)
+        self.deleted_items= []
+        self.new_items = [ ]
+        self._invalidate_cache()        
+
+    def _invalidate_cache(self,):
         self.cache = weakref.WeakValueDictionary()
 
     @Writer
     def _invalidate_item(self,item):
+        self._invalidate_item_(item)
+
+    def _invalidate_item_(self,item):
         try:
             del self.cache[item]
         except KeyError: pass
-        self._do_notify()
 
     @Reader
     def _get_item(self,key,func,*args):
@@ -262,10 +311,53 @@ class MMContainer(MMBase):
         except KeyError:
             item = func(*args)
             self.cache[key] = item
+            self._do_compose(item)
+        
         return item
+
+    def _do_compose(self,item): pass
+
+    @Reader
+    def _has(self,name,func,*args):
+        try:
+            item =self.cache[key]
+        except KeyError:
+            return func(*args)
+        else:
+            return not item.is_deleted
+        #Catch any thing which drops through
+        return False
+
+    @Reader
+    def _iter(self):
+        for k in self.cache.iterkeys(): yield k
+
+    @Writer
+    def _del_item(self,key,callback):
+        item = self._get_item(key,MMDeletedNode,self,key,callback)
+        item._delete()
+        #Keep around to enusre the cache doesn't purge 
+        #the item
+        self.deleted_items.append(item)
 
     @Writer
     def _set_item(self,k,v):
         self.cache[k] = v
     
+    @Writer
+    def _new_item(self,k,v):
+        self.new_items.append(v)
+        self.cache[k] = v
+        v._new()
+       
+    def writeback(self,):
+        self.new_items = [ ]
+        self.deleted_items = [ ]
+        super(MMContainer,self).writeback()
+    
+    def discard(self,):
+        self.deleted_items = [ ]
+        self.new_items = [ ]
+        super(MMContainer,self).discard()
+
 

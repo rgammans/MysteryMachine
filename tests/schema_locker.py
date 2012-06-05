@@ -75,7 +75,7 @@ class MockNode(object):
         self.in_write = False
         self.tm.abort_write(self,x)
 
-    def __setitem__(self,):
+    def writeback(self,):
         self.written = True
 
     def discard(self,):
@@ -90,19 +90,11 @@ def do_something(self):
     if self.in_write: self.done_write =True
     if self.in_read: self.done_read =True
 
-_old_end_write = TransactionManagerStub.end_write
-def end_write(self,node,tx):
-    _old_end_write(self,node,tx)
-    if hasattr(node,"written"):
-        if tx != "abort": node.written = True
-
-TransactionManagerStub.end_write = end_write
 
 def recurse(self,):
     self.do_something()
 
 class DummyException(Exception): pass
-
 
 class lockerTest(unittest.TestCase):
 
@@ -159,7 +151,6 @@ class lockerTest(unittest.TestCase):
         self.assertFalse(self.n.written)
         self.assertFalse(self.n.in_read)
         #CHeck exception got propgatied too.
-        self.written = True
         self.assertTrue(raised)
 
     def testWriteLock(self,):

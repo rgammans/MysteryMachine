@@ -24,25 +24,38 @@ Tests for the MysteryMachine MMSystem  module
 from MysteryMachine import * 
 from MysteryMachine.schema.MMSystem import *
 
-import MysteryMachine.store.dict_store
+import MysteryMachine.store.file_store
 
 import unittest
 import itertools
 
+import logging
+#logging.getLogger("MysteryMachine.schema").setLevel(logging.DEBUG)
+#logging.getLogger("MysteryMachine.store.file_store").setLevel(logging.DEBUG)
+
 class sysTests(unittest.TestCase):
     def setUp(self):
-        self.appctx = StartApp(["--cfgengine=ConfigYaml", "--logtarget=logging.StreamHandler", "--cfgfile=tests/test.yaml", "--testmode"]) 
-        self.sys=MMSystem.Create("dict:test")
+        self.appctx = StartApp(["--cfgengine=ConfigYaml",  "--cfgfile=tests/test.yaml", "--testmode"]) 
+        self.mpath = tempfile.mkdtemp(prefix="mysmac")
+        self.sys=MMSystem.OpenUri("attrfile:"+self.mpath)
+
+    def tearDown(self,):
+        #print "+++++"
+        import shutil
+        shutil.rmtree(self.mpath)
 
     def testCategory(self):
+#        print "-----r--------"
         cats=list(self.sys.EnumCategories())
         self.assertEqual(len(cats),0)
         self.sys.NewCategory("One",None)
         self.sys.NewCategory("Two",None)
         cats=list(self.sys.EnumCategories())
         self.assertEqual(len(cats),2)
+        #print "---------+-----"
         self.sys.DeleteCategory("One")
         cats=list(self.sys.EnumCategories())
+        #print "ans:",cats
         self.assertEqual(len(cats),1)
 
     def testCatObject(self):
@@ -101,6 +114,7 @@ class sysTests(unittest.TestCase):
   
         #Check instance behaviour
         self.assertTrue(isinstance(o11,MMObject))
+        #print "Obj: %r<->%r\n"%(object.__repr__(self.sys.get_object("One",repr(o12).split(":")[1])) ,object.__repr__( o12))
         self.assertTrue(self.sys.get_object("One",repr(o12).split(":")[1]) is o12)
         self.assertFalse(self.sys.get_object("One",repr(o12).split(":")[1]) is o11)
       
@@ -155,10 +169,11 @@ class sysTests(unittest.TestCase):
 
         #Test parent.
         self.assertEquals(o11.get_parent(),None)
-        cat[".parent"] = o21
+        cat.set_parent(o21)
         self.assertEquals(cat.get_parent(),o21)
 
         o12=self.sys.NewObject("One")
+        self.assertEquals(o12.get_parent(),o21)
         cat.set_parent(o12)
         self.assertEquals(cat.get_parent(),o12)
         #Check we can't create objects which are their own parents.
@@ -174,7 +189,7 @@ class sysTests(unittest.TestCase):
         # __init__ del calls them ok.
         # Test open / create semanitcs.
         self.assertEquals(UnEscapeSystemUri(EscapeSystemUri("dict:test")),"dict:test")
-        self.assertEquals(EscapeSystemUri("dict:test"),str(self.sys))
+        self.assertEquals(EscapeSystemUri("attrfile:"+self.mpath),str(self.sys))
         self.assertTrue(GetLoadedSystemByName(str(self.sys)) is self.sys)
       
      
@@ -226,7 +241,7 @@ class sysTests(unittest.TestCase):
        self.assertTrue(update.count > lastcount, "Update not detected")
        if self.exception: raise self.exception
        lastcount = update.count
-       #Notify are guaranteed to be preserved if we don't keep
+       #Notify are not guaranteed to be preserved if we don't keep
        # reference to the schema node. So lets inc it refcount.
        c=self.sys["one"]  
        self.sys["one"].register_notify(update)
@@ -235,7 +250,7 @@ class sysTests(unittest.TestCase):
        lastcount = update.count
 
        o21=self.sys.NewObject("Two")
-       self.assertEqual(update.count , lastcount, "Update  detected")
+       self.assertEqual(update.count , lastcount)#, "Update  detected")
 
 
 def getTestNames():

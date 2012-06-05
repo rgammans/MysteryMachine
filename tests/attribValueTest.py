@@ -28,6 +28,8 @@ from MysteryMachine import *
 from functools import partial
 
 
+from mock.schema_top import *
+
 class ObjectProxy(MMObject):
     def __init__(self,*args,**kwargs):
         l = [ "" ,"" ]
@@ -52,11 +54,13 @@ class ObjectProxy(MMObject):
         return self.name
 
 
-class SystemProxy: 
+class SystemProxy(fakeParent): 
+    """A slight more advanced mock system"""
     def get_object(self,cat,id):
         return ObjectProxy(cat , id)
     def getSelf(self):
         return self
+
     
 class attribValTest(unittest.TestCase):
     def setUp(self):

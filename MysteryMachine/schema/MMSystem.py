@@ -28,14 +28,16 @@ from MysteryMachine.schema.Locker import Reader,Writer
 from MysteryMachine.schema.MMObject import *
 from MysteryMachine.schema.MMAttributeValue import CreateAttributeValue, MakeAttributeValue
 from MysteryMachine.schema.MMBase import *
+from MysteryMachine.schema.TransactionManager import TransactionManager
 from MysteryMachine.store import *
 #from MMSystemDiff import *
 #from Controller import *
+import MysteryMachine.policies
 import MysteryMachine.Exceptions as Error
 
-from Globals import * 
+import MysteryMachine.store.locallock
 
-from MysteryMachine.policies.SequentialId import NewId
+from Globals import * 
 
 import re
 import time
@@ -44,47 +46,17 @@ import binascii
 
 import logging
 
-class TransactionManagerStub(object):
-    """A mock transactionmanager so the MystertMachine still 
-     works untl I've tested all the other parts needed"""
-    def __init__(self,):
-        self.writing = {}
-        self.reading = {}
-    def start_write(self,node):
-        if node in self.writing:
-            self.writing[node] += 1
-        else:
-            self.writing[node] = 1
-        #print "SWV(%s):"%repr(node),self.writing[node]
 
-    def end_write(self,node,xaction):
-        #import traceback
-        #traceback.print_stack(None)
-        #print "EWV(%s):"%repr(node),self.writing[node]
-        self.writing[node] -= 1
-        #print "EWV2:",self.writing[node]
-        assert self.writing[node] >= 0, "node over unlocked(write)"
+##FIXME - Make a per-system configurable
+policy = MysteryMachine.policies
+ 
 
-    def start_read(self,node):
-        if node in self.reading:
-            self.reading[node] += 1
-        else:
-            self.reading[node] = 1
-        #print "SRV:",self.reading[node]
+def find_n_ancestor(obj,dist):
+    for i in range(dist): obj = obj.get_ancestor()
+    return obj 
 
-    def end_read(self,node,xaction):
-        #print "ERV:",self.reading[node]
-        self.reading[node] -= 1
-        #print "ERV2:",self.reading[node]
-        assert self.reading[node] >= 0, "node over unlocked(read)"
 
-    def abort_read(self,node,xaction):
-        self.end_read(node,"abort")
-
-    def abort_write(self,node,xaction):
-        self.end_write(node,"abort")
-
-class MMSystem (MMContainer):
+class MMSystem (MMAttributeContainer):
 
   """
    This class represents all the data within a single related set of MMObjects,
@@ -128,8 +100,10 @@ class MMSystem (MMContainer):
     DocsLoaded[self.name] = self
     store.set_owner(self)
     self.encoding = self._get_encoding()
+    self.old_encoding = self.encoding
     self.logger = logging.getLogger("MysteryMachine.schema.MMSystem")
-    self.tm  = TransactionManagerStub()   
+    self.lm  = MysteryMachine.store.locallock.LocalLocks()
+    self.tm  = TransactionManager(self.lm,self.store)   
     
   def __repr__(self):
     return self.name
@@ -151,6 +125,7 @@ class MMSystem (MMContainer):
 
   def get_tm(self,):
     return self.tm
+ 
    
   def get_nodeid(self,):
     return ""
@@ -163,10 +138,18 @@ class MMSystem (MMContainer):
     @return  : Iterable list of caterogies in the system
     @author
     """
-    return self.store.EnumCategories()
+    seen = [ ]
+    for key in self._iter():
+        seen.append(key)
+        try:
+            self[key]
+        except KeyError:pass
+        else:  yield key
+    for key in self.store.EnumCategories():
+        if key not in seen: yield key
 
   @Writer
-  def DeleteCategory(self,cat):
+  def _DeleteCategory(self,cat):
     """
     This deletes an existing empty category in the MysteryMachine system.
 
@@ -181,10 +164,19 @@ class MMSystem (MMContainer):
         self._do_notify()
     else: raise "Can't delete non-empty category"
  
+
+ 
+  @Writer
+  def DeleteCategory(self,cat):
+     cat = self.canonicalise(cat)
+     item = self._del_item(cat,MMCategory.delete_callback(self,cat))
+  
   @Writer
   def DeleteObject(self,object):
-    self._invalidate_item(object)
-    return self.store.DeleteObject(object)    
+    names = object.split(":")
+    cat = self.canonicalise(names[0])
+    parent = self._find_node(self,names[:-1])
+    return parent.DeleteObject(names[-1])
 
   @Reader
   def EnumObjects(self, category):
@@ -207,7 +199,7 @@ class MMSystem (MMContainer):
     @author
     """
 
-    return self[cat + ":" + id]
+    return self[cat][id]
 
   def Commit(self, msg):
     """
@@ -248,24 +240,44 @@ class MMSystem (MMContainer):
     return self.store.getChangeLog()
 
   @Writer
+  def _NewCategory(self, CategoryName, formathelper = None , defaultparent = None):
+    CategoryName = self.canonicalise(CategoryName)
+    self.store.NewCategory(CategoryName)
+    self[CategoryName][".parent"] = defaultparent
+    self._do_notify()
+
+  @Writer
   def NewCategory(self, CategoryName, formathelper = None , defaultparent = None):
     """
      Creates a new category
 
     @param string CategoryName : 
-    @param string defaultobjref : Basic template to use for new objects in this category
+  xdefaultobjref : Basic template to use for new objects in this category
     @return bool :
     @author
     """
-    CategoryName = self.canonicalise(CategoryName)
-    self.store.start_store_transaction()
-    self.store.NewCategory(CategoryName)
-    self.store.commit_store_transaction()
-    self[CategoryName][".parent"] = defaultparent
-    self._do_notify()
+    name = self.canonicalise(CategoryName)
+    cat = MMCategory(self,name ,create = True)
+    if defaultparent is not None:
+        cat[".parent"] = defaultparent
+    self._new_item(name,cat)
+  
+  #System New object is not a writer - because it modifies a child
+  #node of system
+  def NewObject(self, category, parent = None , formathelper = None):
+    """
+     Creates a new object in the system.
+
+    @param string category : Category in which to create new object
+    @return MMOBject: Created object. 
+    @author
+    """ 
+    cat = self[category]
+    obj = cat.NewObject(parent,formathelper)
+    return obj
 
   @Writer
-  def NewObject(self, category, parent = None , formathelper = None):
+  def _NewObject(self, category, parent = None , formathelper = None):
     """
      Creates a new object in the system.
 
@@ -278,10 +290,7 @@ class MMSystem (MMContainer):
     # don't depend on the store to check it's existence for us.
     category = self[category_name]
 
-    self.store.start_store_transaction()
-    id = NewId(self.EnumObjects(category_name))
-    self.store.NewObject(category_name + ":" + id)
-    self.store.commit_store_transaction()
+    id = self.store.NewObject(category_name)
     obj = self.get_object(category_name,id)
     
     if parent is None:
@@ -368,19 +377,15 @@ class MMSystem (MMContainer):
     """
     pass
 
+  @Writer
   def set_name(self,name):
     """Set a user friendly name for the system.
 
     This would probably be the name for the project the system is used to store
     """
-    name_attrib = CreateAttributeValue(name)    
-    if hasattr(name_attrib,"_compose"):
-        name_attrib._compose(self)   
-    self.store.start_store_transaction()
-    self.store.SetAttribute(".defname",name_attrib.get_type(),name_attrib.get_parts())
-    self.store.commit_store_transaction()
+    nm = self._set_attr_item(".defname",name)
 
-
+  @Reader
   def get_name(self):
     """Return a userfriendly for the system.
 
@@ -393,6 +398,9 @@ class MMSystem (MMContainer):
         return str(attribute)
     return None
 
+  def _make_encoding(encoding):
+        "_raw",{'txt':encoding}
+
   @Writer
   def set_encoding(self,encoding):
     """Define default character set encoding for non-unicode data in thi system
@@ -402,14 +410,14 @@ class MMSystem (MMContainer):
     import codecs
     codecs.lookup(encoding) #Check encoding is known
 
+    self.old_encoding = self.encoding
     self.encoding = str(encoding)
     #We don't use the full attribute type schema here as the encoding
     #must be treated as simply as possibly because all string interpolation
     #depends on it. So we can't run the parser for this value - as the parser
     #may need this value for it's input
-    self.store.start_store_transaction()
-    self.store.SetAttribute(".encoding","_raw",{'txt':self.encoding})     
-    self.store.commit_store_transaction()
+    enc_value =  MMAttributeValue_Raw(parts = {'txt':self.encoding})
+    self._set_attr_item('.encoding',enc_value)
 
   def _get_encoding(self):
     if self.store.HasAttribute(".encoding"):
@@ -419,7 +427,8 @@ class MMSystem (MMContainer):
         return parts["txt"]
     else: return "ascii"
  
-  
+ 
+  @Reader 
   def get_encoding(self):
     return self.encoding
 
@@ -440,28 +449,50 @@ class MMSystem (MMContainer):
         yield  self[k]
 
   itervalues = __iter__
+  
+  def _find_node(self,root, path, lastpath = ""):
+      node = root
+      for element in path:
+          element = self.canonicalise(element)
+            
+          if node is None: 
+              raise Error.NullReference(lastpath)
+             
+          lastpath = repr(node) + ":" + element
+          if element != "":
+              node = node[element]
+      return node
+
 
   def __getitem__(self,obj): 
     self.logger.debug("System asked for %s"%obj)
 
     fullid = ""
     len = 0
-    for element in  obj.split(":"):
-        fullid += ":" + self.canonicalise(element)
-        len += 1
-        if len > 2:  raise KeyError(obj)       
-    
-    #Snip off leading  ':'
-    fullid = fullid[1:]
+    elements = obj.split(":")
+    el1 = self.canonicalise(elements[0])
+    #Get the first node in the path and then walk it, to find
+    # the target object 
+    node = self._get_item(el1,self._do_get_item,el1)
+    if node.is_deleted:
+        raise KeyError(el1)
 
+    node = self._find_node(node, elements[1:] , lastpath = el1)
+    return node
+    
+
+  def _do_get_item(self, fullid ):
     if self.store.HasCategory(fullid):
-         return self._get_item(fullid,MMCategory,self,fullid)
+         return MMCategory(self,fullid)
     elif self.store.HasObject(fullid): 
-        return self._get_item(fullid,MMObject,fullid,self,self.store.GetObjStore(fullid))
+        return MMObject(fullid,self,self.store.GetObjStore(fullid))
     elif self.store.HasAttribute(fullid):
-        return MakeAttributeValue(*(self.store.GetAttribute(fullid)))
+        val = MakeAttributeValue(*(self.store.GetAttribute(fullid)))
+        return MMAttribute(fullid,val,self,copy = False )
+
 
     raise KeyError(fullid)
+      
 
   def __delitem__(self,obj):
       path = obj.split(":")
@@ -487,14 +518,28 @@ class MMSystem (MMContainer):
     kwargs['flags'] = self.loadflags
     MysteryMachine.Packfile.SavePackFile(self,*args,**kwargs)
 
+  def discard(self,):
+    #Encoding is the only special thing.
+    # = and we don't awnt to trigger base as wee are not contained/
+    self.encoding = self.old_encoding
+
+  def writeback(self,):
+    self.old_encoding = self.encoding
+
+#  def start_write(self,*args):
+#    super(MMSystem,self).start_write(*args)
+
+
 class MMCategory(MMAttributeContainer):
         
-    def __init__(self,owner,name):
-        super(MMCategory,self).__init__(self,owner,name)
+    def __init__(self,owner,name,**kwargs):
+        super(MMCategory,self).__init__(self,owner,name,**kwargs)
         self.owner = owner
         self.name   = name
         self.logger = logging.getLogger("MysteryMachine.schema.MMCategory")
 
+    def get_owner(self,):
+        return self.owner
 
     def __repr__(self):
         return self.name
@@ -510,11 +555,25 @@ class MMCategory(MMAttributeContainer):
     @Reader
     def __getitem__(self,item):
         if item[0] == ".":
-            itemname = "." + self.canonicalise(item[1:])
-            return self._get_item(itemname,self._getAttribute,itemname)
-        else:
-            return self.owner.get_object(self.name,item)
-       
+            item = "." + self.canonicalise(item[1:])
+        node = self._get_item(item,self._do_get_item,item)
+        if node.is_deleted: raise KeyError(item)
+        return node
+
+    def _do_get_item(self, key ):
+      fullid = self.name + ":" + key
+      if self.owner.store.HasCategory(fullid):
+           return MMCategory(self,fullid)
+      elif self.owner.store.HasObject(fullid): 
+          return MMObject(key,self,self.owner.store.GetObjStore(fullid))
+      elif self.owner.store.HasAttribute(fullid):
+          val = MakeAttributeValue(*(self.owner.store.GetAttribute(fullid)))
+          return MMAttribute(key,val,self,copy = False )
+
+
+      raise KeyError(fullid)
+
+
     @Writer
     def __setitem__(self,item,value):
         if item[0] ==".":
@@ -524,24 +583,22 @@ class MMCategory(MMAttributeContainer):
                 del self[item] 
                 return
             
-            val = self._set_item(itemname,value).get_value()
-            self.owner.store.start_store_transaction()
-            self.owner.store.SetAttribute(self.name + ":"  +itemname,
-                                    val.get_type(),val.get_parts())    
-            self.owner.store.commit_store_transaction()
+            itm = self._set_attr_item(itemname,value)
+            val = itm.get_value()
 
         else: raise LookupError("Cannot directly set objects")
 
     @Writer
     def __delitem__(self, attrname):
         if attrname[0] ==".":
-            attrname = self.canonicalise(attrname) 
-            #Remove from cache 
-            self._invalidate_item(attrname)
-            #Remove from backing store. 
-            if self.owner.store.HasAttribute(self.name+":"+attrname):
-                 self.owner.store.DelAttribute(self.name+":"+attrname)    
-        else: del self.owner[self.name + ":" + attrname]
+            name = self.canonicalise(attrname) 
+            item = self._del_item(name,MMAttribute.delete_callback(self.owner,self.name + ":" + name))
+        else:
+            name = self.canonicalise(attrname)
+            item = self._del_item(name,MMObject.delete_callback(self,self.name + ":" + name))
+ 
+
+
 
     def _getAttribute(self,name):
       if not self.owner.store.HasAttribute(self.name+":"+name):
@@ -556,6 +613,29 @@ class MMCategory(MMAttributeContainer):
             yield  self[objkey] 
 
     itervalues = __iter__
+
+    @Writer
+    def NewObject(self,  parent = None , formathelper = None):
+       objs = list(self.iterkeys())
+       Id = self.canonicalise(policy.NewId(objs))
+       fullId = self.name + ":" + Id
+       obj = MMObject(Id,self,self.owner.store.GetObjStore(fullId),create =True)
+       self._new_item(Id,obj)
+       if parent is None:
+          #Get parent from category
+          try:
+              parent = self[".parent"]
+              parent = parent.getSelf()
+          except KeyError: pass
+          
+       if parent is not None: obj.set_parent(parent)
+       return obj
+
+    @Writer
+    def DeleteObject(self,name):
+        name = self.canonicalise(name)
+        item = self._del_item(name,MMObject.delete_callback(self,self.name + ":" + name))
+  
 
     def iteritems(self):
        for objkey in self.owner.EnumObjects(self.name):
@@ -573,3 +653,18 @@ class MMCategory(MMAttributeContainer):
         if type(newparent) is not MMObject: raise Error.InvalidParent()
 
         self['.parent'] = newparent
+
+
+    def writeback(self,):
+        if self.is_modified:
+            self.owner.store.NewCategory(repr(self))
+        if self.is_deleted:
+            self.owner.store.DeleteCategory(repr(self))
+
+        super(MMCategory,self).writeback()
+
+    @staticmethod
+    def delete_callback(system,name):
+        def callback():
+            system.store.DeleteCategory(name)
+        return callback

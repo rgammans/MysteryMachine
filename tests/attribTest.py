@@ -28,7 +28,6 @@ import unittest
 
 from types import NoneType
 
-from MysteryMachine.schema.MMSystem import TransactionManagerStub
 from mock.schema_top import *
 
 
@@ -43,8 +42,11 @@ class container(MMAttributeContainer):
         super(MMAttributeContainer,self).__init__(*args,**kwargs)
         self.parent = kwargs.get('parent',None)
         self.items  = { }
-        self.tm = TransactionManagerStub()
+        self.store = mock_store()
+        self.tm = TransactionManager(mock_lockman(),self.store)
+        self.owner = None
 
+    def get_nodeid(self,): return ""
     def get_root(self,):
         return self
 
@@ -60,7 +62,7 @@ class container(MMAttributeContainer):
             else: raise KeyError(i)
         return self._get_item(i,NoneType)
     def __setitem__(self,k,v):
-        self.items[k] = self._set_item(k,v)
+        self.items[k] = self._set_attr_item(k,v)
         return self.items[k]
 
     def __delitem__(self,i):
@@ -104,14 +106,22 @@ class attribTest(unittest.TestCase):
        attr=MMAttribute("document","test\n----\n\n\nA Message",None)
        self.assertEquals("test\n----\n\n\nA Message",attr.get_raw())
 
-    def testAttrParentStuff(self):
-       p = fakeParent()
-       attr=MMAttribute("document","test\n----\n\n\nA Message",p)
 
-       attr.set_value("diff")
-       self.assertTrue(p.Updated())
-       v1 = attr.get_value()
-       self.assertEquals("diff",str(v1))
+#  XXX Commented out as I don't believe this test 
+#      makes sense since we've added transactions. 
+#     as Attribute no handle saving themselves to the store
+#    and don't rely on the owners (or parents in the old nomenclature)
+#
+#    I've left this code to jog memories in case I'm wrong.
+#
+#    def testAttrParentStuff(self):
+#       p = fakeParent()
+#       attr=MMAttribute("document","test\n----\n\n\nA Message",p)
+#
+#       attr.set_value("diff")
+#       self.assertTrue(p.Updated())
+#       v1 = attr.get_value()
+#       self.assertEquals("diff",str(v1))
 
 
     def testNotify(self):
@@ -148,16 +158,16 @@ class attribTest(unittest.TestCase):
     def testAttribContainer(self):
         m = container()
         #Keep the attrib around so it stays in the cache.
-        a = m._set_item("name","str")
+        a = m._set_attr_item("name","str")
         self.assertEquals(type( a ) , MMAttribute )
         self.assertEquals(type( m._get_item("name",DummyPart,"Crap")) , MMAttribute )
         self.assertEquals(str(a),"str")
         self.assertEquals( m._get_item("name",DummyPart,"Crap") , a )
-        b = m._set_item("name","no string")
+        b = m._set_attr_item("name","no string")
         self.assertEquals(a,b)
-        c = m._set_item("notname","foo")
+        c = m._set_attr_item("notname","foo")
         self.assertNotEquals(b,c)
-        b = m._set_item("name",c)
+        b = m._set_attr_item("name",c)
         self.assertEquals(str(a),"foo")
     
     def testInheritance(self):
@@ -175,7 +185,7 @@ class attribTest(unittest.TestCase):
     def testEncoding(self):
         m = container()
         m["encoded"] = "String"
-        self.assertRaises(UnicodeDecodeError,m._set_item,"fake","Not ascii\xa5")
+        self.assertRaises(UnicodeDecodeError,m._set_attr_item,"fake","Not ascii\xa5")
         self.assertEquals(str(m["encoded"]),"String")
         self.assertRaises(KeyError,m.__getitem__,"fake")
         self.assertEquals(str(m["encoded"]),"String")
@@ -203,6 +213,7 @@ class attribTest(unittest.TestCase):
         a = MMUnstorableAttribute("name","str",obj)
         self.assertRaises(KeyError,obj.__getitem__,"name" )
         self.assertEquals(str(a),"str")
+        
 
         #Check set_value changes our attribute without modify it's claimed container.
         a.set_value("a different string")

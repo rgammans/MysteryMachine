@@ -304,6 +304,14 @@ class MMAttributeValue (MMBase ):
      return hash(["MMAttributeVal" , self.get_type() , self.get_parts()])
 
 
+class MMAttributeValue_Raw(MMAttributeValue):
+    """
+    A minimalistic attribtue value class used for
+    certain special purposes within the schema
+    """
+    typename = "_raw"
+    contain_prefs = {}
+
 class MMAttributeValue_BasicText(MMAttributeValue):
     """
     A single Macro part value type.
@@ -330,7 +338,7 @@ class MMAttributeValue_BasicText(MMAttributeValue):
        #Ensure text values can be transcribed in the system encoding
        # will rasise an exception we will propagate if not decodeable.
        decode(self.parts["txt"])
-
+       pass
 
 class MMAttributeValue_UnicodeText(MMAttributeValue):
     """
@@ -386,7 +394,8 @@ class MMAttributeValue_MMRef(MMAttributeValue):
         self.exports += [ "get_object" ]
 
     def _compose(self,obj = None):
-        if not self._validate(obj): raise Error()    
+        if not self._validate(obj): pass# raise Error()    
+        #pass
 
     def _validate(self, obj = None):
         objref = None
@@ -403,14 +412,15 @@ class MMAttributeValue_MMRef(MMAttributeValue):
         own_obj is not valid or the value will not validate.
         """
         ##TODO Consider caching the return result.
-  #      self.logger.debug( "refobj->%s<--" % attr)
+        self.logger.debug( "refobj->%r<--" %obj )
         pstr = self.get_raw(obj)
         #Special case answer.
         if pstr == "": return obj.get_root() 
-
-        self.logger.debug( "MMA-O:go:pstr  ->%s<--" % pstr)
-        objref = Grammar(obj).parseString(pstr)[0]
-  #      self.logger.debug( "ret = %s, class = %s" % (objref , objref.__class__ ))
+        objref = None
+        self.logger.debug( "MMA-O:go:pstr  ->%r<--" % pstr)
+        g = Grammar(obj)
+        objref = g.parseString(pstr)[0]
+        self.logger.debug( "ret = %r, class = %r" % (objref , objref.__class__ ))
         return objref
 
     def get_raw_rst(self,obj = None):

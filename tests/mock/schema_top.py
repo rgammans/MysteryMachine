@@ -33,7 +33,7 @@ their containers.
 # MMSYstem current as a mock TransactionManager until we 
 # have fully integrated the ACID complaince features.
 
-from MysteryMachine.schema.MMSystem import TransactionManagerStub
+from MysteryMachine.schema.TransactionManager import TransactionManager
 from MysteryMachine.schema.MMAttribute import * 
 
 
@@ -78,8 +78,8 @@ class mock_store(object):
 class fakeParent:
     def __init__(self):
         self.updated = False
-        self.tm = TransactionManagerStub()
         self.store = mock_store()
+        self.tm = TransactionManager(mock_lockman(),self.store)
 
     def Updated(self):
         return self.updated
@@ -89,7 +89,7 @@ class fakeParent:
     def getSelf(self,):
         return self
 
-    def __setitem__(self,k,v):
+    def writeback(self,):
         self.updated = True
     def resetUpdate(self):
         self.updated = False

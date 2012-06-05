@@ -42,120 +42,47 @@ class MMAttributeContainer(MMContainer):
     MMAttributes
     """
     @Writer
-    def _set_item(self,attrname  , attrvalue , notify = True):
-
-        """
-        Handle MMAttribute assignment.
-
-        This needs to see if there is an existing attribute, and set it value
-        or create a new Attribute object.
-        """
-        global recurse_count
-
-        ## Get current status so we can rollback in case of an exeception
+    def _set_attr_item(self,attrname  , attrvalue ):
         attrobj  = None
-        oldvalue = None
-        overwrite = False
 
+        #Sanity check.
         if attrvalue is None: raise ValueError("Cannot store none")
         objname = "unknown" 
-
+        
         try:
             attrobj = self[attrname]
         except KeyError:
             pass
-        else:
-            objname = repr(attrobj)
-            avobj = attrobj.get_value()
-            self.logger.debug("Staring with %r",avobj.get_parts())
-            #Don't take a copy of ShadowAttributes, as just deleting their
-            # local instance has the correct effect.
-            if not isinstance(avobj,ShadowAttributeValue):
-                oldvalue = _copy.copy(avobj)
-     
+
         #Deal only with any value part of an existing attribute.
         #  to create a reference caller should use getRef()
         if isinstance(attrvalue,MMAttribute):
             attrvalue=attrvalue.get_value()
 
-        #dispvalue is only used for debugging - but the early exit is important        
-        dispvalue = repr(attrvalue)
-        if isinstance(attrvalue ,MMAttributeValue):
-            dispvalue = "parts-%r" % attrvalue.get_parts() 
-            if attrvalue == oldvalue:
-                 #It's all ok, but we need to ensure compose is called.
-                 # (I'm pretty sure the only way this can be a no-op and raise is
-                 #  if we are a sub-call from inside ourselves)
-                 self.logger.debug("compose_only(%i) %s" % (recurse_count+1, dispvalue ))
-                 attrobj._compose()
-                 return attrobj 
+        if  attrobj  is None:
+            self.logger.debug("Creating new value object")
+            attrobj = MMAttribute(attrname,attrvalue,self)
+        else:
+            self.logger.debug("basic set_value")
+            attrobj.set_value(attrvalue )
 
 
-        #Recurse count is only used to make the debug tracking more readable
-        recurse_count = recurse_count+1
-        self.logger.debug( "setting(%i) %s  from %r to %s" % (recurse_count, objname , oldvalue and oldvalue.get_parts()  ,dispvalue ))
-       
- 
-        try:
-          
-            if  attrobj  is None:
-                self.logger.debug("Creating new value object")
-                attrobj = MMAttribute(attrname,attrvalue,self)
-            elif isinstance(avobj,ShadowAttributeValue):
-            #elif attrobj.get_owner() is not self:
-                #Check the attribute didn't come from a parent.
-                self.logger.debug("Creating copy of shadow value object")
-                attrobj  = MMAttribute(attrname,avobj._get_target(),self, copy = True ) 
-                attrobj.set_value(attrvalue ,writeback = False )
-            else:
-                self.logger.debug("basic set_value")
-                attrobj.set_value(attrvalue )
-            
-            #Write back to the cache
-            super(MMAttributeContainer,self)._set_item(attrname,attrobj) 
-            
-            #Now the value is in the cache it (and referenced here)
-            #so it won't expire - we can do any final fixup that the 
-            #value object might require - most value objects probably don't
-            #need this but DLink very much does!. This fixup should then occur
-            #before anythini is written to the store.
-            attrobj._compose()
-            if notify: self._do_notify()
-            return attrobj
+        #Write back to the cache
+        super(MMAttributeContainer,self)._new_item(attrname,attrobj) 
+        
+        #Now the value is in the cache it (and referenced here)
+        #so it won't expire - we can do any final fixup that the 
+        #value object might require - most value objects probably don't
+        #need this but DLink very much does!. This fixup should then occur
+        #before anythini is written to the store.
+        attrobj._compose()
+        #if notify: self._do_notify()
+        return attrobj
 
-        except:
-            #Roll back any have complete changes
-            (t1, e1, tb1 ) =sys.exc_info()
-            self.logger.warn("Exception - rollingback %s"%e1)
-            try: 
-                if oldvalue is None:
-                    del self[attrname]
-                else:
-                    #self._invalidate_item(attrname)
-                    if attrobj is not None:
-                        if attrobj.get_value() != oldvalue:
-                            self._set_item(attrname,oldvalue)
-                        else: self.logger.warn( "rollback skipped! - nothing to do")
-            except:
-                 (t2, e2, tb2 ) =sys.exc_info()
-                 self.logger.warn("Exception during rollback %s,%s"%(t2,e2))
-                 import traceback
-                 self.logger.debug(traceback.format_tb(tb2))
-            finally:
-                #Re raise orginally exceptions.
-                raise t1,e1,tb1
-        finally:
-            self.logger.debug( "completing (%i)"%recurse_count)
-            recurse_count = recurse_count-1
            
-    @Reader 
-    def _get_item(self,key,func,*args):
-        item = super(MMAttributeContainer,self)._get_item(key,func,*args)
-        item._compose()
-        return item
-
-
-
+    def _do_compose(self,item):
+        if isinstance(item,MMAttribute):
+            item._compose()
 
 
 class MMAttribute (MMAttributeContainer):
@@ -191,6 +118,7 @@ class MMAttribute (MMAttributeContainer):
      self.name=str(name)
      self.valueobj=CreateAttributeValue(value , copy)
      self.owner=owner
+     self.oldvalue = None
      self.logger    = logging.getLogger("MysteryMachine.schema.MMAttribute")
      #self.logger.setLevel(logging.DEBUG)
 
@@ -251,14 +179,16 @@ class MMAttribute (MMAttributeContainer):
   @Reader
   def get_value(self):
      return self.valueobj
+
   @Reader
   def get_type(self,):
      """return the type of value stored in the attribute"""
      if valueobj: return valueobj.get_type()
      else: return None
 
+  @Writer
   def set_value(self,val, copy = True , writeback = True ):
-     #Quit early in case of No-Op - triggered by _writeback.
+     #Quit early in case of No-Op 
      if val is self.valueobj: 
         return
 
@@ -267,8 +197,10 @@ class MMAttribute (MMAttributeContainer):
      except Exception, e:
         if str(e): self.logger.warn(e)
         self.valueobj = CreateAttributeValue(val,copy)
-     if writeback: self._writeback()
-     self._do_notify()
+
+     self._invalidate_cache()        
+
+     self._compose()
 
   #This is intend for method lookup
   def __getattr__(self,name):
@@ -276,10 +208,6 @@ class MMAttribute (MMAttributeContainer):
       if name in self.valueobj.exports:
         return functools.partial(getattr(self.valueobj,name),obj = self)
       else: raise AttributeError("%s not in %s"% ( name,repr(self) ) )
-
-  def _writeback(self):
-     self.logger.debug("writing back %r - > %s\n"%(self,self.valueobj.parts))
-     self.owner[self.name] = self.valueobj
 
   @Reader
   def getRef(self):
@@ -315,23 +243,21 @@ class MMAttribute (MMAttributeContainer):
      
      return self._get_item(self._keymap(name),self._makeattr,self._keymap(name))
   
-  @Writer
+  @Writer 
   def __setitem__(self,name,value):
      if '__setitem__' not in self.valueobj.exports:
         raise TypeError("%s is not indexable (MM)" % self.valueobj.__class__)
      
-     attr = self._set_item(name,value,notify= False)
+     attr = self._set_attr_item(name,value)
      self.valueobj.__setitem__(name,attr.get_value(), obj = self)
-     self._writeback()
 
   @Writer
   def __delitem__(self,name):
      if '__delitem__' not in self.valueobj.exports:
        raise TypeError("%s is not indexable (MM)" % self.valueobj.__class__)
      
-     self._invalidate_item(name)
+     self._del_item(name,lambda :None)
      self.valueobj.__delitem__(name,obj = self )
-     self._writeback()
 
   @Reader
   def __contains__(self,name):
@@ -377,6 +303,46 @@ class MMAttribute (MMAttributeContainer):
   
   itervalues = __iter__ 
 
+  @staticmethod
+  def delete_callback(system,name):
+      def callback():
+          system.store.DelAttribute(name)
+      return callback
+
+  #Deprecated.
+  def _writeback(self,): pass
+ 
+  def writeback(self,):
+        self.logger.debug("writing back a %s to %r"%(self.valueobj.get_type(),self))
+        #print ("writing back a %s to %r"%(self.valueobj.get_type(),self))
+        store = self.get_root().store
+        #Don't writeback if our parent is also an attribute, as then
+        # it is it's resopnibility to do store stuf
+        ancestor = self.get_ancestor()
+        if not isinstance(ancestor,MMAttribute):
+            self.logger.debug("\t(t,v)->(%r,%r)"%( self.valueobj.get_type(),self.valueobj.get_parts() ))
+            store.SetAttribute(self.get_nodeid(),self.valueobj.get_type(),self.valueobj.get_parts())    
+        else: 
+            self.logger.debug("\tterminated writeback as contained by %r"%ancestor)
+        self.oldvalue = None
+
+  def start_write(self,*args):
+        #print ("preparing write to %r"%self)
+        if self.oldvalue is None:
+            self.oldvalue = _copy.copy(self.valueobj)
+            if isinstance(self.valueobj,ShadowAttributeValue):
+                #print "elevating shadow"
+                #Swap copy and current as the Shadow wants to 
+                # reinstated on rollback not a copy..
+                self.valueobj,self.oldvalue = self.oldvalue,self.valueobj
+                
+        return super(MMAttribute,self).start_write(*args)
+
+  def discard(self,):    
+        self.oldvalue , self.valueobj = None, self.oldvalue
+
+
+
 
 #        Since MMUnstorableAttribtes doesn't honor the owner
 #        properties of MMAttributes, they shouldn't be considered
@@ -387,12 +353,11 @@ class MMAttribute (MMAttributeContainer):
 #        isinstance(MMAttribute,MMUnstorableAttribute()) should
 #        probably be true -  as it is  a more readable (and obviously correct)
 #        test, for both object types.
-      
 class MMUnstorableAttribute(MMAttribute):
     """A temporary attribute which is only weakly bound to it's owner.
 
     Specifically a MMUnstorableAttribute is never written back
-    to it's owning object, and consequently it's value is never _compose()'d
+    to it's owning object.
 
     Essentially this attribtue *lies* about having an owner.
 
@@ -408,10 +373,11 @@ class MMUnstorableAttribute(MMAttribute):
     # I strongly advise in your unittests you test it as part
     # of a MMUnstorableAttribute as well.
     #
+    # You may need some special hadnling in compose.
 
     def __init__(self,*args,**kwargs):
         super(MMUnstorableAttribute,self).__init__(*args,**kwargs)
         self._compose()
 
-    def _writeback(self):
+    def writeback(self):
         pass

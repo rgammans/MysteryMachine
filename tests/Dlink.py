@@ -62,6 +62,9 @@ class DlinkTests(unittest.TestCase):
         #self.logger.debug( "object1 => " , repr(self.object1))
         #self.logger.debug( "object2 => " , repr(self.object2))
 
+    def tearDown(self):
+        logging.getLogger("MysteryMachine.schema.MMDLinkValue").info("-------------------")
+        logging.getLogger("MysteryMachine.schema.MMDLinkValue").setLevel(logging.WARN)
 
     def testLink(self):
         dlk.CreateBiDiLink(self.object1,"link",self.object2,"link" )
@@ -207,6 +210,26 @@ class DlinkTests(unittest.TestCase):
         self.assertEquals(self.object1["ulink2"].get_object(),self.object3)
         self.assertEquals(self.object3["uobjlink1"].get_object(),self.object1)
 
+    def testUnstored2(self):
+        attr = MMUnstorableAttribute("foo", dlk.CreateAnchorPoint(self.object1) , self.object1)
+        self.assertRaises(KeyError,self.object1.__getitem__,"foo")
+        #Test that the value can be set multiple times with a problems
+        self.object3["uobjlink1"] = dlk.CreateAnchorPoint(self.object3)
+        self.object1["ulink2"] = attr
+        self.object3["uobjlink1"] = dlk.ConnectTo(self.object1["ulink2"] )
+        self.assertEquals(self.object1["ulink2"].get_object(),self.object3)
+        self.assertEquals(self.object3["uobjlink1"].get_object(),self.object1)
+   
+    def testConnectTwice(self):
+        #Test that the value can be set multiple times with a problems
+        self.object3["uobjlink1"] = dlk.CreateAnchorPoint(self.object3)
+        self.object2["uobjlink1"] = dlk.CreateAnchorPoint(self.object2)
+        self.object3["uobjlink1"] = dlk.ConnectTo(self.object2["uobjlink1"] )
+        self.object3["uobjlink1"] = dlk.ConnectTo( self.object2["uobjlink1"] )
+        self.assertEquals(self.object2["uobjlink1"].get_object(),self.object3)
+        self.assertEquals(self.object3["uobjlink1"].get_object(),self.object2)
+
+
     def testUnstoredWithShadow(self):
         self.dummyparent["usobjlink1"] = dlk.CreateAnchorPoint(self.dummyparent)
         attr = MMUnstorableAttribute("foo", dlk.CreateAnchorPoint(self.object1) , self.object1)
@@ -217,7 +240,7 @@ class DlinkTests(unittest.TestCase):
         self.assertEquals(   self.object3["usobjlink1"].get_object() , None )
         self.assertRaises(KeyError,self.object1.__getitem__,"foo")
         self.object1["uslink2"] = attr
-        self.object2["usobjlink1"] = dlk.ConnectTo( self.object1["uslink2"])
+        #self.object2["usobjlink1"] = dlk.ConnectTo( self.object1["uslink2"])
         self.assertEquals(self.object1["uslink2"].get_object(),self.object2)
         self.assertEquals(self.object2["usobjlink1"].get_object(),self.object1)
         self.assertEquals(self.dummyparent["usobjlink1"].get_object(),None)

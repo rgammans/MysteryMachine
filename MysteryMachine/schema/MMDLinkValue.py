@@ -101,9 +101,10 @@ in list attributes if more complex structures are required.
 
 from __future__ import with_statement
 from MMAttributeValue import MMAttributeValue
-from MMAttribute import MMAttribute
+from MMAttribute import MMAttribute, MMUnstorableAttribute
 
 from MysteryMachine.parsetools.grammar import Grammar
+from MysteryMachine.schema.Locker import Reader,Writer
 
 import copy
 import weakref
@@ -166,8 +167,6 @@ def _container_walk(root,path):
 
 
 def _walk_back(obj,dist):
-    #FIXME Fails in the case of categories, as an object's owner is the system not it's
-    #      category. Hmm.
     for i in range(dist): obj = obj.get_ancestor()
     return obj 
 
@@ -187,6 +186,7 @@ def CreateBiDiLink(obj1,attrname1,obj2,attrname2):
     baseref1[basepath1_elements[-1]] = CreateAnchorPoint(obj1)
     baseref1[basepath1_elements[-1]] = ConnectTo( baseref2[basepath2_elements[-1]] )
 
+#@Writer
 def ConnectTo(attribute):
     """
     This functions returns a half-link so that it can be used to 
@@ -245,7 +245,6 @@ class MMDLinkValue(MMAttributeValue):
         self.valid = False 
         self.in_assignment = False
 
-
     def assign(self,other):
       """Called by MMAttribute when an value assignment occurs - not exported"""
       self.logger.debug( "in assign")
@@ -254,9 +253,11 @@ class MMDLinkValue(MMAttributeValue):
           with _member_guard(self,"in_assignment") as assign_guard:
             self.logger.debug( "got inassign lock")
             oldpartner =  self.get_partner()
+
             #Keep hold of old partner data, so we can delink it later.
             if oldpartner is not None:
                 oldpanchor = oldpartner.get_anchor()
+
             self.logger.debug( "oldp>%r"%oldpartner )
 
             self.parts =  copy.copy(other.parts)
@@ -301,6 +302,7 @@ class MMDLinkValue(MMAttributeValue):
                 self.anchordist = int(sniplen)
             self.partner_path=attributename
        else:
+            self.obj= None
             self.partner_path = None
             if "anchor" in self.parts:
                 self.anchordist = None
@@ -345,7 +347,7 @@ class MMDLinkValue(MMAttributeValue):
         #If only and anchor point the only thing left to do is clear the
         # cached target if it exists.
         if self.partner_path is None:
-            self.obj = None
+            #self.obj = None
             self.logger.debug("Completing ap with anchordist %i", self.anchordist)
             return
         elif "target" in self.parts:
@@ -380,13 +382,13 @@ class MMDLinkValue(MMAttributeValue):
                 #we should do that then to the do we need moved check.
                 #pv._compose(partner)
 
-
-            if pv.obj is not self.get_anchor(obj):
+            #Don't modifiy the parner of an unstoreable, and ensure partner defined.
+            if not isinstance(obj,MMUnstorableAttribute) and pv.obj is not self.get_anchor(obj):
                 #This is where we handle a moved link from an existing destination,
                 # we need to  move the link back to use and back the old destination
                 #Do partner Fixup
                 ptarget_str = repr(obj)
-                pval = MMDLinkValue( parts = {'target': ptarget_str +","+str(pv.anchordist)} )  
+                pval = MMDLinkValue( parts = {'target': ptarget_str +","+str(pv.anchordist or 0)} )  
                 self.logger.debug( "pval> %s "%pval.parts)
                 partner.set_value( pval )
             else:

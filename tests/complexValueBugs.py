@@ -47,6 +47,11 @@ class complexValTest(unittest.TestCase):
     def setUp(self):
         StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
         self.logger = logging.getLogger("")
+        self.logger.setLevel(logging.INFO)
+        import tempfile
+        d=tempfile.mkdtemp()
+        os.rmdir(d)
+        #self.system=MMSystem.Create("hgafile:"+d)
         self.system=MMSystem.Create("dict:ObjectTests")
         self.system.NewCategory( "Template" )
         self.dummyparent             = self.system.NewObject( "Template" )
@@ -60,26 +65,54 @@ class complexValTest(unittest.TestCase):
         self.object.set_parent(self.parent)       
 
         self.object2                  = self.system.NewObject("Dummy") 
-  
+    def tearDown(self,): 
+        #self.logger.info( "+++++++++++++++++++++++++++++++")
+        pass
+
     def testListInheirtance(self):
+        
         self.parent["a_list"]  = [ "" ]
         self.assertEquals(self.parent["a_list"].get_value().get_type(), "list")
         self.assertEquals(self.object["a_list"].get_value().get_type(), "list")
         self.assertEquals(self.parent["a_list"][0].get_raw(), "")
         self.assertEquals(self.object["a_list"][0].get_raw(), "")
 
-        ##This is counter-intuiutive *but* anything else would be too confusing...
+       ##This is counter-intuiutive *but* anything else would be too confusing...
         #  the reason we have changed data in both elements is because we have called
         #  setitem on the value object change the shared value directly...
+        # XXX XXX XXX
+        # This has chnaged with acid compliance - now modifying object[a_list] auto vivifies 
+        # the attribute in COW like manner.
         self.object["a_list"][0]  =  "data"
-        self.assertEquals(self.parent["a_list"][0].get_raw(), "data")
+        #self.assertEquals(self.parent["a_list"][0].get_raw(), "data")
+        self.assertEquals(self.parent["a_list"][0].get_raw(), "")
         self.assertEquals(self.object["a_list"][0].get_raw(), "data")
 
         self.object["a_list"]  =  [ "differentdata" ]
-        self.assertEquals(self.parent["a_list"][0].get_raw(), "data")
+        self.assertEquals(self.parent["a_list"][0].get_raw(), "")
         self.assertEquals(self.object["a_list"][0].get_raw(), "differentdata")
 
+        self.object["c_list"]  =  [ "differentdata" ,"moredata"]
+        self.assertEquals(self.object["c_list"][0].get_raw(), "differentdata")
+        self.assertEquals(self.object["c_list"][1].get_raw(), "moredata")
 
+        oldlevel= self.logger.getEffectiveLevel()
+        #New list for testing the append behavior
+        # first check we have an empty list.
+        self.parent["b_list"]  = [ ]
+        self.assertEquals(len(self.parent["b_list"]), 0) 
+        self.assertEquals(len(self.object["b_list"]), 0)
+       
+        #Now append through the object and check it has the right data in an element
+        # and the ancestor attribute is untouched
+        #o=self.object["b_list"]
+        #o.append("S")
+        self.object["b_list"].append("S")
+        self.assertEquals(len(self.object["b_list"]), 1)
+        self.assertEquals(self.object["b_list"][0].get_raw(), "S")
+        self.assertEquals(len(self.parent["b_list"]), 0)
+
+        self.logger.setLevel(oldlevel)
     def testListAndDlink(self):
         self.object["linklist"]  = [dlk.CreateAnchorPoint(self.object)] * 2 
         self.assertEquals(self.object["linklist"][0].get_value().get_type(), "bidilink")
@@ -118,6 +151,8 @@ class complexValTest(unittest.TestCase):
         attr[0] = dlk.ConnectTo (self.object2["link2"])
         self.assertRaises(KeyError,self.object.__getitem__,".temp")
         self.assertEqual(self.object2["link"].get_partner(),None)
+
+
 
 def getTestNames():
     return [ 'complexValueBugs.complexValTest' ]
