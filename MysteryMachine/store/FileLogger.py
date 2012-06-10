@@ -886,7 +886,7 @@ class FileLoggerSimpleFS(object):
         self.rotatelog(**kwargs)
 
     def _findlogs(self,):
-        logs = glob.glob(os.path.join(self.home,"..xaction.*.log"))
+        logs = glob.glob(os.path.join(*self._get_logname("*")))
         modlogger.debug( "Logs:%s"%logs)
 
         return logs
@@ -897,9 +897,15 @@ class FileLoggerSimpleFS(object):
         if avail:
             return os.path.join(self.home, avail[0])
         else:
-            nr = max([x.split(".")[3] for x in chain(["..xaction.-1.log"],names)])
+            path,  zeroth_log = self._get_logname(-1)
+            nr = max([x.split(".")[3] for x in chain([zeroth_log],names)])
             nr = int(nr) +1
-            return os.path.join(self.home, "..xaction.%s.log"%nr)
+            return os.path.join(*self._get_logname(nr))
+
+    def _get_logname(self,seq):
+        """Takes integer decribing the sequence nr of the log file,
+        or * to generate a glob pattern for logfiles"""
+        return self.home,"..xaction.%s.log"%seq
 
     def new_opid(self,):
         """Internal: Create a new unique transaction id (Thread safe)"""
