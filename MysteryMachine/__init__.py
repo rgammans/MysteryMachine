@@ -32,8 +32,6 @@ system.
 
 from __future__ import with_statement
 
-import mercurial
-import mercurial.ui
 import sys
 import types
 import re
@@ -248,8 +246,6 @@ class _LibraryContext(object):
 
         # TODO Write close action to logfile. 
         #     (Important so we can trace any bug provoked by an early close).
-
-        # TODO Iterate around opened systems and Save/NoSave action
          
         #Delete our context to force a reinit
         self.__class__.instance = None
@@ -283,17 +279,6 @@ class _LibraryContext(object):
         Returns the extension lib instance to use.
         """
         return self.ExtLib
-
-    def GetMercurialUi(self):
-        """
-        Gets a mercurial ui instance to use when calling mercurial api
-        functions.
-        """
-        if self.Ui == None:
-            return mercurial.ui.ui()
-        else:
-            return self.Ui.mercurial_ui()
-
 
     def get_app_option(self,name):
         """

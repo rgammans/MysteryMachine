@@ -20,9 +20,6 @@
 
 from __future__ import with_statement
 
-import mercurial
-import mercurial.cmdutil as cmdutil
-from mercurial import hg
 
 import MysteryMachine
 import MysteryMachine.store.Base
@@ -30,6 +27,9 @@ import MysteryMachine.store.Base
 import sys
 import os 
 import itertools
+
+import hglib
+import hglib.client
 
 class HgStoreMixin(object):
     """
@@ -39,29 +39,19 @@ class HgStoreMixin(object):
 
     def __init__(self,*args,**kwargs):
         super(HgStoreMixin,self).__init__(*args,**kwargs)
-        #We get the Ui from our Root so that our Ui's can provide their own
-        # implementation.
-        #
-        # The with statement doesn't make the best sense here as we keep the 
-        # resources past the end of the block /BUT/ our special use of singletons 
-        # in startapp should take care of it  - providing StartApp is also guarding
-        # main routine.
-        with MysteryMachine.StartApp() as MMGlobals:
-            self.ui = MMGlobals.GetMercurialUi()
-            self.repo = hg.repository(self.ui,self.get_path(),create = (kwargs.get('create') or 0))
+        if kwargs.get('create',None):
+            hglib.init(self.get_path(),encoding="utf-8")
         
-    def _wdir_obj(self):
-        # Mask the differences between  hg1.5, and later
-        if hasattr(self.repo,"add"):
-            addobj = self.repo
-        else:
-            addobj = self.repo[None]
-        return addobj
-
-
+        self.repo = hglib.open(self.get_path(),encoding="utf-8")
+        #self.repo = hglib.repository(self.ui,self.get_path(),create = (kwargs.get('create') or 0))
+        
     def start_store_transaction(self,):
         self.filechanges = []
         super(HgStoreMixin,self).start_store_transaction()
+
+    def abort_store_transaction(self,):
+        self.filechanges = []
+        super(HgStoreMixin,self).abort_store_transaction()
 
     def commit_store_transaction(self,):
         super(HgStoreMixin,self).commit_store_transaction()
@@ -76,9 +66,8 @@ class HgStoreMixin(object):
             self._Add_file(filename)
 
     def _Add_file(self,filename):
-        if filename not in self.repo[None]:
-            self._wdir_obj().add( [ filename  ]) 
-
+        if filename not in (x[4] for x in self.repo.manifest()):
+            self.repo.add( files = [ os.path.join(self.path,filename)  ]) 
     def Remove_file(self,filename):
         if self.supports_txn:
             self.filechanges.append(("r",filename,))
@@ -86,40 +75,46 @@ class HgStoreMixin(object):
             self._Remove_file(filename)
 
     def _Remove_file(self,filename):
-       if filename in self.repo[None]:
-          s = self.repo.status()
-          #Is the file got the added status?
-          if filename in s[1]:
-            self._wdir_obj().forget( [filename] )
-          else:
-            self._wdir_obj().remove( [filename] )
-
+        addedlist =  [ f[1] for f in  self.repo.status() if f[0] == 'A' ]
+        #Is the file got the added status?
+        if filename in addedlist:
+          self.repo.forget( files = [os.path.join(self.path,filename)] )
+        else:
+          self.repo.remove( files = [os.path.join(self.path,filename)] )
+    
     def commit(self,msg):
         self.lock()
-        rv = self.repo.commit(msg, None, None , cmdutil.match(self.repo),
-                         editor=cmdutil.commiteditor, extra= { })
+        print "%r"%msg
+        try:
+            rv = self.repo.commit(message=msg,user ="foo" )
+        except hglib.error.CommandError, c:
+            print "E:",c.err
+            print "R:",c.ret
+            print "O:",c.out
+            print "A:",c.args
+            raise
         self.unlock()
         return rv
 
     def rollback(self):
-        
-        return self.repo.rollback()
+        return self.repo.rawcommand(["rollback",])
 
     def revert(self,revid):
-        #Forcing to string ensures the revid is in a form mercurial is happy with
+        #Forcing to string ensures the revid is in a self.repo.log()form mercurial is happy with
         # and allows changectx objects to be passed
-        return mercurial.hg.revert(self.repo,str(revid),None)
+        return self.repo.update(str(revid),clean=True)
 
     def getChangeLog(self):
-        for change in self.repo:
-            #FIXME:
-            # We will want to wrap this into a generic container so
-            # other SCMs are usable.
-            # 
-            # This wraping requires integration with the underlying store
-            # so filenames <-> MysteryMachine names can be mapped if poss.
-            yield self.repo[change]
 
+        class HgRevision(hglib.client.revision):
+            repo = self.repo
+            def __str__(self,):
+                return self[1]
+
+            def manifest(self,):
+                return self.repo.manifest(rev=self[0])
+
+        return ( HgRevision(*x) for x in self.repo.log() )
 
     def uptodate(self,*args,**kwargs):
         """
@@ -129,15 +124,11 @@ class HgStoreMixin(object):
 
         Up to date - is the equivalent of an empty result from 'hg status'
         """
-        modified, added, removed, deleted, unknown, ignored, clean = self.repo.status()
+        significant_status = "MA"
         if not kwargs.get("deleted"):
-            deleted = []
-
-        for list in itertools.chain(modified,added,removed):
-            #We're not interested in deleted
-            return False
-
-        return True 
+            significant_status += "R"
+    
+        return all( (x[0] not in significant_status for x in self.repo.status() ) )
 
     def clean(self,*args,**kwargs):
         """
@@ -151,10 +142,8 @@ class HgStoreMixin(object):
         if hasattr(mysuper,"clean"):
             mysuper.clean(*args,**kwargs)
         if not self.uptodate():
-            self.ui.warn("%slean requested in non-up-todate repo." % (
-                         "Forced c" if kwargs.get('force') else "C"  
-                        ))
-
+            self.logger.warn("%slean requested in non-up-todate repo." % (
+                         "Forced c" if kwargs.get('force') else "C" )) 
             if not kwargs.get('force'): return
             
         if kwargs.get('full'):
@@ -168,8 +157,7 @@ class HgStoreMixin(object):
                     dirs.remove('.hg')
 
         else:
-            #Basic clean - just remove files stored in revision control.
-            ctx = self.repo[None]
-            for f in ctx:
+            #Basic clean - just remove files in the manifest and marked as added.
+            for f in (x[1] for x in self.repo.status(all=True) if x[0] in 'MARC`' ):
                 os.unlink(os.path.join(self.get_path(),f))
 

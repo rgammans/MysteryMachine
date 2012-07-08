@@ -29,7 +29,7 @@ import MysteryMachine.Exceptions as Exceptions
 from MysteryMachine.schema.MMSystem import MMSystem
 from MysteryMachine.Exceptions import *
 
-
+import datetime
 import tempfile
 import zipfile
 import os
@@ -179,7 +179,7 @@ def OpenVersion0(workdir,scheme,flags = { } ):
     system = MMSystem.OpenUri(scheme+":"+workdir,flags)
     log = list(system.getChangeLog())
     #Unpack last rev into working dir and open MMsystem
-    system.Revert(log[-1])
+    system.Revert(log[0])
     return system
 
 
@@ -194,7 +194,10 @@ def SavePackFile(system,*args,**kwargs):
     if len(args) > 0: filename = args[0]
     if not filename: raise NoPackFileName()
 
-    system.Commit(kwargs.get('message'))
+    if not system.store.uptodate():
+        default_commit_message = "Auto commit for packfile save at %s"%datetime.datetime.now()
+        system.Commit(kwargs.get('message',default_commit_message))
+
     system.store.clean()
     f  = file(filename,"w")
     pack = zipfile.ZipFile(filename,"w")

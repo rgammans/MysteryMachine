@@ -29,7 +29,6 @@ from MysteryMachine.schema.MMObject import MMObject
 from MysteryMachine.schema.MMSystem import MMSystem
 
 
-import mercurial.ui as hgui
 import tempfile
 
 import wx
@@ -363,11 +362,6 @@ class MainWindow(wx.Frame):
         self.app = app
 
 
-class WxMercurialUi(hgui.ui):
-    def plain(self):
-        """Activates plain mode  so parsing of repsonses is easier"""
-        return True
-
 class MMWxApp(wx.PySimpleApp):
     def __init__(self,options  = []):
         wx.PySimpleApp.__init__(self)
@@ -383,7 +377,6 @@ class MMWxApp(wx.PySimpleApp):
         win.SetApp(self)
         win.Show()
 
-        self.ui = WxMercurialUi()
         self.frames  =  { None: win }
         self.systems =  { win: None }
     
