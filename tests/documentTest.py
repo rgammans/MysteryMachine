@@ -39,6 +39,9 @@ class docTest(unittest.TestCase):
         self.s.NewCategory("character")
         self.s.NewCategory("docs")
 
+    def tearDown(self,):
+        self.app.close()
+
     def test1(self):
         c1     = self.s.NewObject("character")
         c1["name"]    = "Freddie Bloggs"

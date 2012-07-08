@@ -83,7 +83,10 @@ class container(MMAttributeContainer):
 
 class attribTest(unittest.TestCase):
     def setUp(self):
-        StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])    
+        self.ctx = StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])    
+      
+    def tearDown(self,):
+        self.ctx.close()
  
     def testCreate(self):
        p = fakeParent()

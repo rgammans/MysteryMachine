@@ -39,18 +39,18 @@ DummySystem=DummySystemClass()
 
 class filestoreTests(scmTests,storeTests,unittest.TestCase):
     def mySetUp(self):
-        StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])
+        self.ctx = StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])
         self.mpath = tempfile.mkdtemp(prefix="mysmac")
         os.rmdir(self.mpath)
         self.store=HgFileStore("hgafile:"+self.mpath,create = True)
         self.store.set_owner(DummySystem)
         self.has_scm     = True
     
-    def tearDown(self):
-        self.store.lock()
+    def myTearDown(self):
+        self.ctx.close()
         shutil.rmtree(self.mpath)
-        self.store.unlock()
-#        os.rmdir(self.mpath)
+        if os.path.exists(self.mpath):
+            os.rmdir(self.mpath)
 
     def processDirs(self,dirs):
         if '.hg' in dirs:

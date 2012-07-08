@@ -40,7 +40,7 @@ import sys
 
 class DlinkTests(unittest.TestCase):
     def setUp(self):
-        StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
+        self.ctx = StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
 
 
         self.system=MMSystem.Create("dict:ObjectTests")
@@ -65,6 +65,7 @@ class DlinkTests(unittest.TestCase):
     def tearDown(self):
         logging.getLogger("MysteryMachine.schema.MMDLinkValue").info("-------------------")
         logging.getLogger("MysteryMachine.schema.MMDLinkValue").setLevel(logging.WARN)
+        self.ctx.close()
 
     def testLink(self):
         dlk.CreateBiDiLink(self.object1,"link",self.object2,"link" )

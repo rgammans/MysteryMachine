@@ -107,7 +107,13 @@ class ConfigYamlTest(unittest.TestCase):
         cfg1.read(tstfile)
         self.assertEquals(cfg1['test1'],"foo")
         self.assertEquals(cfg1['test2'],{'a':'2' })
-     
+         #cleanup
+        try:
+            os.remove(tstfile) 
+        except:
+            pass 
+
+    
 
     def testTestMode(self):
         tstfile = tempfile.NamedTemporaryFile(suffix=".yaml")

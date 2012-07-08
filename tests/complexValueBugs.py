@@ -45,7 +45,7 @@ from MysteryMachine.store.dict_store import *
     
 class complexValTest(unittest.TestCase):
     def setUp(self):
-        StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
+        self.ctx = StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
         self.logger = logging.getLogger("")
         self.logger.setLevel(logging.INFO)
         import tempfile
@@ -65,9 +65,9 @@ class complexValTest(unittest.TestCase):
         self.object.set_parent(self.parent)       
 
         self.object2                  = self.system.NewObject("Dummy") 
+
     def tearDown(self,): 
-        #self.logger.info( "+++++++++++++++++++++++++++++++")
-        pass
+        self.ctx.close()
 
     def testListInheirtance(self):
         

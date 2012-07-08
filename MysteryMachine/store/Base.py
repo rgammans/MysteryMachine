@@ -361,6 +361,11 @@ class Base(object):
         """
         return []
 
+    def close(self,):
+        """Called prior to nolong using the store to ensure every is saved
+        correctly"""
+        self.lock()
+
 class obj_storeproxy:
     """
     A generic Proxy store for MMObjects. 

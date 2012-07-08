@@ -38,17 +38,17 @@ DummySystem=DummySystemClass()
 
 class filestoreTests(storeTests,unittest.TestCase):
     def mySetUp(self):
-        StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])
+        self.ctx = StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])
         self.mpath = tempfile.mkdtemp(prefix="mysmac")
         self.store=filestore("attrfile:"+self.mpath,create = False)
         self.store.set_owner(DummySystem)
         self.has_scm = False
     
     def tearDown(self):
-        self.store.lock()
+        self.store.close()
         shutil.rmtree(self.mpath)
-        self.store.unlock()
-        #os.rmdir(self.mpath)
+        if os.path.exists(self.mpath):
+            os.rmdir(self.mpath)
 
     def testCanonicalise(self):
         import os
@@ -60,8 +60,10 @@ class filestoreTests(storeTests,unittest.TestCase):
         except ImportError:
             pass
         path= tempfile.mkdtemp()
+        print "path,",path
         symname = tempfile.NamedTemporaryFile()
         symname = symname.name
+        print "symname",symname
         try:
             os.remove(symname)
         except OSError:
@@ -79,7 +81,15 @@ class filestoreTests(storeTests,unittest.TestCase):
             self.assertEqual(self.store.GetCanonicalUri(symname + os.sep + "test" + os.sep + ".."),path)
             self.assertEqual(self.store.GetCanonicalUri(symname + os.sep + ".." + os.sep + "test" + os.sep + ".."),parentpath)
 
+        try:
+            os.remove(symname)
+        except OSError:
+            pass
 
+        shutil.rmtree(path)
+        if os.path.exists(path):
+            os.rmdir(path)
+ 
     def test_should_tell_the_difference_between_categories_and_random_dirs(self):
         cats=list(self.store.EnumCategories())
         self.assertEqual(len(cats),0)
@@ -167,8 +177,12 @@ class test2(filestoreTests):
             prefix = "~" 
         except ImportError:
             pass
-        self.mpath = prefix + tempfile.mkdtemp(prefix="mysmac")
+        self.mpath = tempfile.mkdtemp(prefix="mysmac")
+        os.rmdir(self.mpath)
+        self.mpath = prefix + self.mpath
         self.parentpath = os.path.normpath(os.path.expanduser(self.mpath+os.path.sep+".."))
+        print prefix, self.mpath
+        print self.parentpath
         self.tmpexists = os.path.exists(self.parentpath)
         os.makedirs(os.path.expanduser(self.mpath))
 
@@ -178,11 +192,11 @@ class test2(filestoreTests):
     
     def tearDown(self):
         self.store.lock()
+        self.store.close()
+        self.store = None
         shutil.rmtree(os.path.expanduser(self.mpath))
-        self.store.unlock()
         if not self.tmpexists: 
             os.rmdir(self.parentpath)
-
 
 def getTestNames():
     	return [ 'file_store.filestoreTests' , 'file_store.tests2' ] 

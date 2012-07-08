@@ -30,7 +30,7 @@ import re
 
 class ParsersTests(unittest.TestCase):
     def setUp(self):
-        StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
+        self.ctx = StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
         self.sys=MMSystem.Create("dict:test")
         self.sys.NewCategory("template")
         self.p=self.sys.NewObject("template")
@@ -55,7 +55,9 @@ class ParsersTests(unittest.TestCase):
         #modlogger.setLevel(logging.DEBUG)
 
         
- 
+    def tearDown(self,):
+        self.ctx.close()
+
     def testParser(self):
         self.assertEquals(self.c["carries"].GetFullExpansion(),"The one ring")
         self.assertEquals(str(self.c),"Frodo")

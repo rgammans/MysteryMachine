@@ -30,6 +30,7 @@ from functools import partial
 
 from mock.schema_top import *
 
+
 class ObjectProxy(MMObject):
     def __init__(self,*args,**kwargs):
         l = [ "" ,"" ]
@@ -64,10 +65,13 @@ class SystemProxy(fakeParent):
     
 class attribValTest(unittest.TestCase):
     def setUp(self):
-       StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
+       self.ctx = StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
        self.objA=ObjectProxy("Proxy", "1", name="TestName",title="A Title")
        self.objB=ObjectProxy("Proxy", "2", name="WrongName",title="A Title")
-    
+   
+    def tearDown(self,):
+        self.ctx.close()   
+ 
     def testUnderInit(self):
        val=MMAttributeValue(parts = {"1":"test","2":"this"})
        self.assertEqual(val.get_raw_rst(),"test\nthis")

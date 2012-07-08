@@ -60,17 +60,25 @@ class BasicStore(Base):
 
 class hgstoreTests(scmTests, unittest.TestCase):
     def setUp(self):
-        StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])
+        self.testpath = None
+        self.ctx = StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])
         try:
-            testpath = tempfile.mkdtemp("mysmachg")
+            self.testpath = tempfile.mkdtemp("mysmachg")
         except:
             pass
         self.testtype = type("HgTestStore", (HgStoreMixin , BasicStore ), {'uriScheme':"hgbasic"} )
         #Ensure delte - will create again in a moment
-        os.rmdir(testpath)
-        self.store= self.testtype("hgbasic:"+testpath,create = True)
+        os.rmdir(self.testpath)
+        self.store= self.testtype("hgbasic:"+self.testpath,create = True)
         self.has_scm = True
-   
+  
+    def tearDown(self):
+        self.store.close()
+        shutil.rmtree(self.testpath)
+        if os.path.exists(self.testpath):
+            os.rmdir(self.testpath)
+        self.ctx.close()
+ 
     def processDirs(self,dirs):
         if '.hg' in dirs:
            #Don't scan .hg directory.

@@ -37,14 +37,17 @@ def dontdo(*args,**kwargs): pass
 class floggerTests(unittest.TestCase):
     def setUp(self,):
         self.dirname  = tempfile.mkdtemp()
+        print self.dirname
         self.flog = fl.FileLogger(self.dirname)
         
 
     def tearDown(self):
-        #self.flog.close()
-        shutil.rmtree(self.dirname)
-        #os.rmdir(self.dirname)
-        pass
+        if self.flog: self.flog.close()
+        try:
+            shutil.rmtree(self.dirname)
+            #os.rmdir(self.dirname)
+        except BaseException, e:
+            print e
 
 
     def filecontents(self,fname):
@@ -56,6 +59,8 @@ class floggerTests(unittest.TestCase):
         except: return None
 
     def testlogger(self):
+        #White box text - check correct impl.
+        if not hasattr(self.flog,"logf"): return
         t = self.flog.start_transaction()
         self.flog.Add_File(t,"test1","Test data")
         self.flog.Add_File(t,"test2","Test other data")
@@ -102,6 +107,7 @@ class floggerTests(unittest.TestCase):
     def test_overlapp_detection(self):
         t = self.flog.start_transaction()
         self.assertRaises(fl.OverlappedTransaction, self.flog.start_transaction)
+        self.flog.abort_transaction(t)
         #ok the cleanup
 
     def test_overlapp_recovery(self):
@@ -161,6 +167,8 @@ class floggerTests(unittest.TestCase):
 
 
     def testlogger_recovery_commit(self,):
+        #White box text - check correct impl.
+        if not hasattr(self.flog,"logf"): return
         t = self.flog.start_transaction()
         x1 = fl.ReplaceAll_Operation(os.path.join(self.dirname,"testA"),"DAyasda",self.flog.new_opid())
         x2 = fl.ReplaceAll_Operation(os.path.join(self.dirname,"testB"),"sDsdsaAyasda",self.flog.new_opid())
@@ -186,6 +194,8 @@ class floggerTests(unittest.TestCase):
         #check no
 
     def test_logfile_truncation(self,):
+        #White box text - check correct impl.
+        if not hasattr(self.flog,"logf"): return
         #checkpint
         t = self.flog.start_transaction()
         self.flog.Add_File(t,"test1","Test data")
@@ -198,27 +208,15 @@ class floggerTests(unittest.TestCase):
         self.flog.commit_transaction(t)
         lfile = self.flog.logf.fname
         self.assertEquals(len(self.flog.in_use_logs), 1 ) 
+
+        self.assertTrue(os.path.exists(lfile))
         self.flog.freeze()
         
-        #All Xactions are now committed.
-        log = fl.LogFile(lfile,readonly = True)
-        #Check there are no entries in the journal if we replay it.
-        self.assertEquals(len(self.flog.in_use_logs), 0 ) 
-        self.assertEquals(list(iter(log)), [ ] ) 
-        self.flog.thaw()
- 
-        t = self.flog.start_transaction()
-        self.flog.Add_File(t,"test2","Test other data")
-        self.flog.commit_transaction(t)
-        self.assertEquals(len(self.flog.in_use_logs), 1 ) 
-
-        #Check we are reusing the exiting logfile
-        self.assertEquals(self.flog.logname,lfile)
-        
+        self.assertFalse(os.path.exists(lfile))
 
     def test_operations(self,):
 
-        f = tempfile.NamedTemporaryFile()
+        f = tempfile.NamedTemporaryFile(dir=self.dirname)
         f.close()
         xact = fl.ReplaceAll_Operation(f.name,"testcontent","1")
         xact1 = fl.ReplaceAll_Operation(f.name,"testcontent",2)

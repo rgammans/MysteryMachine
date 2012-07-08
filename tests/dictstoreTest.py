@@ -42,13 +42,16 @@ class dictstoreTests(storeTests,unittest.TestCase):
     """
     def mySetUp(self):
         global testscount
-        StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
+        self.ctx = StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
         #Ensure each new time this starts we use a new system
         testscount = testscount + 1
         self.store=dict_store("dict:test"+str(testscount),True)
         self.store.set_owner(DummySystem)
         self.has_scm = False   
-    
+
+    def myTearDown(self,):
+        self.ctx.close()
+
 def getTestNames():
     	return [ 'dictstoreTest.dictstoreTests' ] 
 

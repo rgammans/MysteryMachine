@@ -56,6 +56,8 @@ class SystGlobalTest(unittest.TestCase):
             test1.SaveAsPackFile()
             # - check file is recreated.
             self.assertTrue(os.path.exists(packfname))
+            #cleanup
+            os.unlink(packfname)
 
     def test_should_raise_if_doesnt_have_a_filename_to_save_with(self):
         with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/libtest.yaml", "--testmode"]) as g:
@@ -97,6 +99,10 @@ class SystGlobalTest(unittest.TestCase):
            # test1.SaveAsPackFile()
            # ## - check file is recreated.
            # self.assertTrue(os.path.exists(packfname2.name))
+            #cleanup
+            os.unlink(packfname)
+            os.unlink(packfname2)
+
 
 
 

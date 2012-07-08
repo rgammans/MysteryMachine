@@ -516,6 +516,7 @@ class MMSystem (MMAttributeContainer):
   def SaveAsPackFile(self,*args,**kwargs):
     import MysteryMachine.Packfile
     kwargs['flags'] = self.loadflags
+        
     MysteryMachine.Packfile.SavePackFile(self,*args,**kwargs)
 
   def discard(self,):
@@ -528,6 +529,18 @@ class MMSystem (MMAttributeContainer):
 
 #  def start_write(self,*args):
 #    super(MMSystem,self).start_write(*args)
+
+  def close(self,):
+        """Call this if you've finished using the system.
+           
+        This call isn't protected against other threads. And
+        leaves the object in an inconsistent state.
+        """
+        self._invalidate_cache()
+        if self.store is not None:
+            self.store.close()
+        self.store = None
+        self.tm = None
 
 
 class MMCategory(MMAttributeContainer):

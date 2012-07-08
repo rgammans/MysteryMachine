@@ -27,6 +27,7 @@ from MysteryMachine.schema.MMObject import MMObject
 from MysteryMachine.schema.MMAttribute import * 
 
 from MysteryMachine.store.dict_store import *
+import MysteryMachine.store.file_store
 
 import MysteryMachine.Exceptions as Error
 
@@ -34,13 +35,20 @@ import MysteryMachine.schema.MMAttributeValue
 import unittest
 import logging
 import itertools
+#logging.getLogger("MysteryMachine.schema").setLevel(logging.DEBUG)
+#logging.getLogger("MysteryMachine.store.file_store").setLevel(logging.DEBUG)
+
 
 class ObjectTests(unittest.TestCase):
     def setUp(self):
-        StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode","--logtarget=logging.StreamHandler"]) 
-        self.logger = logging.getLogger("")
-
-        self.system=MMSystem.Create("dict:ObjectTests")
+        self.ctx = StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
+        self.ctx.__enter__()
+        self.logger = logging.getLogger("MysteryMachine.schema.MMObject.tests")
+        self.logger.debug( "-----STARTING NEW TEST---")
+        self.mpath = tempfile.mkdtemp(prefix="mysmac")
+        self.system=MMSystem.OpenUri("attrfile:"+self.mpath)
+        
+        #self.system=MMSystem.Create("dict:ObjectTests")
         self.system.NewCategory( "Template" )
         self.dummyparent             = self.system.NewObject( "Template" )
         self.dummyparent[".defname"] = "name"
@@ -53,9 +61,18 @@ class ObjectTests(unittest.TestCase):
         self.object.set_parent(self.parent)       
 
         self.object2                  = self.system.NewObject("Template") 
-        self.logger.debug( "dummy => " ,repr(self.dummyparent))
-        self.logger.debug( "parent => " ,repr(self.parent))
-        self.logger.debug( "object => " , repr(self.object))
+        self.logger.debug( "dummy => %s" ,repr(self.dummyparent))
+        self.logger.debug( "parent => %s" ,repr(self.parent))
+        self.logger.debug( "object => %s" , repr(self.object))
+        self.tmppath = None
+
+
+    def tearDown(self):
+        self.ctx.__exit__(None,None,None)
+        import shutil
+        shutil.rmtree(self.mpath)
+        if self.tmppath:
+            shutil.rmtree(self.tmppath)
 
     def testgetparent(self):
         self.logger.debug( "----starting getparent test------")
@@ -63,6 +80,7 @@ class ObjectTests(unittest.TestCase):
         self.logger.debug( "----completed getparent test------")
 
 
+    def test_fixture(self,): pass
 
     def testdefname(self):
         self.logger.debug( "----starting defname test------")
@@ -84,9 +102,9 @@ class ObjectTests(unittest.TestCase):
         except:
             return
         ##Also test dereference using the filestore
-        tmppath = tempfile.mkdtemp()
-        os.rmdir(tmppath)
-        self.sys2 = MMSystem.Create("attrfile:" + tmppath)
+        self.tmppath = tempfile.mkdtemp()
+        os.rmdir(self.tmppath)
+        self.sys2 = MMSystem.Create("attrfile:" + self.tmppath)
         self.sys2.NewCategory( "Dummy" )
         obj  = self.sys2.NewObject("Dummy")
         obj["data"] = "soemdata"
@@ -98,6 +116,7 @@ class ObjectTests(unittest.TestCase):
         self.assertEquals(obj,obj.getRef())
         self.assertEquals(obj["data"],obj["atref"].getSelf())
 
+   
 
     def testParentRef(self):
         p=self.object.get_parent()
@@ -158,12 +177,14 @@ class ObjectTests(unittest.TestCase):
         myobj = self.system.NewObject("dummy",MMNullReferenceValue())
         self.assertRaises(KeyError,myobj.__getitem__,"testattr")
 
+        #Check when a reference the shadow value is still held
         self.object.set_parent(self.parent)
         self.assertEquals(str(self.object["testattr"]),"somedata")
         v = self.object["testattr"]
         self.object.set_parent(MMNullReferenceValue())
         #Test fetch of disappeared attribute raises KeyErrpr
         self.assertRaises(KeyError,self.object.__getitem__,"testattr")
+
         
         #Test de-reference of store but dissapeared aatr raises 
         # ReferenceError

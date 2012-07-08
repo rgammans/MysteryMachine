@@ -40,7 +40,7 @@ class sysTests(unittest.TestCase):
         self.sys=MMSystem.OpenUri("attrfile:"+self.mpath)
 
     def tearDown(self,):
-        #print "+++++"
+        self.appctx.close()
         import shutil
         shutil.rmtree(self.mpath)
 

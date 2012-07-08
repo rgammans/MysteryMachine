@@ -76,10 +76,12 @@ class ObjectProxy(MMAttributeContainer):
 class ListValTest(unittest.TestCase):
     def setUp(self):
        global system
-       StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
+       self.ctx = StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
        system = SystemProxy()
 
-    
+    def tearDown(self,):
+        self.ctx.close()
+
     def testList(self):
         val  = MMListAttribute(value =  [ "first" , "second" , "third" ] )
         self.assertEquals(str(val[0] )  , "first")      

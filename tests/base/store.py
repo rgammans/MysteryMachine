@@ -40,6 +40,13 @@ class storeTests(object):
     def setUp(self):  
         self.mySetUp()
 
+    def myTearDown(self,): pass
+
+    def tearDown(self,):
+        self.myTearDown()
+        self.store.lock()
+        self.store.close()
+
     def testCreate(self):
         myclass = type(self.store)
         self.store.start_store_transaction()

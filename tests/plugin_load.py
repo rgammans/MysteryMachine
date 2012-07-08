@@ -30,8 +30,9 @@ import unittest
     
 class dynamicLoad(unittest.TestCase):
     def setUp(self):
-        StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/libtest.yaml", "--testmode"]) 
-
+        self.ctx = StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/libtest.yaml", "--testmode"]) 
+    def tearDown(self,):
+        self.ctx.close()
     
     def testLoadStorePlugin(self):
         self.system=MMSystem.Create("dict:ObjectTests")

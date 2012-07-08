@@ -49,6 +49,7 @@ This has a number of consequences:-
        qualit of your os's implentation of fsync.
 
 """
+from __future__ import with_statement
 
 
 from __future__ import with_statement
@@ -727,9 +728,9 @@ class LogFile(object):
         #We detect sparse logfile, and dont really support
         # them properly.
         self.sparse = False
-        self.complete = False
         self.not_complete_lock = threading.Lock()
         self.not_complete = []
+        self.closing = False 
         self.outstanding = threading.Condition(self.not_complete_lock)
  
         if not self.ro: self._reserve(reserve)        
@@ -771,13 +772,15 @@ class LogFile(object):
         if len(op) > self.limit - self.fd.tell():
             return False
 
-        self.complete = False
         modlogger.debug( "LF.a:%s"%(map(lambda x:hex(ord(x)), str(op))))
+        with self.not_complete_lock:
+            if self.closing:
+                  raise RuntimeError("Cannot append to a closing logfile.")
+
+            self.not_complete.append(op.opid)
         self.fd.write(str(op))
         self._write_terminator()
-        with self.not_complete_lock:
-            self.not_complete.append(op.opid)
-
+ 
         op.set_callback(self._mark_xcompleted)
         return True
 
@@ -793,15 +796,14 @@ class LogFile(object):
         """Internal function to ensure the main store has
         all the transactions that are in the logfile"""
         self.outstanding.wait()
-        self.complete = True
  
-    def wait(self,):
+    def _wait(self,):
         """Wait for all the operations to be commit to persistent store"""
-        if self.complete: return
-
-        modlogger.debug( "%s: waiting"%self)
+        #modlogger.debug( "%s: waiting"%self)
+        self.closing = True
         with self.not_complete_lock:
-            if self.not_complete: self._checkpoint()
+            if not self.not_complete: return
+            self._checkpoint()
                
 
     def __iter__(self,):
@@ -817,20 +819,12 @@ class LogFile(object):
  
         This function is not protected against racing with append
         """
-        self.wait()
+        self._wait()
         self.fd.close()
         self.fd = None
         os.unlink(self.fname)
 
-    def close(self,):
-        """Mark the file as empty. Release it for reuse
-
-        This function is not protected against racing with append
-        """
-        self.wait()
-        self.fd.seek(0)
-        self._write_terminator()
-
+    close = unlink
     def _write_terminator(self,):
         """Write log terminator record. And flush all to disk """
         #It is critical that this function blocks and write the outstanding
@@ -873,7 +867,13 @@ class FileLoggerSimpleFS(object):
         self.home  = directory
         self.track_state = kwargs.get('track_state',True)
 
-        self.last_opid = -1
+        self.last_opid = -1        #cleanup
+        try:
+            os.remove(tstfile) 
+        except:
+            pass 
+
+
         #id_lock prevents new transactions being created 
         # and protect last_opid.
         self.id_lock = threading.Lock()     
@@ -1240,7 +1240,7 @@ class FileLoggerTxF(object):
         """This is a no-op on Txf"""
         pass
 
-    unfreeze = thaw = freeze
+    close = unfreeze = thaw = freeze
 
 
 FileLogger = FileLoggerSimpleFS

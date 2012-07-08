@@ -34,7 +34,7 @@ def getfiles_and_changelog(store):
         cl = list(store.getChangeLog())
         files = []
         if len(cl) > 0:
-            for f in cl[len(cl)-1]: files+= [ f] 
+            files = list( cl[0].manifest() )
         return cl, files
 
 
@@ -95,16 +95,24 @@ class scmTests(object):
         clog  ,files = getfiles_and_changelog(self.store)
         self.assertEquals(len(clog),2)
         self.assertEquals(len(files),1)
- 
+        
+   
         # revert - check file contents.
         changelog = list( self.store.getChangeLog() )
-        rev = changelog[0]
+        rev = changelog[-1]
         self.store.revert(rev)
         self.assertEquals(ReadFile(self.store,"test1"),"Test data") 
+        try:
+            #Remove 'test2' before cleaning it is ok for it
+            #to be removeed or to belfet by cleaning.
+            #  - or to have gone already
+            os.unlink(os.path.join(self.store.get_path(),"test2"))
+        except: pass
         self.doCleanTst()
 
     def doCleanTst(self):
         self.store.lock()
+        print list(self.store.repo.status())
         self.store.clean()
         for dirpath,dirs,files in os.walk(self.store.get_path()):
              self.processDirs(dirs)

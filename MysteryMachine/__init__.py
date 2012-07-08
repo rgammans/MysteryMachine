@@ -237,7 +237,13 @@ class _LibraryContext(object):
         self.Ui = self.get_app_option_object("ui")    
 
     def close(self):
-         ## Do our Application finalisation here.
+        #Iterate around open schemas and close them.
+        from MysteryMachine.schema.Globals import DocsLoaded
+        for schema in DocsLoaded.values():
+            #TODO - Should we ask the UI to save/nosave a packfile?
+            schema.close()
+
+        ## Do our Application finalisation here.
         self.cfg_engine.write()
 
         # TODO Write close action to logfile. 
@@ -426,7 +432,8 @@ class StartApp(object):
         if self.primary:
             self.maincntxt.close()
 
-
+    def close(self,):
+        self.__exit__(None,None,None)
 
 if __name__ == '__main__':
    #Fixup the name space to be standard
