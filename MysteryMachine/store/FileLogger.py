@@ -50,7 +50,9 @@ This has a number of consequences:-
 
 """
 
+
 from __future__ import with_statement
+
 
 import thread
 import threading
@@ -148,6 +150,9 @@ class JournaledOperation(object):
             self.complete_txn(**kwargs)
         else:
             thread.start_new_thread(self.complete_txn, () ,kwargs )
+
+    def dont_do(self,**kwargs):
+        self.callback(self.opid)
 
     def set_callback(self,cbk):
         self.callback = cbk
@@ -601,6 +606,10 @@ class Transaction(object):
             op.update_state(self)
         self.ops += [ op ]
     
+    def rollback(self,**kwargs):
+        for op in self.ops:
+            op.dont_do(**kwargs)
+
     def commit(self,**kwargs):
         for op in self.ops:
             op.do(**kwargs)
@@ -1126,7 +1135,10 @@ class FileLoggerSimpleFS(object):
         opid = self.new_opid()
         xaction = AbortTxOperation(opid,xid)
         self._add_operation(xid,xaction)
-        self.tx = None
+        try:
+            self.tx.rollback()
+        finally:
+            self.tx = None
 
 
     def close(self,):
