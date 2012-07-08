@@ -27,7 +27,7 @@ from MysteryMachine.Exceptions import *
 from MysteryMachine.store.Base import Base
 from MysteryMachine.utils.locks import RRwLock
 from MysteryMachine.utils.path import make_rel 
-from MysteryMachine.store.FileLogger import FileLogger
+import MysteryMachine.store.FileLogger 
 
 import os
 import sys
@@ -58,6 +58,17 @@ def FileStoreAttributePart(filename,partname):
         infile.close()
         logging.getLogger("MysteryMachine.Store.file_store").debug("APi:data:%s",data)
         return {partname: data }
+
+
+#Redefine the log file to be outside the MM directory.
+class FileLogger(MysteryMachine.store.FileLogger.FileLogger):
+    def _get_logname(self,seq):
+        basename = os.path.basename(self.home)
+        parent   = os.path.realpath(os.path.join(self.home ,os.path.pardir))
+        name =  ".%s.xaction.%s.log"%(basename,seq)
+        return parent,name
+
+
 
 class filestore(Base):
     """
