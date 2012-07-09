@@ -174,8 +174,10 @@ class filestore(Base):
             self.tlog.Create_Dir(self.tx,catpath)
         except OSError, e:
             #Ignore Directory already exists errors .
-            if e.errno != errno.EEXIST:
-                raise
+            if e.errno != errno.EEXIST: raise
+        except WindowsError, e:
+            #Ignore Directory already exists errors .
+	    if e.errno != 183: raise
         else:
             sentinel = os.path.join(catpath ,CATEGORY_SENTINEL_NAME )
             self.tlog.Add_File(self.tx,sentinel,"")

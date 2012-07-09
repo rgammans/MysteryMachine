@@ -52,7 +52,11 @@ This has a number of consequences:-
 from __future__ import with_statement
 
 
-from __future__ import with_statement
+
+#Set this to false to use the Posix FS version
+#under windows vista and greater.
+TxF_Enabled = True
+
 
 
 import thread
@@ -1178,62 +1182,62 @@ class FileLoggerTxF(object):
     def __init__(self,directory,*args,**kwargs):
         self.home = directory
         self.readonly = kwargs.get('readonly',False)
-        self.txn = None
+        self.tx = None
 
     def start_transaction(self,):
-        if self.txn is not None:
-            raise OverlappedTransaction(str(self.txn))
+        if self.tx is not None:
+            raise OverlappedTransaction(str(self.tx))
 
-        self.txn = win32_txf.CreateTransaction()
-        return self.txn
+        self.tx = win32_txf.CreateTransaction()
+        return self.tx
 
-    def abort_transaction(self,txn):
-        if txn != self.txn:
-            raise InvalidTransaction(txn)
-        win32_txf.RollbackTransaction(self.txn)
-        self.txn = None
+    def abort_transaction(self,tx):
+        if tx != self.tx:
+            raise InvalidTransaction(tx)
+        win32_txf.RollbackTransaction(self.tx)
+        self.tx = None
 
-    def commit_transaction(self, txn):
-        if txn != self.txn:
-            raise InvalidTransaction(txn)
-        win32_txf.CommitTransaction(txn)
-        self.txn = None
+    def commit_transaction(self, tx):
+        if tx != self.tx:
+            raise InvalidTransaction(tx)
+        win32_txf.CommitTransaction(tx)
+        self.tx = None
 
-    def Add_File(self,txn,filename,newcontents):
+    def Add_File(self,tx,filename,newcontents):
         """Log new file content transaction."""
-        if txn != self.txn:
-            raise InvalidTransaction(txn)
+        if tx != self.tx:
+            raise InvalidTransaction(tx)
         fullname = os.path.join(self.home,filename)
-        h = win32_txf.CreateFileTransacted(fullname,transaction = txn,
+        h = win32_txf.CreateFileTransacted(fullname,transaction = tx,
                     desired_access = win32_txf.const.GENERIC_WRITE,
                     creation_disposition = win32_txf.const.CREATE_ALWAYS)
         #TODO handle partial writes
         win32_txf.WriteFile(h,newcontents)
         win32_txf.CloseHandle(h)
 
-    def Delete_File(self,txn,filename):
+    def Delete_File(self,tx,filename):
         """Log a delete file  transaction."""
-        if txn != self.txn:
-            raise InvalidTransaction(txn)
+        if tx != self.tx:
+            raise InvalidTransaction(tx)
 
         fullname = os.path.join(self.home,filename)
-        win32_txf.DeleteFileTransacted(fullname,txn)
+        win32_txf.DeleteFileTransacted(fullname,transaction = tx)
 
-    def Create_Dir(self,txn,filename):
+    def Create_Dir(self,tx,filename):
         """Log a delete file  transaction."""
-        if txn != self.txn:
-            raise InvalidTransaction(txn)
+        if tx != self.tx:
+            raise InvalidTransaction(tx)
  
         fullname = os.path.join(self.home,filename)
-        win32_txf.CreateDirectoryTransacted(fullname,txn)
+        win32_txf.CreateDirectoryTransacted(None,fullname,transaction = tx)
 
 
-    def Delete_Dir(self,txn,filename):
+    def Delete_Dir(self,tx,filename):
         """Log a delete file  transaction."""
-        if txn != self.txn: raise RuntimeError("wrong txn")
+        if tx != self.tx: raise RuntimeError("wrong tx")
 
         fullname = os.path.join(self.home,filename)
-        win32_txf.RemoveDirectoryTransacted(fullname,txn)
+        win32_txf.RemoveDirectoryTransacted(fullname,transaction = tx)
 
 
     def freeze(self,): 
@@ -1246,9 +1250,8 @@ class FileLoggerTxF(object):
 FileLogger = FileLoggerSimpleFS
 
 ##If on windows try to detext TxF Support and switch to that if available.
-#import sytofold._debug as debug
-if sys.platform[:5] == 'win32' and False:# debug.TxF_Enabled:
-    import sytofold.win32_txf as win32_txf
+if sys.platform[:5] == 'win32' and TxF_Enabled:
+    import MysteryMachine.store.win32_txf as win32_txf
     import ctypes
     try:
         #Ask ctypes to look for the CreateTransaction entry point
