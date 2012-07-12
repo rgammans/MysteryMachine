@@ -57,13 +57,16 @@ DIST_PACKAGES = [ "yapsy" , "MysteryMachine","MysteryMachine.schema",
                  "MysteryMachine.utils",
                  "MysteryMachine.policies" , "MysteryMachine.document"  ]
 
-PY_MODULES  = [ 'pyparsing' ]
+PY_MODULES  = [ 
+                #'pyparsing',
+               ]
 
-#Mercurial and pyaprsing (as of 1.5.2 ) don't install with easy_install. 
+#Mercurial doesn't install with easy_install. 
 EZ_PACKAGES   = ["docutils" , 
 #                 "mercurial" ,
 #                 "bpython" ,    # We add bpython back in later...
-#                 "pyparsing > 1.5" ,
+                 "pyparsing>1.5" ,
+                 "python-hglib",
                  "PyYaml"]
 
 
@@ -138,7 +141,8 @@ def sdist():
                    #Put all our need packages in the local directory 
                    shutil.copy(os.path.join(dir,*filedir),os.path.join(filedir[0],*filedir[1:]))
                    #Register deletion of new filefor when we've finished..
-                   atexit.register(os.remove,os.path.join(filedir[0],*filedir[1:]))
+                   if os.path.realpath(".") != os.path.realpath(os.path.join(filedir[:-1])):
+                       atexit.register(os.remove,os.path.join(filedir[0],*filedir[1:]))
                except:
                    pass
 
@@ -210,20 +214,8 @@ def relaunch_self(extra_args):
 #should install mercurial
 def dst_environ(options):
     """Install MysteryMachine dependencies that setuptools can't handle without help"""
-    #Check  whether we need pyparsing...
-    try:
-        import pyparsing
-        v = pyparsing.__version__.split(".")
-        for existing,minimum in zip(v,['1','5','0']):
-            if existing < minimum: raise ImportError()
-        #pyparsing exists in a usable version - don't override.
-        options.setup.py_modules.remove('pyparsing') 
-    except ImportError:
-        #We need the shipping version of pyparsing with mysterymachine
-        # So the standard options are ok.
-        pass
-
-    #TODO Install mercurial
+    #Currently there are none of these. Woot!.
+    pass
 
 @task 
 @cmdopts([('srcenv-loop=', 'l' ,'internal use only - used to detect infinite loops')])
@@ -292,8 +284,16 @@ def install_here():
     ## created by now, and by using the import we can hopefully, ensure
     ## consistency.
     oldpath  = sys.path
-    if sys.path[0] == "paver-minilib.zip":
-        sys.path = sys.path[2:]   
+        #Remove local dir from serahc path so we find the installed lib
+    try:
+        sys.path.remove("paver-minilib.zip")
+    except ValueError:pass
+    try:
+        sys.path.remove("")
+    except ValueError:pass
+    try:
+        sys.path.remove(".")
+    except ValueError:pass
     from MysteryMachine.ExtensionLib import DEFAULT_TRUSTEDPLUGIN_PATH
     print DEFAULT_TRUSTEDPLUGIN_PATH
     shutil.copytree("MysteryMachine/TrustedPlugIns", DEFAULT_TRUSTEDPLUGIN_PATH)
@@ -348,7 +348,7 @@ setup(name ="MysteryMachine",
       packages = DIST_PACKAGES ,
       scripts  = SCRIPTS ,
       py_modules =PY_MODULES,
-      version  = "0.1.4", 
+      version  = "0.2.0", 
       install_requires = EZ_PACKAGES,
       url="http://trac.backslashat.org/MysteryMachine",
       author="Roger Gammans",
