@@ -304,9 +304,9 @@ class MMAttribute (MMAttributeContainer):
   itervalues = __iter__ 
 
   @staticmethod
-  def delete_callback(system,name):
+  def delete_callback(obj,name):
       def callback():
-          system.store.DelAttribute(name)
+          obj.store.DelAttribute(name)
       return callback
 
   #Deprecated.

@@ -168,15 +168,8 @@ class MMObject (MMAttributeContainer):
     @author
     """
     #
-    #FIXME - Mark as destoryed in case references exist.
-    # - we can do this by pulling the ref out of the cache.
-   
     attrname = self.canonicalise(attrname) 
-    #Remove from backing store. 
-    if self.store.HasAttribute(attrname):
-        self.store.DelAttribute(attrname)    
-    #Remove from cache 
-    self._invalidate_item(attrname)
+    self._del_item(attrname,MMAttribute.delete_callback(self,attrname))
 
   def iteritems(self):
         for a in self.store.EnumAttributes():

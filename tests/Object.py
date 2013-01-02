@@ -130,6 +130,9 @@ class ObjectTests(unittest.TestCase):
         self.object[".defname"]= "object" 
         self.assertEquals(str(self.object), "object")
         self.assertEquals(str(p), "parent")
+        #Test deltete and parent ref.
+        del self.object[".defname"]
+        self.assertEquals(str(self.object), "parent")
 
     def testDefaultParent(self):
         obj2 = self.system.NewObject("Dummy")
