@@ -52,6 +52,16 @@ This has a number of consequences:-
 from __future__ import with_statement
 
 
+SystemErrors =  []
+try:
+    SystemErrors.append(OSError)
+except: pass
+try:
+    SystemErrors.append(WindowsError)
+except: pass
+
+SystemErrors = tuple(SystemErrors)
+
 
 #Set this to false to use the Posix FS version
 #under windows vista and greater.
@@ -136,6 +146,7 @@ class JournaledOperation(object):
         self.sync_wait_time = SYNC_WAIT_TIME
         self.callback = None
         self.fobjs = [ ]
+        self.recovery_mode = kwargs.get('recovery_mode',False)
 
     def __repr__(self,):
         return "<Operation Type:%s, Id:%i>"%(self.operation_type,self.opid)
@@ -207,11 +218,11 @@ class JournaledOperation(object):
         return v
  
     @classmethod
-    def load(cls,data):
+    def load(cls,data, recovery_mode = False):
         opid = _read_delimited_field(data)
         operation_type = _read_delimited_field(data)
         modlogger.debug( "loading: %s,%s"%(opid,operation_type))
-        return _operation_type_map[operation_type].load(opid,data)
+        return _operation_type_map[operation_type].load(opid,data, recovery_mode = recovery_mode)
 
 
  
@@ -246,9 +257,9 @@ class CheckpointOperation(JournaledOperation):
         pass
 
     @classmethod
-    def load(cls,opid,data):
+    def load(cls,opid,data, recovery_mode = False):
         chkpoint_id = _read_delimited_field(last_checkpointed)
-        return cls(chkpoint_id,opid)
+        return cls(chkpoint_id,opid, recovery_mode = recovery_mode)
  
 
 class ReplaceAll_Operation(JournaledOperation):
@@ -306,11 +317,11 @@ class ReplaceAll_Operation(JournaledOperation):
         return v
  
     @classmethod
-    def load(cls,opid,data):
+    def load(cls,opid,data, recovery_mode = False):
         length = int(_read_delimited_field(data))
         target = _read_delimited_field(data)
         content = _read_fixedlength(data,length - len(target) -1)
-        return cls(target,content,opid)
+        return cls(target,content,opid, recovery_mode = recovery_mode)
 
 class SingleDentry_Operation(JournaledOperation):
     def __init__(self,*args,**kwargs):
@@ -336,16 +347,23 @@ class SingleDentry_Operation(JournaledOperation):
         self.fobjs += [ directory(dname) ]
  
     @classmethod
-    def load(cls,opid,data):
+    def load(cls,opid,data, recovery_mode = False):
         target = _read_delimited_field(data)
-        return cls(target,opid)
+        return cls(target,opid, recovery_mode = recovery_mode)
+
 
 
 class DeleteFile_Operation(SingleDentry_Operation):
     operation_type = "delete_file"
     def _do(self,):
         self.add_fds()
-        os.unlink(self.target)
+        try:
+            os.unlink(self.target)
+        except SystemErrors, e:
+            import errno
+            #Ignore missing file during recovery. 
+            if not self.recovery_mode and e.errno != errno.ENOENT:
+                raise
 
     def update_state(self,state):
         if state.dir_exists(self.target):
@@ -420,9 +438,9 @@ class GenericTxOperation(object):
         pass
 
     @classmethod
-    def load(cls,opid,data):
+    def load(cls,opid,data, recovery_mode = False):
         txn_id = _read_delimited_field(data)
-        return cls(opid,txn_id)
+        return cls(opid,txn_id, recovery_mode = recovery_mode)
  
 class StartTxOperation(GenericTxOperation,JournaledOperation):
     """Operation which marks the beginning of a Txn"""
@@ -957,7 +975,7 @@ class FileLoggerSimpleFS(object):
                     #We ignore any ops until we see a 'startTxn' marker, but we
                     # keep a record of there ids to ensure we see a later checkpoint.
                     # if we don't we can't replay partial Txn.
-                    modlogger.debug( "R:",cur_op,state)
+                    modlogger.debug( "R:%s,%s",cur_op,state)
                     if state=='init':
                         #Record all operations we see before we see the first
                         #start tx marker.
@@ -980,7 +998,7 @@ class FileLoggerSimpleFS(object):
                     if state=='txcomplete':
                         if cur_op.optype == 'start_txn':
                             tx = cur_op.txn_id
-                            self.txops = [ ]
+                            txops = [ ]
                             state = 'txstarted'
                             continue
                         elif cur_op.optype == 'Checkpoint':
@@ -997,7 +1015,7 @@ class FileLoggerSimpleFS(object):
                             #for  some reason. This forces us not to accept this log file.
                             if cur_op.txn_id != tx: raise RecoveryError("Non matching Tx commit found")
                             else:
-                                for top in self.txops:
+                                for top in txops:
                                     top.do(sync = True)
                             state = 'txcomplete'
                         elif cur_op.optype == 'abort_txn':
@@ -1005,7 +1023,7 @@ class FileLoggerSimpleFS(object):
                         elif cur_op.optype == 'Checkpoint':
                             unrecoverable = _remove_commited(unrecoverable,cur_op.opid)
                         else:
-                            self.txops += [ cur_op ] 
+                            txops += [ cur_op ] 
                 #Log file has been processed successfully - remove it from the Fs.
                 #we could call close() here and reused the allocated space on the
                 #FS - but the logfile is readonly - and close() adds a terminator
