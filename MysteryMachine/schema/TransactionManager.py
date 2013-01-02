@@ -231,7 +231,10 @@ class TransactionManager(object):
         except:
             self.state = "tx_commit_abort"
             import sys
-            self.logger.debug("Commit except: %s,%s,%s"%sys.exc_info())
+            import traceback
+            t , e , tb = sys.exc_info()
+            tb = traceback.format_tb(tb)
+            self.logger.debug("Commit except: %s,%s,%s"%(t,e,tb))
             self.store.abort_store_transaction()
             self._do_abort()
             raise
