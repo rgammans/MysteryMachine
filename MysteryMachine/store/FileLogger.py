@@ -157,7 +157,10 @@ class JournaledOperation(object):
             thread.start_new_thread(self.complete_txn, () ,kwargs )
 
     def dont_do(self,**kwargs):
-        self.callback(self.opid)
+        if self.callback is not None:
+            self.callback(self.opid)
+        else:
+            modlogger.error("Abort before callback set")
 
     def set_callback(self,cbk):
         self.callback = cbk
@@ -254,6 +257,9 @@ class ReplaceAll_Operation(JournaledOperation):
         #Placeholder for future expansion.
         self.content = args[1]
         self.target = args[0]
+        if type(self.content) is not str:
+            raise TypeError("File contents must be a byte stream")
+
         super(ReplaceAll_Operation,self).__init__(*(args[2:]),**kwargs)
         self.fobj    = None
 
@@ -285,7 +291,7 @@ class ReplaceAll_Operation(JournaledOperation):
         v = super( ReplaceAll_Operation ,self).__str__()
         length = len(self.content) + len(self.target) + 1
         v += (str(length) + '\0')
-        v += (self.target + '\0')
+        v += (self.target.encode('ascii') + '\0')
         v += self.content
         
         return v
@@ -314,7 +320,7 @@ class SingleDentry_Operation(JournaledOperation):
         self.fobj    = None
     def __str__(self,):
         v = super( SingleDentry_Operation ,self).__str__()
-        v += (self.target + '\0')
+        v += (self.target.encode('ascii') + '\0')
         return v
 
     def __len__(self,):
