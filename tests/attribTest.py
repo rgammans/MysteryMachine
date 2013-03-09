@@ -109,6 +109,11 @@ class attribTest(unittest.TestCase):
        attr=MMAttribute("document","test\n----\n\n\nA Message",None)
        self.assertEquals("test\n----\n\n\nA Message",attr.get_raw())
 
+    def testAttrValType(self):
+       p = fakeParent()
+       attr=MMAttribute("document","test\n----\n\n\nA Message",p)
+       self.assertEquals(attr.get_type(),"simple")
+
 
 #  XXX Commented out as I don't believe this test 
 #      makes sense since we've added transactions. 

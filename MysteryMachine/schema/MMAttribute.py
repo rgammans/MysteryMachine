@@ -183,7 +183,7 @@ class MMAttribute (MMAttributeContainer):
   @Reader
   def get_type(self,):
      """return the type of value stored in the attribute"""
-     if valueobj: return valueobj.get_type()
+     if self.valueobj: return self.valueobj.get_type()
      else: return None
 
   @Writer
