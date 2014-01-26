@@ -210,7 +210,7 @@ class pyConfigDict(object):
         try:
             for k, v in value:
                 self.cfg.set(name, k, v)
-        except:
+        except Exception:
             self.cfg.set("__root__",name,value)
 
     def __delitem__(self, name):

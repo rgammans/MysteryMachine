@@ -33,6 +33,7 @@ import itertools
 
 DEFAULT_TRUSTEDPLUGIN_PATH = os.path.realpath(os.path.join(__file__,".." + os.path.sep + "TrustedPlugIns"))
 
+class InvalidPlugin(RuntimeError):pass
 
 class ExtensionLib(object):
     """
@@ -216,7 +217,7 @@ class ExtensionLib(object):
             self.plugin_man.loadPlugin(plugin)
         elif plugin in  self.trusted_man.getPluginCandidates():
             self.trusted_man.loadPlugin(plugin)
-        else: raise RuntimeError("Cant load foreign plugin")    
+        else: raise InvalidPlugin(plugin.name)    
 
     def IsSystemPlugin(self,plugin):
         return ((plugin in self.trusted_man.getAllPlugins() ) or 

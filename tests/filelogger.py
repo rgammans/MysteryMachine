@@ -56,7 +56,7 @@ class floggerTests(unittest.TestCase):
             contents = "\n".join(f.readlines())
             f.close()
             return contents
-        except: return None
+        except Exception: return None
 
     def testlogger(self):
         #White box text - check correct impl.

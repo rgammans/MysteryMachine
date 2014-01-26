@@ -107,7 +107,7 @@ class scmTests(object):
             #to be removeed or to belfet by cleaning.
             #  - or to have gone already
             os.unlink(os.path.join(self.store.get_path(),"test2"))
-        except: pass
+        except Exception: pass
         self.doCleanTst()
 
     def doCleanTst(self):

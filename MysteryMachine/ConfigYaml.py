@@ -74,7 +74,7 @@ class ConfigYaml(object):
         try:
             for k, v in value:
                 self.cfg[name][k] = v
-        except:
+        except Exception:
             self.cfg[name] = value
 
 

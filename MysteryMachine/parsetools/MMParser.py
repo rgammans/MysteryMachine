@@ -119,7 +119,7 @@ class MMParser (object):
     try:
         source = result[0]
         source = source.source
-    except:
+    except Exception:
         self.logger.info("Can't resolve docutils to find source, using src") 
         source = src
     self.logger.debug( "source[ => %s" % source)
@@ -185,7 +185,7 @@ def role_handler(role, rawtext, text, lineno, inliner,
                 #Return to docutils to get docutils node representation.
                 nodes += current_parser.ProcessRawRst(str(rst),src = repr(rst) ,
                                                       src_stack=content + [ text ] )
-             except:
+             except Exception:
                 import traceback
                 import sys
                 e_info = sys.exc_info()

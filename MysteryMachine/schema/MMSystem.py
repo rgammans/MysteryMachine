@@ -112,7 +112,7 @@ class MMSystem (MMAttributeContainer):
   def __str__(self):
     try:
        name = self[".defname"].get_raw()
-    except BaseException, e:
+    except Exception, e:
        self.logger.debug(str(e))
        name = repr(self)
     return name
@@ -560,7 +560,7 @@ class MMCategory(MMAttributeContainer):
     def __str__(self):
         try:
             name = self[".defname"].get_raw()
-        except BaseException, e:
+        except Exception, e:
             self.logger.debug(str(e))
             name = repr(self)
         return name

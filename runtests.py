@@ -26,7 +26,16 @@ import imp
 import sys
 import re
 
-PYTHONS  =( 'python2.5', 'python2.6', 'python2.6 -3')
+PYTHONEXES ={
+    'python2.5' : '../testenvs/py25/bin/python',
+    'python2.6' : '../testenvs/py26/bin/python',
+    'python2.7' : '../testenvs/py27/bin/python',
+    #'python2.7' : 'python2.7',
+    }
+
+TEST_PYS  =( ('python2.5',[]), (  'python2.6', []), ( 'python2.7', []) ,('python2.7', ['-3',]), )
+
+
 UNITTEST ='/usr/lib/python2.6/unittest.py'
 TESTSDIR ='tests'
 
@@ -67,23 +76,25 @@ guitesting = process_bool(GUITEST_SWITCH,default = False)
 
 #Allow the ability to run tests under a single python.
 if len(sys.argv) > 1:
-    DEFPYTHONS=PYTHONS
     PYTHONS = []
     
     for arg in sys.argv[1:]:
         print arg
-        PYTHONS += [ 'python%s' % arg ]
+        PYTHONS += [ ('python%s' % arg ,[] )]
+else:
+    PYTHONS=TEST_PYS
 
-for python in (PYTHONS):
-	sys.stderr.write( "Testing under %s:\n" % python )
+for pytype,args in (PYTHONS):
+    python = PYTHONEXES[pytype] + " " + " ".join(args)
+    sys.stderr.write( "Testing under %s with %r :\n" % (pytype,args) )
 	#TODO: should this inner loop go inside tests/__init__.py ?
-	for module in os.listdir('tests/'):
+    for module in os.listdir('tests/'):
 		#Turn filenmae into module name
 		testname , replaced =re.subn(STRIP,"",module)
 		# SKip invalid module names
 		if not replaced: continue
 		#run tests.
-		sys.stderr.write("Running %s (%s)" % (module,python) )
+		sys.stderr.write("Running %s (%s)" % (module,pytype+" "+' '.join(args)) )
 		os.system("%s %s/%s" % ( python,  TESTSDIR, module))
 
 if guitesting:

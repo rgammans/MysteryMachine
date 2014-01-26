@@ -126,7 +126,7 @@ def FindBestValueType(atype):
     candidates = list()
     try:
         typelist = atype.__mro__
-    except:
+    except Exception:
         typelist = list(atype)
 
 
@@ -264,7 +264,7 @@ class MMAttributeValue (MMBase ):
             grammar.parse(self.get_raw_rst())
         else:
             attr.get_ancestor().parser.ProcessRawRst(self.get_raw_rst())
-    except:
+    except Exception:
         ok = False
     return ok
 

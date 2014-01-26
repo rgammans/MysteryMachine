@@ -228,7 +228,9 @@ class TransactionManager(object):
             for obj in ordered_modified:
                 if not obj.is_deleted:
                     obj.writeback()
-        except:
+        #Only catch synchronus exceptions - Non-synchroonus stuff should be handled
+        # either below or should restart the journal and the manager,
+        except Exception:
             self.state = "tx_commit_abort"
             import sys
             import traceback

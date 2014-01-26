@@ -95,7 +95,7 @@ class ConfigYamlTest(unittest.TestCase):
         tstfile = tstfile.name
         try:
             os.remove(tstfile) 
-        except:
+        except Exception:
             pass
         cfg= ConfigYaml()
         cfg.read(tstfile)
@@ -110,7 +110,7 @@ class ConfigYamlTest(unittest.TestCase):
         #cleanup
         try:
             os.remove(tstfile) 
-        except:
+        except Exception:
             pass 
 
     def testTestMode(self):

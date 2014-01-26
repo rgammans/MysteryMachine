@@ -64,7 +64,7 @@ class hgstoreTests(scmTests, unittest.TestCase):
         self.ctx = StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])
         try:
             self.testpath = tempfile.mkdtemp("mysmachg")
-        except:
+        except Exception:
             pass
         self.testtype = type("HgTestStore", (HgStoreMixin , BasicStore ), {'uriScheme':"hgbasic"} )
         #Ensure delte - will create again in a moment

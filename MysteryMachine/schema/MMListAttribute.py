@@ -31,7 +31,7 @@ import functools
 # in 3.x
 try:
     izip_longest = itertools.izip_longest
-except:
+except Exception:
     izip_longest = functools.partial(map,None)
 
 
@@ -132,7 +132,7 @@ class MMListAttribute(MMAttributeValue):
         lastkey = None
         try:
             lastkey = sorted(self._elementkeys(),reverse=True)[0]
-        except:
+        except Exception:
             pass
  
         lastkey = _Key(lastkey)

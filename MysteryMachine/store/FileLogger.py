@@ -55,10 +55,10 @@ from __future__ import with_statement
 SystemErrors =  []
 try:
     SystemErrors.append(OSError)
-except: pass
+except Exception: pass
 try:
     SystemErrors.append(WindowsError)
-except: pass
+except Exception: pass
 
 SystemErrors = tuple(SystemErrors)
 
@@ -898,7 +898,7 @@ class FileLoggerSimpleFS(object):
         self.last_opid = -1        #cleanup
         try:
             os.remove(tstfile) 
-        except:
+        except Exception:
             pass 
 
 
@@ -1053,7 +1053,7 @@ class FileLoggerSimpleFS(object):
         if newname: self.in_use_logs += [ newname ] 
         try:
             self.logf, self.logname = newlgf , newname
-        except:
+        except Exception:
             if newname:
                 self.in_use_logs.remove(newname)
             raise
@@ -1129,7 +1129,7 @@ class FileLoggerSimpleFS(object):
         self._add_operation(xid,xaction)
         try:
             self.tx.commit()
-        except:
+        except Exception:
             self.tx = None
             #There is an arguement to call abort here...
             # but we don't because our (MysteryMachine) use

@@ -57,7 +57,7 @@ class storeTests(object):
             #This must create an empty store or raise an exception
             differentStore = CreateStore(self.store.getUri())
             self.assertEquals(list(differentStore.EnumCategories()),[])
-        except:
+        except Exception:
             pass
 
     def testCategories(self):

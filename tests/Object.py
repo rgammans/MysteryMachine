@@ -99,7 +99,7 @@ class ObjectTests(unittest.TestCase):
         self.assertRaises(KeyError,noAttrTst,self.object)
         try:
             import MysteryMachine.store.file_store
-        except:
+        except Exception:
             return
         ##Also test dereference using the filestore
         self.tmppath = tempfile.mkdtemp()

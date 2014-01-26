@@ -120,7 +120,7 @@ class filestore(Base):
         self._lock.acquire_read()
         try:
             self.tx = self.tlog.start_transaction()
-        except:
+        except Exception:
             self._lock.release()
             raise
 

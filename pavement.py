@@ -28,7 +28,7 @@ existing_setuptools_available   = False
 try:
     import setuptools
     existing_setuptools_available = True
-except:
+except Exception:
     pass
 
 ez_setup_available = False
@@ -128,7 +128,7 @@ def sdist():
                try:
                    #Put all our need packages in the local directory.
                    os.symlink(os.path.join(dir,*pkgdir),os.path.join(pkgdir[0],*pkgdir[1:]))
-               except:
+               except Exception:
                    pass
 
     for pkg in PY_MODULES:
@@ -143,7 +143,7 @@ def sdist():
                    #Register deletion of new filefor when we've finished..
                    if os.path.realpath(".") != os.path.realpath(os.path.join(filedir[:-1])):
                        atexit.register(os.remove,os.path.join(filedir[0],*filedir[1:]))
-               except:
+               except Exception:
                    pass
 
     #Create find data files scripts etc needed for sdist.    
