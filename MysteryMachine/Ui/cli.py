@@ -41,25 +41,17 @@ if bpython_installed + idle_installed < 1:
 import MysteryMachine
 from MysteryMachine.schema.MMAttribute import MMAttribute
 from MysteryMachine.schema.MMAttributeValue import MakeAttributeValue
-import mercurial
 
 import tempfile
 import os
 import sys
 import logging
 
-def closed(self):
-    """A fixup function so mercurial and bpython play well together"""
-    return False
-
 class UiBase(object):
     def __init__(self,args = [] ):    
         self.args      = args
         self.in_curses = False 
         self.logger = logging.getLogger("MysteryMachine.Ui.cli")
-
-    def mercurial_ui(self):
-        return mercurial.ui.ui()
 
     def edit_attribute(self,attr):
         """
@@ -132,8 +124,6 @@ if bpython_installed:
                 pass
             if not repl:
                 repl = bpython.cli.CLIRepl
-            if not hasattr(repl,"closed"):
-                 repl.closed = closed
             
         def Run(self):
             self.DoPatches()           

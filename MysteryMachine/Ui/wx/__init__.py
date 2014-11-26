@@ -413,9 +413,6 @@ class MMWxApp(wx.PySimpleApp):
             del self.frames[system]
             del self.systems[frame]
 
-    def mercurial_ui(self):
-        return self.ui 
-
     def Run(self):
        with MysteryMachine.StartApp(self.args) as ctx:
             self.ctx = ctx
