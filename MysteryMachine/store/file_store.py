@@ -331,7 +331,7 @@ class filestore(Base):
                 if attrtype == None:
                     attrtype = items[1]
                 if attrtype != items[1]:
-                    raise exception("Inconsisent attrype in store")
+                    raise Exception("Inconsisent attrype in store")
                 self.logger.debug( "GA:Loading:%s-%s)" %(candidate,items[2]))
                 files.update(FileStoreAttributePart(os.path.join(workuri,candidate),items[2]))
         
