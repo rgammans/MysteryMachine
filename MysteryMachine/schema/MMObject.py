@@ -171,19 +171,10 @@ class MMObject (MMAttributeContainer):
     attrname = self.canonicalise(attrname) 
     self._del_item(attrname,MMAttribute.delete_callback(self,attrname))
 
-  def iteritems(self):
-        for a in self.store.EnumAttributes():
-            if a[0] != '.': yield (a ,self[a])  
 
   def iterkeys(self):
-        for a in self.store.EnumAttributes():
-            if a[0] != '.': yield a  
-
-  def __iter__(self):
-        for a in self.store.EnumAttributes():
-            if a[0] != '.': yield self[a]
-
-  itervalues = __iter__
+        return self._iterhelper(lambda x:x[0] != '.',self._iter,
+                               self.store.EnumAttributes)
 
 
   @Reader 

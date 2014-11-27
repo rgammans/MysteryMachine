@@ -135,18 +135,11 @@ class MMSystem (MMAttributeContainer):
     """
      This lists all the existing categories in the MysteryMachine system.
 
-    @return  : Iterable list of caterogies in the system
+    @return  : Iterable list of categories in the system
     @author
     """
-    seen = [ ]
-    for key in self._iter():
-        seen.append(key)
-        try:
-            self[key]
-        except KeyError:pass
-        else:  yield key
-    for key in self.store.EnumCategories():
-        if key not in seen: yield key
+    return self._iterhelper(None,self._iter,self.store.EnumCategories)
+
 
   @Writer
   def _DeleteCategory(self,cat):
@@ -426,8 +419,8 @@ class MMSystem (MMAttributeContainer):
             raise Error
         return parts["txt"]
     else: return "ascii"
- 
- 
+
+
   @Reader 
   def get_encoding(self):
     return self.encoding
@@ -438,26 +431,16 @@ class MMSystem (MMAttributeContainer):
         for obj in self.EnumObjects(cat):
             yield cat + ":" + obj
 
-
   iterkeys = EnumContents
-  def iteritems(self):
-    for k in self.EnumContents():
-        yield (k , self[k] )
 
-  def __iter__(self):
-    for k in self.EnumContents():
-        yield  self[k]
-
-  itervalues = __iter__
-  
   def _find_node(self,root, path, lastpath = ""):
       node = root
       for element in path:
           element = self.canonicalise(element)
-            
+
           if node is None: 
               raise Error.NullReference(lastpath)
-             
+
           lastpath = repr(node) + ":" + element
           if element != "":
               node = node[element]
@@ -516,7 +499,7 @@ class MMSystem (MMAttributeContainer):
   def SaveAsPackFile(self,*args,**kwargs):
     import MysteryMachine.Packfile
     kwargs['flags'] = self.loadflags
-        
+
     MysteryMachine.Packfile.SavePackFile(self,*args,**kwargs)
 
   def discard(self,):
@@ -532,7 +515,7 @@ class MMSystem (MMAttributeContainer):
 
   def close(self,):
         """Call this if you've finished using the system.
-           
+
         This call isn't protected against other threads. And
         leaves the object in an inconsistent state.
         """
@@ -544,7 +527,7 @@ class MMSystem (MMAttributeContainer):
 
 
 class MMCategory(MMAttributeContainer):
-        
+
     def __init__(self,owner,name,**kwargs):
         super(MMCategory,self).__init__(self,owner,name,**kwargs)
         self.owner = owner
@@ -595,7 +578,7 @@ class MMCategory(MMAttributeContainer):
             if value is None:
                 del self[item] 
                 return
-            
+
             itm = self._set_attr_item(itemname,value)
             val = itm.get_value()
 

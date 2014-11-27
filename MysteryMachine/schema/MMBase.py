@@ -330,7 +330,30 @@ class MMContainer(MMBase):
 
     @Reader
     def _iter(self):
-        for k in self.cache.iterkeys(): yield k
+        for k,v in self.cache.iteritems():
+            if not v.is_deleted: yield k
+
+
+    def _iterhelper(self,guard,*generators):
+        seen = set()
+        for gen in generators:
+            for k in gen():
+                if guard and not guard(k): continue
+                if k not in seen:
+                    seen.add(k)
+                    yield k
+
+
+    def iteritems(self):
+        for a in self.iterkeys():
+            yield (a ,self[a])
+
+    def __iter__(self):
+        for a in self.iterkeys():
+            yield self[a]
+
+    itervalues = __iter__
+
 
     @Writer
     def _del_item(self,key,callback):

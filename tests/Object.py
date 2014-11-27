@@ -218,8 +218,9 @@ class ObjectTests(unittest.TestCase):
         attrk = list(self.object.iterkeys())
         self.assertEqual(len(attrk),2)
 
-        for k,v in itertools.izip(attrk,attrv):
-            self.assertEquals(self.object[k],v)
+        ##Check both lists contain the same set of objects.
+        self.assertEquals(set(attrk),
+                          set(v.name for v in attrv))
         
         #Check contains and iter are consistent.
         for a in attrk:
