@@ -69,21 +69,21 @@ class storeTests(object):
         self.store.NewCategory(".Three")
         self.store.commit_store_transaction()
         cats=list(self.store.EnumCategories())
-        self.assertEqual(len(cats),3)
+        self.assertEqual(set(cats),set(['One','Two','.Three'] ))
 
         self.store.start_store_transaction()
         self.store.DeleteCategory("One")
         self.store.commit_store_transaction()
         cats=list(self.store.EnumCategories())
-        self.assertEqual(len(cats),2)
+        self.assertEqual(set(cats), set(['Two','.Three'] ))
 
         #Create and delete in the same txn.
         self.store.start_store_transaction()
         self.store.NewCategory("Four")
         self.store.DeleteCategory("Four")
         self.store.commit_store_transaction()
-        self.assertEqual(len(cats),2)
-        self.assertFalse(self.store.HasCategory("Four")) 
+        self.assertEqual(set(cats),set(['Two','.Three'] ))
+        self.assertFalse(self.store.HasCategory("Four"))
 
         if False:
             #This behaviour is currently undefined, but below
@@ -124,15 +124,15 @@ class storeTests(object):
         self.store.commit_store_transaction()
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
-        self.assertEqual(len(objs1),2)
-        self.assertEqual(len(objs2),1)
+        self.assertEqual(set(objs1),set([o11,o12]))
+        self.assertEqual(set(objs2),set([o21]))
    
         #Recreate cateogory - should have no effect.
         self.store.start_store_transaction()
         self.store.NewCategory("Two")
         self.store.commit_store_transaction()
         objs2=list(self.store.EnumObjects("Two"))
-        self.assertEqual(len(objs2),1)
+        self.assertEqual(set(objs2),set([o21]))
        
         #Test deletion 
         self.store.start_store_transaction()
@@ -150,7 +150,7 @@ class storeTests(object):
         self.store.commit_store_transaction()
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
-        self.assertEqual(len(objs1),1)
+        self.assertEqual(set(objs1),set([o11]))
         self.assertEqual(len(objs2),0)
 
         #Create and delete in the same txn.
@@ -199,7 +199,7 @@ class storeTests(object):
 
         #Count objects to check that attributes aren't included
         objs1=list(self.store.EnumObjects("One"))
-        self.assertEqual(len(objs1),2)      
+        self.assertEqual(set(objs1),set([ o11,o12])) 
 
        #Test presence
         self.assertTrue(self.store.HasAttribute("One:"+o12+":name"))
@@ -338,8 +338,8 @@ class storeTests(object):
         
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
-        self.assertEqual(len(objs1),2)
-        self.assertEqual(len(objs2),1)
+        self.assertEqual(set(objs1),set([o11,o12]))
+        self.assertEqual(set(objs2),set(o21))
   
         self.assertTrue(self.store.HasCategory("One"))
         self.assertTrue(self.store.HasCategory("Two"))
@@ -356,7 +356,7 @@ class storeTests(object):
         self.store.NewCategory("Two")
         self.store.commit_store_transaction()
         objs2=list(self.store.EnumObjects("Two"))
-        self.assertEqual(len(objs2),1)
+        self.assertEqual(set(objs2),set([o21]))
        
         #Test deletion 
         self.store.start_store_transaction()
@@ -374,7 +374,7 @@ class storeTests(object):
         self.store.commit_store_transaction()
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
-        self.assertEqual(len(objs1),1)
+        self.assertEqual(set(objs1),set([o11]))
         self.assertEqual(len(objs2),0)
 
     def test_rollback(self,):   
@@ -416,5 +416,5 @@ class storeTests(object):
                 
                 objs1=list(self.store.EnumObjects("One"))
                 objs2=list(self.store.EnumObjects("Two"))
-                self.assertEqual(len(objs1),2)
-                self.assertEqual(len(objs2),1)
+                self.assertEqual(set(objs1),set([o11,o12]))
+                self.assertEqual(set(objs2),set([o21]))

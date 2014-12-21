@@ -132,15 +132,15 @@ class filestoreTests(storeTests,unittest.TestCase):
 
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
-        self.assertEqual(len(objs1),2)
-        self.assertEqual(len(objs2),1)
+        self.assertEqual(set(objs1),set([o11,o12]))
+        self.assertEqual(set(objs2),set([o21]))
    
         #Recreate cateogory - should have no effect.
         self.store.start_store_transaction()
         self.store.NewCategory("Two")
         self.store.commit_store_transaction()
         objs2=list(self.store.EnumObjects("Two"))
-        self.assertEqual(len(objs2),1)
+        self.assertEqual(set(objs2),  set([o21 ]) )
        
         #Test deletion 
         self.store.start_store_transaction()
@@ -158,7 +158,7 @@ class filestoreTests(storeTests,unittest.TestCase):
 
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
-        self.assertEqual(len(objs1),1)
+        self.assertEqual(set(objs1),set([o11]))
         self.assertEqual(len(objs2),0)
 
 
