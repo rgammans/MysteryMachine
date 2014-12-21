@@ -48,7 +48,7 @@ class dict_store(Base):
 
     def EnumCategories(self):
         #Forward the iterator object
-        return self._GenericEnum("", lambda d,k:  operator.isMappingType(d[k]) and k[0] !="." )
+        return self._GenericEnum("", lambda d,k:  operator.isMappingType(d[k])  and k[:2] !='..' )
 
     def _testObject(self,container,name):
         return (re.match(self.invalidobj,name) is None ) and ("..object" in container[name]) 
@@ -91,7 +91,7 @@ class dict_store(Base):
          return self._GenericHas("..object",name)
 
     def EnumAttributes(self,obj):
-       return self._GenericEnum(obj, lambda d,a: (not operator.isMappingType(d[a])) and  a[0] != '.')
+       return self._GenericEnum(obj, lambda d,a: (not operator.isMappingType(d[a]))  and a[:2] != '..' )
 
     def HasAttribute(self,name):
         dbpath = self.canonicalise(name)

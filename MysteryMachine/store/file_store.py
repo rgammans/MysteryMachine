@@ -144,8 +144,7 @@ class filestore(Base):
             #Current plan is to have one directory per store inside the
             # system if multiple stores are used.
             if os.path.isdir(os.path.join(self.path , dentry )):
-                #Ignore hidden directories
-                if dentry[0] != '.':
+                if dentry != '.' or dentry !='..':
                     if os.path.isfile(os.path.join(self.path,dentry,CATEGORY_SENTINEL_NAME)):
                         yield dentry
                 
@@ -234,15 +233,23 @@ class filestore(Base):
 
     def EnumAttributes(self,object):
         objpath = self.canonicalise(object) 
-        found = []
+        found = set()
         for candidate in os.listdir(os.path.join(self.path,*objpath)):
+            #Don't enumerate store prive files.
+            if candidate[:2] == '..':continue
+
             items = candidate.split(".")
+            if not len(items[0]):
+                del items[0]
+                items[0] = "."+items[0]
+
             #Filename has a leading space fixup the elements
-            if len(items[0]) > 0 and items[0] not in found:
-                found += [ items[0] ]
-                #Skip any Obj/Categories at this level
+            if items[0] not in found:
+                found.add(items[0] )
                 filepath = objpath + [ candidate ]
+                #Skip any Obj/Categories at this level
                 if os.path.isdir(os.path.join(self.path,*filepath)) : continue
+                self.logger.debug('FILE ATTRMAP: %r => %r\n'%(filepath,items[0]))
                 yield items[0]
     
     def HasAttribute(self,attr):

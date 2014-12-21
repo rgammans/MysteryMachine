@@ -164,8 +164,8 @@ class Base(object):
         """
         Returns a list or a generator yielding category names
  
-        System categories, (those starting with a leading period) should not
-        be return by this method.        
+        System categories, (those starting with a leading period) should 
+        be return be by this method.
 
         You are expected to override this for your own store.
         """
@@ -262,9 +262,9 @@ class Base(object):
     def EnumAttributes(self,object):
         """
         Returns a list or a generator yielding attributes names in object object.
-       
-        System attributes, (those starting with a leading period) should not
-        be return by this method.        
+
+        System attributes, (those starting with a leading period) should be
+        be returned by this method.        
  
         You are expected to override this for your own store.
         """

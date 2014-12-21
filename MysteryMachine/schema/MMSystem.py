@@ -138,7 +138,8 @@ class MMSystem (MMAttributeContainer):
     @return  : Iterable list of categories in the system
     @author
     """
-    return self._iterhelper(None,self._iter,self.store.EnumCategories)
+    return self._iterhelper(lambda x:x[0] != '.',
+                            self._iter,self.store.EnumCategories)
 
 
   @Writer

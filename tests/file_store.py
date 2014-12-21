@@ -100,12 +100,12 @@ class filestoreTests(storeTests,unittest.TestCase):
         self.store.commit_store_transaction()
         cats=list(self.store.EnumCategories())
         os.mkdir(os.path.expanduser(self.mpath) + os.path.sep + "Four")
-        self.assertEqual(len(cats),2)
+        self.assertEqual(set(cats),set(['One','Two', '.Three']))
         self.store.start_store_transaction()
         self.store.DeleteCategory("One")
         self.store.commit_store_transaction()
         cats=list(self.store.EnumCategories())
-        self.assertEqual(len(cats),1)
+        self.assertEqual(set(cats),set(['Two', '.Three']))
  
     def test_should_be_able_tell_the_difference_between_objects_categories_and_random_dirs(self):
         #Check empty categories are..

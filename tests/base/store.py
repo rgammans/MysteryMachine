@@ -69,20 +69,20 @@ class storeTests(object):
         self.store.NewCategory(".Three")
         self.store.commit_store_transaction()
         cats=list(self.store.EnumCategories())
-        self.assertEqual(len(cats),2)
+        self.assertEqual(len(cats),3)
 
         self.store.start_store_transaction()
         self.store.DeleteCategory("One")
         self.store.commit_store_transaction()
         cats=list(self.store.EnumCategories())
-        self.assertEqual(len(cats),1)
+        self.assertEqual(len(cats),2)
 
         #Create and delete in the same txn.
         self.store.start_store_transaction()
         self.store.NewCategory("Four")
         self.store.DeleteCategory("Four")
         self.store.commit_store_transaction()
-        self.assertEqual(len(cats),1)
+        self.assertEqual(len(cats),2)
         self.assertFalse(self.store.HasCategory("Four")) 
 
         if False:
@@ -192,8 +192,9 @@ class storeTests(object):
         objs1=list(self.store.EnumAttributes("One:"+o12))
         cat1=list(self.store.EnumAttributes("One"))
         objs2=list(self.store.EnumAttributes(".Two:"+o21))
-        self.assertEqual(len(objs1),1)
-        self.assertEqual(len(cat1),0)
+        ##Cast to set as order is not part of the API.
+        self.assertEqual(set(objs1),set(['name', '.dotfile']))
+        self.assertEqual(set(cat1),set(['.dummyattr']))
         self.assertEqual(len(objs2),0)
 
         #Count objects to check that attributes aren't included
@@ -279,7 +280,7 @@ class storeTests(object):
         #Count attributes.
         objs1=list(o12store.EnumAttributes())
         objs2=list(o21store.EnumAttributes())
-        self.assertEqual(len(objs1),1)
+        self.assertEqual(set(objs1) , set(['name']))
         self.assertEqual(len(objs2),0)
         
         #Test presence
