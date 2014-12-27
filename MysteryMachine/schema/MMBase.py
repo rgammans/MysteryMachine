@@ -323,7 +323,8 @@ class MMContainer(MMBase):
             item =self.cache[key]
         except KeyError:
             return func(*args)
-        else:
+        else: 
+            #TODO: Does reading is_deleted require a reader lock on v?
             return not item.is_deleted
         #Catch any thing which drops through
         return False
@@ -331,15 +332,23 @@ class MMContainer(MMBase):
     @Reader
     def _iter(self):
         for k,v in self.cache.iteritems():
+            #TODO: Does reading is_deleted require a reader lock on v?
             if not v.is_deleted: yield k
 
+
+    @Reader
+    def _is_item_deleted(self,k):
+        """Returns true, if the item  has a deleted ghos in the cache"""
+        v = self.cache.get(k,None)
+        #TODO: Does reading is_deleted require a reader lock on v?
+        return v is not None and v.is_deleted
 
     def _iterhelper(self,guard,*generators):
         seen = set()
         for gen in generators:
             for k in gen():
                 if guard and not guard(k): continue
-                if k not in seen:
+                if k not in seen and not self._is_item_deleted(k):
                     seen.add(k)
                     yield k
 

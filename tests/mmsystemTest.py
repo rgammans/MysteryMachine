@@ -23,6 +23,7 @@ Tests for the MysteryMachine MMSystem  module
 
 from MysteryMachine import * 
 from MysteryMachine.schema.MMSystem import *
+from MysteryMachine.schema.Locker import *
 
 import MysteryMachine.store.file_store
 
@@ -203,6 +204,30 @@ class sysTests(unittest.TestCase):
         #Black box test - to enusre we get fetch in from the store
         self.assertEquals(self.sys._get_encoding(),"utf-8" )
         self.assertRaises(LookupError,self.sys.set_encoding,"xyyzzy")
+
+    def testEnumeration(self):
+        """We (have)/had a bug where hidden attribute caused issues enumerating a systems contents"""
+        #Setencoding and name
+        self.sys.set_encoding("utf-8")
+        self.sys.set_name("dsddssd")
+        #Black box test - to enusre we get fetch in from the store
+        self.assertEquals(len(list(self.sys.EnumContents()) ) ,0  )
+        self.assertTrue(set(self.sys.EnumHiddenAttributes())  > set(['.defname', ] ) )
+
+    def testConsistentEnumerationDuringTransaction(self):
+#        print "-----r--------"
+        cats=list(self.sys.EnumCategories())
+        self.assertEqual(len(cats),0)
+        self.sys.NewCategory("One",None)
+        self.sys.NewCategory("Two",None)
+        with WriteLock(self.sys):
+            cats=list(self.sys.EnumCategories())
+            self.assertEqual(len(cats),2)
+            self.sys.DeleteCategory("One")
+            cats=list(self.sys.EnumCategories())
+            self.assertEqual(len(cats),1)
+        #Check again outside of transaction
+        self.assertEqual(len(cats),1)
 
 
     def testNaming(self):
