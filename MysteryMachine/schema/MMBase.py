@@ -330,8 +330,12 @@ class MMContainer(MMBase):
         return False
 
     @Reader
-    def _iter(self):
+    def _iter(self, **kwargs):
+        val_guard = kwargs.get('val_guard',None)
         for k,v in self.cache.iteritems():
+            #Check the value agaisnt the guard/filter fn.
+            if callable(val_guard) and not val_guard(v): continue
+
             #TODO: Does reading is_deleted require a reader lock on v?
             if not v.is_deleted: yield k
 
@@ -343,14 +347,31 @@ class MMContainer(MMBase):
         #TODO: Does reading is_deleted require a reader lock on v?
         return v is not None and v.is_deleted
 
-    def _iterhelper(self,guard,*generators):
+    @Reader
+    def _EnumX(self, storefn , **kwargs ):
+        """Helper function for Enumerator in node classes
+        Takes a function to query the store for possible object names
+        and checks against the cache, and (hence) current transcation state
+        """
+        inc_hidden = kwargs.get('inc_hidden', False)
+
+        if inc_hidden:
+            #guard returns false on hidden
+            guard = lambda x:True
+        else:
+            guard = lambda x:x[0] != '.'
+
         seen = set()
-        for gen in generators:
-            for k in gen():
-                if guard and not guard(k): continue
-                if k not in seen and not self._is_item_deleted(k):
-                    seen.add(k)
-                    yield k
+        for k in self._iter(**kwargs):
+            if not guard(k): continue
+            seen.add(k)
+            yield k
+
+        for k in storefn():
+            if not guard(k): continue
+            if k not in seen and not self._is_item_deleted(k):
+                seen.add(k)
+                yield k
 
 
     def iteritems(self):

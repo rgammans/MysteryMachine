@@ -172,18 +172,28 @@ class MMObject (MMAttributeContainer):
     self._del_item(attrname,MMAttribute.delete_callback(self,attrname))
 
 
+  @Reader
   def iterkeys(self):
-        return self._iterhelper(lambda x:x[0] != '.',self._iter,
-                               self.store.EnumAttributes)
+    for k in self.EnumAttributes(inc_parent=False,inc_hidden=False):
+        yield k
 
 
-  @Reader 
-  def EnumAttributes(self):
-        for key in self.iterkeys():
-            yield key
-        parent = self.get_parent()
-        if parent is not None:
-            for key in self.get_parent().iterkeys():
+  @Reader
+  def EnumAttributes(self, **kwargs):
+    inc_parent = kwargs.get('inc_parent', True)
+    
+    seen = set()
+    for key in self._EnumX(self.store.EnumAttributes,
+                            val_guard = lambda o:isinstance(o,MMAttribute),
+                            **kwargs):
+        seen.add(key)
+        yield key
+
+    parent = self.get_parent()
+    if parent is not None:
+        for key in parent.EnumAttributes(**kwargs):
+            if key not in seen:
+                seen.add(key)
                 yield key
 
   @Reader

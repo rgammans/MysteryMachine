@@ -84,6 +84,14 @@ class MMAttributeContainer(MMContainer):
         if isinstance(item,MMAttribute):
             item._compose()
 
+    @Reader
+    def EnumAttributes(self, **kwargs):
+        rootstore  = self.get_root().store
+        return self._EnumX(functools.partial(rootstore.EnumAttributes,self.get_nodeid()) ,
+                            val_guard = lambda o:isinstance(o,MMAttribute),
+                             **kwargs)
+
+
 
 class MMAttribute (MMAttributeContainer):
 

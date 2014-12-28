@@ -131,15 +131,14 @@ class MMSystem (MMAttributeContainer):
     return ""
   
   @Reader   
-  def EnumCategories(self):
+  def EnumCategories(self, **kwargs):
     """
      This lists all the existing categories in the MysteryMachine system.
 
     @return  : Iterable list of categories in the system
     @author
     """
-    return self._iterhelper(lambda x:x[0] != '.',
-                            self._iter,self.store.EnumCategories)
+    return self._EnumX(self.store.EnumCategories, val_guard = lambda o:isinstance(o,MMCategory) , **kwargs)
 
 
   @Writer

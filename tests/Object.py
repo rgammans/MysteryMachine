@@ -203,8 +203,8 @@ class ObjectTests(unittest.TestCase):
         self.object["name"]  = "fred blogs"
         self.assertTrue("name" in self.object)
         self.assertTrue("attr1" in self.object)
-        self.assertEquals(len(list(iter(self.object))),2)
         names = [ "attr1" , "name" ]
+        self.assertEquals(set( o.name for o in  iter(self.object)) , set( names ))
         fndNames= []
         for k,v in self.object.iteritems():
             self.assertTrue(k in names)

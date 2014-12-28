@@ -211,8 +211,9 @@ class sysTests(unittest.TestCase):
         self.sys.set_encoding("utf-8")
         self.sys.set_name("dsddssd")
         #Black box test - to enusre we get fetch in from the store
-        self.assertEquals(len(list(self.sys.EnumContents()) ) ,0  )
-        self.assertTrue(set(self.sys.EnumHiddenAttributes())  > set(['.defname', ] ) )
+        self.assertEquals(set(self.sys.EnumContents())  ,set()  ) #Is empty
+        self.assertEquals(set(self.sys.EnumAttributes(inc_hidden = False)) , set()) #Is empty
+        self.assertTrue(set(self.sys.EnumAttributes(inc_hidden = True))  > set(['.defname', ] ) )
 
     def testConsistentEnumerationDuringTransaction(self):
 #        print "-----r--------"
@@ -228,6 +229,17 @@ class sysTests(unittest.TestCase):
             self.assertEqual(len(cats),1)
         #Check again outside of transaction
         self.assertEqual(len(cats),1)
+
+        #Check add operation
+        with WriteLock(self.sys):
+            cats=list(self.sys.EnumCategories())
+            self.assertEqual(len(cats),1)
+            self.sys.NewCategory("Three")
+            cats=list(self.sys.EnumCategories())
+            self.assertEqual(len(cats),2)
+        #Check again outside of transaction
+        self.assertEqual(len(cats),2)
+
 
 
     def testNaming(self):
