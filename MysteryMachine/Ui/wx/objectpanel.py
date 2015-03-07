@@ -38,6 +38,9 @@ def NewUI_ID():
 
 
 class ObjectPanel(wx.PyPanel):
+    """This is UI panel for a complete object showing all the attirbutes, 
+        with a read/write sub-panel of attributes set at the top-level and readonly sub-panels of what is inherited"""
+
     def __init__(self,parent,obj):
         super(ObjectPanel,self).__init__(parent,-1,wx.DefaultPosition,wx.Size(0,0))
         self.obj = obj
@@ -115,7 +118,11 @@ class ObjectPanel(wx.PyPanel):
         return section, section.get_included()
 
 class _object_section(wx.PyPanel):
-    
+    """This is a Ui Sub-panel , of ObjectPanel that only shows the attribute set directlt
+    on the object it reflects.
+    If obj and tob_obj are no thte same it is in a read-only mode.
+    """
+
     #def _buildObjectPanel(self,obj,overridden_list,top_object):
     def __init__(self,parent,obj,overridden_list,top_object):
         """
@@ -158,13 +165,16 @@ class _object_section(wx.PyPanel):
         return self.obj
 
 class _attribute_section(wx.PyPanel):
+    """This is a panel which manages an attribute. If Attr is not directly
+    set in top_object it creates and override button which copies it there"""
+
     ID_MYBUTTON = NewUI_ID()
     def __init__(self,parent,id,attribute,top_object):
         super(_attribute_section,self).__init__(parent,id)
         self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
         self.attribute = attribute
         self.top = top_object
-        at_top = self.attribute.get_ancestor() is top_object
+        at_top = not self.attribute.is_shadow()
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         label = wx.StaticText(self,-1,label = self.attribute.name)

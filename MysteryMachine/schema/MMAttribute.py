@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-#   			MMAttribute.py - Copyright roger
-# 
+#           MMAttribute.py - Copyright roger
+#
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ class MMAttributeContainer(MMContainer):
         #Sanity check.
         if attrvalue is None: raise ValueError("Cannot store none")
         objname = "unknown" 
-        
+
         try:
             attrobj = self[attrname]
         except KeyError:
@@ -69,7 +69,7 @@ class MMAttributeContainer(MMContainer):
 
         #Write back to the cache
         super(MMAttributeContainer,self)._new_item(attrname,attrobj) 
-        
+
         #Now the value is in the cache it (and referenced here)
         #so it won't expire - we can do any final fixup that the 
         #value object might require - most value objects probably don't
@@ -79,7 +79,7 @@ class MMAttributeContainer(MMContainer):
         #if notify: self._do_notify()
         return attrobj
 
-           
+
     def _do_compose(self,item):
         if isinstance(item,MMAttribute):
             item._compose()
@@ -338,7 +338,7 @@ class MMAttribute (MMAttributeContainer):
         #print ("preparing write to %r"%self)
         if self.oldvalue is None:
             self.oldvalue = _copy.copy(self.valueobj)
-            if isinstance(self.valueobj,ShadowAttributeValue):
+            if self.is_shadow():
                 #print "elevating shadow"
                 #Swap copy and current as the Shadow wants to 
                 # reinstated on rollback not a copy..
@@ -351,6 +351,9 @@ class MMAttribute (MMAttributeContainer):
 
 
 
+  def is_shadow(self,):
+    """Return True if this is a shadow, or inherirted attribute"""
+    return isinstance(self.valueobj,ShadowAttributeValue)
 
 #        Since MMUnstorableAttribtes doesn't honor the owner
 #        properties of MMAttributes, they shouldn't be considered
