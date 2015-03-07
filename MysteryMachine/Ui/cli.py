@@ -110,24 +110,14 @@ class UiBase(object):
     def DoPatches(self):
          #Monkeypatch MAttributr to call out to a local editor.
          MMAttribute.edit =  types.UnboundMethodType(self.edit_attribute,None,MMAttribute)
-                
+
 
 if bpython_installed:
     class BPython(UiBase):
-        def DoPatches(self):
-            super(BPython,self).DoPatches()
-            #Mercurial 1.4 calls sys.stdout.closed() - this ensures that call exists
-            repl = None
-            try:
-                repl = bpython.cli.Repl
-            except AttributeError:
-                pass
-            if not repl:
-                repl = bpython.cli.CLIRepl
-            
+
         def Run(self):
-            self.DoPatches()           
-     
+            self.DoPatches()
+
             with MysteryMachine.StartApp(self.args) as ctx:
                 self.in_curses = True
                 bpython.cli.main(args=["--quiet",] ,locals_ = { 'ctx': ctx })
