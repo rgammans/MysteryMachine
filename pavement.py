@@ -392,6 +392,7 @@ setup(name ="MysteryMachine",
 options(
     virtualenv = Bunch(
         script_name = VENVSCRIPT, 
-        packages_to_install = EZ_PACKAGES,
+        packages_to_install =  EZ_PACKAGES ,
+        no_site_packages = False,
     )
 )
