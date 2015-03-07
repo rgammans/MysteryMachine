@@ -81,6 +81,14 @@ VENVSCRIPT = 'install.py'
 
 PYTHONS= [ "python" ]
 
+
+##Windows compat hack
+FileErrors = [OSError ]
+try:
+    FileErrors.append(WindowsError)
+except NameError:pass
+FileErrors = tuple(FileErrors)
+
 import sys
 import os
 import shutil
@@ -268,6 +276,7 @@ def src_environ(options):
  
 @task
 @needs('dst_environ')
+@cmdopts([('no-tests', 'n' ,'suppress post-install tests')])
 def install_here():
     """Install everything from the build dir into t)he current env.
    
@@ -300,12 +309,14 @@ def install_here():
     sys.path = oldpath
  
     #Do a final test of the installation.
-    call_task('test_installed')
+    if not options.install_here.get('no_tests',False):
+        call_task('test_installed')
 
 
 @task
 @needs('src_environ')
-@cmdopts([('installdir=', 'd' ,'Directory to install MysteryMachine into')])
+@cmdopts([('installdir=', 'd' ,'Directory to install MysteryMachine into'),
+          ('no-tests', 'n' ,'suppress post-install tests')])
 def install(options):
     """Create a virtual environment and install into it.
 
@@ -336,12 +347,27 @@ def install(options):
     os.chdir(here)
     #Relaunch paver to install ourself into the newly setup virtualenv.
     # -but first find our paver executable..
-    paver =os.path.join(options.install.installdir,"bin","paver")
-    try:
-	    os.stat(paver)
-    except (WindowsError,OSError):
-	    paver = os.path.join(options.install.installdir,"scripts","paver")
-    subprocess.call([paver,"-f",os.path.join(here,"pavement.py"),"install_here" ])
+    places_to_look = [
+            os.path.join(options.install.installdir,"bin","paver"),
+            os.path.join(options.install.installdir,"scripts","paver")
+    ]
+    ## Add system path
+    places_to_look.extend([ os.path.join(x, 'paver')  for x in os.getenv('PATH').split(os.pathsep) ])
+
+    for paver in places_to_look:
+        try:
+            os.stat(paver)
+        except FileErrors:pass
+        else: break
+    else:
+        print paver
+        raise RuntimeError("Paver binary not found")
+
+    call_data = [paver,"-f",os.path.join(here,"pavement.py"),"install_here" ,]
+    if options.install.get('no_tests',False):
+        call_data.append('--no-tests')
+    
+    subprocess.call(call_data)
 
 
 setup(name ="MysteryMachine",
