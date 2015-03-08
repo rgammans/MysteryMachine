@@ -103,9 +103,18 @@ class UiBase(object):
             
         #Save and restore curses mode.
         # =Can't guarantee - curses is availble.
-        if self.in_curses: curses.reset_shell_mode()
+        if self.in_curses:
+            curses.def_prog_mode()
+            curses.reset_shell_mode()
         os.system(editor +" "+ filename)
-        if self.in_curses: curses.reset_prog_mode()
+        if self.in_curses: 
+            curses.reset_prog_mode()
+             try:
+                 bpython.cli.stdscr.redrawwin()
+             except NameError,AttributeError:
+                #This means we bython is updated or we are not 
+                #uses the curses implemenation
+                pass
 
     def DoPatches(self):
          #Monkeypatch MAttributr to call out to a local editor.
