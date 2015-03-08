@@ -569,6 +569,10 @@ class MMCategory(MMAttributeContainer):
 
       raise KeyError(fullid)
 
+    @Reader
+    def EnumObjects(self,):
+        for x in self.owner.EnumObjects(self.name):
+            yield x
 
     @Writer
     def __setitem__(self,item,value):
@@ -605,8 +609,8 @@ class MMCategory(MMAttributeContainer):
       return a 
 
     def __iter__(self):
-        for objkey in self.owner.EnumObjects(self.name):
-            yield  self[objkey] 
+        for objkey in self.EnumObjects():
+            yield  self[objkey]
 
     itervalues = __iter__
 
@@ -634,11 +638,11 @@ class MMCategory(MMAttributeContainer):
   
 
     def iteritems(self):
-       for objkey in self.owner.EnumObjects(self.name):
+       for objkey in self.EnumObjects():
             yield  objkey , self[objkey] 
 
     def iterkeys(self):
-       for objkey in self.owner.EnumObjects(self.name):
+       for objkey in self.EnumObjects():
            yield objkey 
 
     def get_parent(self):
