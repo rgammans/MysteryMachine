@@ -108,17 +108,6 @@ def find_all(path,dirname):
             yield filename
 
 
-#
-# Redefine minilib so that it includes the virtual module
-# 
-@task
-def minilib(options):
-    #paver seems to complain if this is already there..
-    if 'extra_files' not in options:
-        options['extra_files']= [ ]
-    options['extra_files'] += ['virtual']
-    paver.misctasks.minilib(options)
-
 
 @task
 @needs('generate_setup','minilib','src_environ')
@@ -184,6 +173,8 @@ def test():
 def test_installed():
     """Run MysteryMachine units tests on the Installed MysteryMachine distribution
         with the current python"""
+
+
     global PYTHONS
     PYTHONS = [ sys.executable ]
     _do_test()
@@ -394,5 +385,8 @@ options(
         script_name = VENVSCRIPT, 
         packages_to_install =  EZ_PACKAGES ,
         no_site_packages = False,
+    ),
+    minilib = Bunch(
+        extra_files = ['virtual']
     )
 )
