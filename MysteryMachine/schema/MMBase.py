@@ -332,7 +332,7 @@ class MMContainer(MMBase):
     @Reader
     def _iter(self, **kwargs):
         val_guard = kwargs.get('val_guard',None)
-        for k,v in self.cache.iteritems():
+        for k,v in self.cache.items():
             #Check the value agaisnt the guard/filter fn.
             if callable(val_guard) and not val_guard(v): continue
 
