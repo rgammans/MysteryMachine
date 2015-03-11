@@ -202,7 +202,7 @@ class MMObject (MMAttributeContainer):
 
   def has(self,name):
        parent = self.get_parent()
-       a = self.store.HasAttribute(name)
+       a = name in self
        if not a and parent:
             parent = parent.has(name)
        return a or parent

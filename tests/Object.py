@@ -310,6 +310,26 @@ class ObjectTests(unittest.TestCase):
         test_new(self.object)
         test_del(self.object)
 
+    def test_contains_looks_at_xaction_state(self,):
+        """ do test inside a xaction to chack that 'in' looks at
+        chnages to the current state"""
+        @Writer
+        def test_new(obj):
+            obj['newattr'] ='x'
+            self.assertTrue(obj.has('newattr'))
+
+        @Writer
+        def test_del(obj):
+            del obj['newattr']
+            self.assertFalse(obj.has('newattr'))
+
+        test_new(self.object)
+        test_del(self.object)
+
+
+
+
+
     def test_attribute_rollback(self,):
         """ do test inside a xaction to chack that 'in' looks at
         chnages to the current state then tthow and sxception anc
