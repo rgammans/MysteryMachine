@@ -276,6 +276,64 @@ class ObjectTests(unittest.TestCase):
        if self.exception: raise self.exception
 
 
+    def test_iter_looks_at_xaction_state(self,):
+        """ do test inside a xaction to chack that 'in' looks at
+        chnages to the current state"""
+        @Writer
+        def test_new(obj):
+            obj['newattr'] ='x'
+            self.assertIn('newattr',list(obj.iterkeys()))
+
+        @Writer
+        def test_del(obj):
+            del obj['newattr']
+            self.assertNotIn('newattr',list(obj.iterkeys()))
+
+        test_new(self.object)
+        test_del(self.object)
+
+   
+
+    def test_contains_looks_at_xaction_state(self,):
+        """ do test inside a xaction to chack that 'in' looks at
+        chnages to the current state"""
+        @Writer
+        def test_new(obj):
+            obj['newattr'] ='x'
+            self.assertIn('newattr',obj)
+
+        @Writer
+        def test_del(obj):
+            del obj['newattr']
+            self.assertNotIn('newattr',obj)
+
+        test_new(self.object)
+        test_del(self.object)
+
+    def test_attribute_rollback(self,):
+        """ do test inside a xaction to chack that 'in' looks at
+        chnages to the current state then tthow and sxception anc
+        chekc the state appears unchanged"""
+        @Writer
+        def test_new(obj):
+            obj['newattr'] ='x'
+            self.assertIn('newattr',list(obj.iterkeys()))
+            raise RuntimeError()
+
+        @Writer
+        def test_del(obj):
+            del obj['newattr']
+            self.assertNotIn('newattr',obj)
+            raise RuntimeError()
+
+        self.assertRaises(RuntimeError,test_new,self.object)
+        self.assertNotIn('newattr',self.object)
+        self.object['newattr']='x'
+        self.assertRaises(RuntimeError,test_del,self.object)
+        self.assertIn('newattr',self.object)
+
+
+
 def getTestNames():
 	return [ 'Object.ObjectTests' ] 
 

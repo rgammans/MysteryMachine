@@ -198,7 +198,10 @@ class MMObject (MMAttributeContainer):
 
   @Reader
   def __contains__(self,name):
-       a = self.store.HasAttribute(name) 
+       if name in self.cache:
+            a = not self.cache[name].is_deleted
+       else:
+            a = self.store.HasAttribute(name) 
        self.logger.debug( "** %s does %s exist** ", name , ("" if a else "not"))
        return a
 
