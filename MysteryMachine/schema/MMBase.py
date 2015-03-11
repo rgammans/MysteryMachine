@@ -348,6 +348,16 @@ class MMContainer(MMBase):
         return v is not None and v.is_deleted
 
     @Reader
+    def _contains_helper(self,name,store_fn ):
+       if name in self.cache:
+            a = not self.cache[name].is_deleted
+       else:
+            a = store_fn(name) 
+       self.logger.debug( "** %s does %s exist** ", name , ("" if a else "not"))
+       return a
+
+
+    @Reader
     def _EnumX(self, storefn , **kwargs ):
         """Helper function for Enumerator in node classes
         Takes a function to query the store for possible object names

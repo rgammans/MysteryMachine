@@ -198,12 +198,7 @@ class MMObject (MMAttributeContainer):
 
   @Reader
   def __contains__(self,name):
-       if name in self.cache:
-            a = not self.cache[name].is_deleted
-       else:
-            a = self.store.HasAttribute(name) 
-       self.logger.debug( "** %s does %s exist** ", name , ("" if a else "not"))
-       return a
+        return self._contains_helper(name, self.store.HasAttribute)
 
   def has(self,name):
        parent = self.get_parent()
