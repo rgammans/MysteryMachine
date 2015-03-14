@@ -187,7 +187,7 @@ class DlinkTests(unittest.TestCase):
         self.assertEquals(self.object2["2link"].get_object(),None)
 
 
-    def testShadowing(self):
+    def testShadowing_unconnected_connecting(self):
         self.dummyparent["objlink1"] = dlk.CreateAnchorPoint(self.dummyparent)
         self.object1["link2"] = dlk.CreateAnchorPoint(self.object1)
         self.object2["objlink1"] = dlk.ConnectTo( self.object1["link2"])
@@ -195,6 +195,24 @@ class DlinkTests(unittest.TestCase):
         self.assertEquals(self.object2["objlink1"].get_object(),self.object1)
         self.assertEquals(self.dummyparent["objlink1"].get_object(),None)
         self.assertEquals(self.dummyparent["objlink1"].get_anchor(),self.dummyparent)
+
+
+    def testShadowing_connected(self):
+        self.dummyparent["objlink1"] = dlk.CreateAnchorPoint(self.dummyparent)
+        self.object1["link2"] = dlk.CreateAnchorPoint(self.object1)
+        self.dummyparent["objlink1"] = dlk.ConnectTo( self.object1["link2"])
+        self.assertEquals(self.object1["link2"].get_object(),self.dummyparent)
+        self.assertEquals(self.object2["objlink1"].get_object(),self.object1)
+        self.assertEquals(self.dummyparent["objlink1"].get_object(),self.object1)
+        self.assertEquals(self.dummyparent["objlink1"].get_anchor(),self.dummyparent)
+        ##This tests on a connected object the anchorpoint shows as the obj from
+        # which the connection is nherited from !
+        #
+        # IN a sense in thsi one case inheirtance works differently! this 
+        # is the second point under shadowing semantics
+        #
+        self.assertEquals(self.object2["objlink1"].get_anchor(),self.dummyparent)
+
 
     def testUnstored(self):
         self.object2["uobjlink1"] = dlk.CreateAnchorPoint(self.object2)
@@ -266,6 +284,21 @@ class DlinkTests(unittest.TestCase):
         self.assertEquals(attr.get_anchor(),self.object1)
         
         
+
+    def test_attempting_to_connect_non_bidi_raises_LinkError(self,):
+        self.object3["link1"] = dlk.CreateAnchorPoint(self.object3)
+        self.object2['link1'] = ''
+        def try_connect(src,target):
+            target = dlk.ConnectTo(src)
+
+        self.assertRaises(TypeError,try_connect,self.object2['link1'],self.object3["link1"])
+        self.assertEqual(self.object3["link1"].get_anchor(),self.object3)
+        self.assertEqual(self.object3["link1"].get_object(),None)
+
+        self.assertRaises(TypeError,try_connect,self.object3['link1'],self.object2["link1"])
+        self.assertEqual(self.object3["link1"].get_anchor(),self.object3)
+        self.assertEqual(self.object3["link1"].get_object(),None)
+
 
 def getTestNames():
 	return [ 'Dlink.DlinkTests' ] 

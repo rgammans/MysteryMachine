@@ -61,7 +61,7 @@ Additionally there is a convinence function CreateBiDiLink() for the case above
 where you are immediately creaing a connected pair. You can use it simply like
 this:
 ::
-    CreateBiDiLink(player1,"character",character2,"player)
+    CreateBiDiLink(player1,"character",character2,"player")
 
 to achieve the same effect as the previous example.
 
@@ -96,6 +96,17 @@ target object.
 
 The bidilinks have been carefully implemented to ensure they can be contained
 in list attributes if more complex structures are required.
+
+
+Shadowing bidilinks
+-------------------
+
+# Anchorpoints keep the same relative reference, so an attribute or list
+  containing an anchor point to it home object, continues to point to it 
+  ownin object after inheritance 9ie. move with the inheithance).
+
+# Connecting links continue to point forwrd, but their anchor is based on the
+  object which owns them.
 
 """
 
@@ -154,6 +165,7 @@ def _process_obj_and_attr(obj,attr):
         basepath_elements =  [ obj.canonicalise(attr) ]
         baseref = obj
     return baseref , basepath_elements
+
 
 
 def _container_walk(root,path):
@@ -448,6 +460,11 @@ class MMDLinkValue(MMAttributeValue):
         if obj is None: raise ValueError("Anchor is now relative - must pass home object")
         if self.anchordist is None:
             if self.anchorp is not None: return self.anchorp
+            ##NOTE If the line below is raising KeyError('anchor') the problem occured
+            #      before we got here!
+            #      For instance assigned ConnectTo(..)'s result to  a non Dlink object is 
+            #      one way to cause this, although I intend to raise a custom error for this
+            #      ealier in the control path!
             else: return _container_walk(obj.get_root(),self.parts["anchor"].split(":"))
         return _walk_back(obj,self.anchordist)
 

@@ -64,6 +64,7 @@ class complexValTest(unittest.TestCase):
         self.object                  = self.system.NewObject("Dummy") 
         self.object.set_parent(self.parent)       
 
+
         self.object2                  = self.system.NewObject("Dummy") 
 
     def tearDown(self,): 
@@ -113,6 +114,7 @@ class complexValTest(unittest.TestCase):
         self.assertEquals(len(self.parent["b_list"]), 0)
 
         self.logger.setLevel(oldlevel)
+
     def testListAndDlink(self):
         self.object["linklist"]  = [dlk.CreateAnchorPoint(self.object)] * 2 
         self.assertEquals(self.object["linklist"][0].get_value().get_type(), "bidilink")
@@ -124,6 +126,56 @@ class complexValTest(unittest.TestCase):
         self.object["linklist"][0] = dlk.ConnectTo(self.object2["link"]) 
         self.assertEquals(self.object["linklist"][0].get_anchor(), self.object)
         self.assertEquals(self.object["linklist"][0].get_object(), self.object2)
+
+
+
+    def testListAndDlink_with_shadows(self):
+        """This is typical behaviour of a manymnay linkng client"""
+        #Create empty list on parent
+        self.dummyparent["linklist"]  = []
+        #override with a ancohr on the object.
+        self.object2["linklist"].append(dlk.CreateAnchorPoint(self.object2))
+        self.assertEquals(self.object2["linklist"][0].get_value().get_type(), "bidilink")
+        self.assertEquals(self.object2["linklist"][0].get_anchor(), self.object2)
+
+        self.object["link"] = dlk.CreateAnchorPoint(self.object)
+        self.object2["linklist"][0] = dlk.ConnectTo(self.object["link"]) 
+        self.assertEquals(self.object2["linklist"][0].get_anchor(), self.object2)
+        self.assertEquals(self.object2["linklist"][0].get_object(), self.object)
+        self.assertEquals(self.object["link"].get_anchor(), self.object)
+        self.assertEquals(self.object["link"].get_object(), self.object2)
+
+    def testListAndDlink_with_dup_shadows(self):
+        """This id another typical behaviour of a manymnay linkng client"""
+        #Create empty list on parent
+        self.dummyparent["linklist"]  = []
+        self.parent["link"]  = dlk.CreateAnchorPoint(self.parent)
+        self.assertEquals(self.object["link"].get_anchor(), self.object)
+        x  = self.dummyparent["linklist"]
+        #override with a ancohr on the object.
+        self.object2["linklist"].append(dlk.CreateAnchorPoint(self.object2))
+        self.assertEquals(self.object2["linklist"][0].get_value().get_type(), "bidilink")
+        self.assertEquals(self.object2["linklist"][0].get_anchor(), self.object2)
+
+        self.object2["linklist"][0] = dlk.ConnectTo(self.object["link"]) 
+        self.assertEquals(self.object2["linklist"][0].get_anchor(), self.object2)
+        self.assertEquals(self.object2["linklist"][0].get_object(), self.object)
+        self.assertEquals(self.object["link"].get_anchor(), self.object)
+        self.assertEquals(self.object["link"].get_object(), self.object2)
+
+
+        ##Now do it again.
+        object3     = self.system.NewObject("Dummy")
+        object3.set_parent(self.parent)
+        object4     = self.system.NewObject("Dummy") 
+        object4["linklist"].append(dlk.CreateAnchorPoint(object4))
+        object4["linklist"][0] = dlk.ConnectTo(object3["link"]) 
+        self.assertEquals(object4["linklist"][0].get_anchor(), object4)
+        self.assertEquals(object4["linklist"][0].get_object(), object3)
+        self.assertEquals(object3["link"].get_anchor(), object3)
+        self.assertEquals(object3["link"].get_object(), object4)
+
+
 
     def test_should_remember_an_empty_list(self):
         self.parent["a_list"]  = [  ]
