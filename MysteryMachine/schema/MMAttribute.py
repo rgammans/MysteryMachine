@@ -61,27 +61,16 @@ class MMAttributeContainer(MMContainer):
 
         if  attrobj  is None:
             self.logger.debug("Creating new value object")
-            attrobj = MMAttribute(attrname,attrvalue,self)
+            attrobj = MMAttribute(attrname,attrvalue,self,complete_write = True)
         else:
             self.logger.debug("basic set_value")
             attrobj.set_value(attrvalue )
 
-
-        #Write back to the cache
-        super(MMAttributeContainer,self)._new_item(attrname,attrobj) 
-
-        #Now the value is in the cache it (and referenced here)
-        #so it won't expire - we can do any final fixup that the 
-        #value object might require - most value objects probably don't
-        #need this but DLink very much does!. This fixup should then occur
-        #before anythini is written to the store.
-        attrobj._compose()
         #if notify: self._do_notify()
         return attrobj
-
-
+    
     def _do_compose(self,item):
-        if isinstance(item,MMAttribute):
+       if isinstance(item,MMAttribute):
             item._compose()
 
     @Reader
@@ -121,7 +110,7 @@ class MMAttribute (MMAttributeContainer):
 
   """
     
-  def __init__(self,name,value,owner , copy = True):
+  def __init__(self,name,value,owner , copy = True ,complete_write = False):
      super(MMAttribute,self).__init__(self,name,value,owner,copy)
      self.name=str(name)
      self.valueobj=CreateAttributeValue(value , copy)
@@ -129,6 +118,8 @@ class MMAttribute (MMAttributeContainer):
      self.oldvalue = None
      self.logger    = logging.getLogger("MysteryMachine.schema.MMAttribute")
      #self.logger.setLevel(logging.DEBUG)
+     if complete_write:
+        self._complete_write()
 
   def get_owner(self):
      return self.owner
@@ -206,9 +197,22 @@ class MMAttribute (MMAttributeContainer):
         if str(e): self.logger.warn(e)
         self.valueobj = CreateAttributeValue(val,copy)
 
-     self._invalidate_cache()        
+     self._invalidate_cache()
+     self._complete_write()
 
-     self._compose()
+
+  def _complete_write(self,):
+
+        #Write back to the cache
+        self.owner._new_item(self.name,self) 
+
+        #Now the value is in the cache it (and referenced here)
+        #so it won't expire - we can do any final fixup that the 
+        #value object might require - most value objects probably don't
+        #need this but DLink very much does!. This fixup should then occur
+        #before anythini is written to the store.
+        self._compose()
+
 
   #This is intend for method lookup
   def __getattr__(self,name):
@@ -364,6 +368,7 @@ class MMAttribute (MMAttributeContainer):
 #        isinstance(MMAttribute,MMUnstorableAttribute()) should
 #        probably be true -  as it is  a more readable (and obviously correct)
 #        test, for both object types.
+
 class MMUnstorableAttribute(MMAttribute):
     """A temporary attribute which is only weakly bound to it's owner.
 
@@ -388,7 +393,18 @@ class MMUnstorableAttribute(MMAttribute):
 
     def __init__(self,*args,**kwargs):
         super(MMUnstorableAttribute,self).__init__(*args,**kwargs)
-        self._compose()
+
 
     def writeback(self):
         pass
+
+
+    def _complete_write(self,):
+        #Now the value is in the cache it (and referenced here)
+        #so it won't expire - we can do any final fixup that the 
+        #value object might require - most value objects probably don't
+        #need this but DLink very much does!. This fixup should then occur
+        #before anythini is written to the store.
+        self._compose()
+
+

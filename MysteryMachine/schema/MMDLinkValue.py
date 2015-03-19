@@ -115,13 +115,15 @@ from MMAttributeValue import MMAttributeValue
 from MMAttribute import MMAttribute, MMUnstorableAttribute
 
 from MysteryMachine.parsetools.grammar import Grammar
-from MysteryMachine.schema.Locker import Reader,Writer
+from MysteryMachine.schema.Locker import ValueReader,ValueWriter
 
-import copy
+import copy as _copy
 import weakref
 import thread
 
 import logging
+import weakref
+import itertools
 
 _value_typename = "bidilink"
 
@@ -169,7 +171,8 @@ def _process_obj_and_attr(obj,attr):
 
 
 def _container_walk(root,path):
-    logging.getLogger("MysteryMachine.schema.MMDLinkValue").debug("walking from %r to %s ",root,path)
+#    logging.getLogger("MysteryMachine.schema.MMDLinkValue").debug("walking from %r to %s ",root,path)
+    if path is None: return None
     node = root
     for element in path:
         if element != "":
@@ -181,6 +184,43 @@ def _container_walk(root,path):
 def _walk_back(obj,dist):
     for i in range(dist): obj = obj.get_ancestor()
     return obj 
+
+
+def _measure_path_diff(frm,to):
+    """Meause the patch distnce from 'frm' to 'to' """
+    frm_path = frm.get_nodeid().split(':')
+    to_path =  to.get_nodeid().split(':')
+
+    count = 0
+    for f,t in itertools.izip_longest(frm_path,to_path):
+        if count >0 and t is not None: RuntimeError("invalid path %r"%to_path)
+        if f is not None and t is not None:
+            if f != t: raise RuntimeError('%r is not a parent of %r'%(frm,to))
+            #Don't count common elements
+            else: continue
+
+        if f is None: break
+        if t is None: count += 1
+
+    print repr(frm), "->", repr(to), "= len ",count
+    return count
+
+
+def _resolve_value(obj,):
+    """When we look at our partners value we need to know the 
+    value is associated directly with the partner and isn't a shadow
+    obj. If it is we need to vivify a actuall valueon the object."""
+
+
+    val = obj.get_value()
+    if val.get_type() !=  _value_typename:
+        raise TypeError("Can only ConnectTo bidilinks")
+
+    if obj.is_shadow(): 
+        obj.set_value(_copy.copy(val))
+        val = obj.get_value()
+
+    return val
 
 def CreateBiDiLink(obj1,attrname1,obj2,attrname2):
     """
@@ -213,105 +253,170 @@ def ConnectTo(attribute):
     if attribute.get_value().get_type() !=  _value_typename:
         raise TypeError("Can only ConnectTo bidilinks")
 
-    anchorname = repr(attribute.get_anchor())
-    attrname   = repr(attribute)
+    #anchorname = repr(attribute.get_anchor())
+    #attrname   = repr(attribute)
+    foreign =attribute.name
     return MMDLinkValue(target = attribute.get_anchor() , 
-                        foreign=attrname[len(anchorname)+1:]) 
+#                        foreign=attrname[len(anchorname)+1:]
+
+    ## TODO Doesm't this change brak list container mode see __init__
+
+                        foreign=foreign,
+                        mode = "connect_to_seed",
+    ) 
 
 def CreateAnchorPoint(obj):
     """
     Creates an anchor point for object obj which can be turned into a
     complete link later. (ie. with ConnectTo() )
     """
-    return MMDLinkValue(anchor = obj)
+    return MMDLinkValue(anchor = obj ,mode = "anchor_point_seed")
 
+def no_weak():
+    return None
 
 class MMDLinkValue(MMAttributeValue):
     typename =  _value_typename
     contain_prefs = {}
     def __init__(self,*args,**kwargs):
+        #FIXME
+        """FIXME  Docuemnt this even if it is to say don;t use."""
         super(MMDLinkValue,self).__init__(*args,**kwargs)
+
         self.logger    = logging.getLogger("MysteryMachine.schema.MMDLinkValue")
         self.obj            = kwargs.get("target",None)
         partner_name        = kwargs.get("foreign",None)
         self.anchorp        = kwargs.get("anchor",None)
+        self.mode           = kwargs.get("mode",'')
         self.anchordist     = None
+
+        self.link_to_node = no_weak
+
         if len(self.parts) == 0:
             #Validate we have enough data..
             # Handle anchopoint init first...
-            if self.anchorp is not None:
-                self.parts["anchor"] = repr(self.anchorp)
-            else:
-                if (self.obj is not None) and  (partner_name is not None):
+            if self.anchorp is None:
+                if self.mode == 'connect_to_seed':
                     #Create member variables we can use..
                     self.partner_path =  repr(self.obj).split(":") + partner_name.split(":")
                     self.parts["target"] =  repr(self.obj)+":" + partner_name +", 0"
+                elif self.mode == 'anchor_point_seed':
+                    self.parts["anchordist"]="0"
                 else:
-                    ###Fallback to default ctor.
+        #            ###Fallback to stuff
+                    print "oops",self.mode
                     self.parts["anchordist"]="1"
                     self._process_parts()
         else:
+             self.mode = 'init_from_parts'
              self._process_parts()
 
         self.exports += [ "get_object", "get_partner" , "get_anchor"]
         self.valid = False 
         self.in_assignment = False
+        if ( (self.mode[:10] != 'connect_to' )  and
+             ( self.anchorp is None and self.anchordist is None)):
+
+            self.mode = "copied_initialised!"
 
     def assign(self,other):
-      """Called by MMAttribute when an value assignment occurs - not exported"""
+      """Called by MMAttribute when an value assignment occurs - not exported
+
+        valid cases.
+            other is an newly initialised Anchor point.
+            other is the result of connectTo from an anchorpoint
+            other is the result of a connectTo  already connected Link object.
+            other is a attribute being moved!
+          #
+           Invaldid cases wherw dircet assinemtn as been tried. 
+
+      """
       self.logger.debug( "in assign")
       if self.__class__ is other.__class__:
           self.valid = False
           with _member_guard(self,"in_assignment") as assign_guard:
             self.logger.debug( "got inassign lock")
-            oldpartner =  self.get_partner()
-
-            #Keep hold of old partner data, so we can delink it later.
-            if oldpartner is not None:
-                oldpanchor = oldpartner.get_anchor()
-
-            self.logger.debug( "oldp>%r"%oldpartner )
-
-            self.parts =  copy.copy(other.parts)
-            oldattr    =  other.get_partner()
-            self.logger.debug( "othp>%r"%oldattr )
-            self.logger.debug( "myap>%r"%self.anchorp )
-
-            self._process_parts()
-
-
-            #Update partner if exists to break the link, iff it isn't inside 
-            # assign further up the stack. 
-            not_opassign = True
-            if oldpartner is not None: not_opassign = not assign_guard.test(oldpartner.get_value())
-            if oldpartner is not None and  not_opassign:
-               oldpartner.set_value(MMDLinkValue(anchor = oldpanchor),copy = False)
-
-            if hasattr(oldattr,"get_partner"): 
-                oldattr=oldattr.get_partner()
-                self.logger.debug( "my-p>%r"%oldattr)
-                #Turn other into an anchorpoint.
-                if other.anchordist is not None:
-                    other.parts = { 'anchordist' : str(other.anchordist) }
-                    other._process_parts()
-
-                #Write the changes to the new anchorpoint back, now our state is sane.
-                if oldattr is not None and oldattr.get_value() is other:
-                    oldattr._writeback()
+            
+            if other.mode == 'anchor_point_seed':
+                #Two sub cases here, we are anchorpoint, or we are connected
+                self.old_partner_path = self.partner_path
+                self.partner_path = None 
+                self.anchordist = None
+                self.anchorp = other.anchorp
+                self.mode = 'anchor_point_gestate'
+                print "APG:",self.parts,other.parts,self.partner_path
+                self.parts= other.parts
+            elif other.mode == 'connect_to_seed':
+                self.parts =  { 'target' :other.parts['target'] }
+                assert self.anchorp or self.anchordist
+                print "c_t_seed", repr(self.anchorp), repr( self.anchordist), self.partner_path,other.partner_path
+                self.mode = 'connect_to_gestate'
+                self.old_partner_path = self.partner_path
+                self.partner_path = other.partner_path
+            else:
+                if other.parts == self.parts: return
+                #Native assiginment/or move.
+                print "XYZZY %s %r %r"%(other.mode,self.parts,other.parts)
+                self.old_partner_path = self.partner_path
+                self.partner_path = other.partner_path
+                self.parts = other.parts
+                if 'target' in other.parts:
+                    self.mode = 'connect_to_gestate'
                 else:
-                    self.logger.debug( "writeback skipped")
+                    #Some wort of Anchorpint move, do simple valid test
+                    if other.anchorp is not None:
+                        self.mode = 'anchor_point_gestate'
+                        self.anchorp = other.anchorp
 
-      else:
-            raise ValueError("Assign of mismathched classes , %s" %repr(other.__class__))
-    
+
+#            oldpartner =  self.get_partner()
+#
+#            #Keep hold of old partner data, so we can delink it later.
+#            if oldpartner is not None:
+#                oldpanchor = oldpartner.get_anchor()
+#
+#            self.logger.debug( "oldp>%r"%oldpartner )
+#
+#            self.parts =  copy.copy(other.parts)
+#            oldattr    =  other.get_partner()
+#            self.logger.debug( "othp>%r"%oldattr )
+#            self.logger.debug( "myap>%r"%self.anchorp )
+#
+#            self._process_parts()
+#
+#
+#            #Update partner if exists to break the link, iff it isn't inside 
+#            # assign further up the stack. 
+#            not_opassign = True
+#            if oldpartner is not None: not_opassign = not assign_guard.test(oldpartner.get_value())
+#            if oldpartner is not None and  not_opassign:
+#               oldpartner.set_value(MMDLinkValue(anchor = oldpanchor),copy = False)
+#
+#            if hasattr(oldattr,"get_partner"): 
+#                oldattr=oldattr.get_partner()
+#                self.logger.debug( "my-p>%r"%oldattr)
+#                #Turn other into an anchorpoint.
+#                if other.anchordist is not None:
+#                    other.parts = { 'anchordist' : str(other.anchordist) }
+#                    other._process_parts()
+#
+#                #Write the changes to the new anchorpoint back, now our state is sane.
+#                if oldattr is not None and oldattr.get_value() is other:
+#                    oldattr._writeback()
+#                else:
+#                    self.logger.debug( "writeback skipped")
+#
+#      else:
+#            raise ValueError("Assign of mismathched classes , %s" %repr(other.__class__))
+#    
 
     def _process_parts(self):
        self.logger.debug( "_pp>%s"%self.parts)
        if "target" in self.parts:
             attributename,sniplen = self.parts["target"].rsplit(",",1)
             attributename = attributename.split(":")
-            if int(sniplen) > 0:
-                self.anchordist = int(sniplen)
+            #if int(sniplen) > 0: we used to ensure anchordist was never 0
+            self.anchordist = int(sniplen)
             self.partner_path=attributename
        else:
             self.obj= None
@@ -320,106 +425,191 @@ class MMDLinkValue(MMAttributeValue):
                 self.anchordist = None
                 if repr(self.anchorp) != self.parts["anchor"]: self.anchorp = None
             if "anchordist" in self.parts:
-                self.anchordist   = int(self.parts["anchordist"])
+                self.anchordist = int(self.parts["anchordist"])
+                #print "SD_>",self.anchordist
 
+
+    @ValueWriter
+    def _connect_to(self, target, **kwargs):
+        """Internal function set partner apth, and clears exsitign partner"""
+        obj = kwargs.get('obj',None)
+        path = kwargs.get('path',self.partner_path)
+        print "cnnect_to moode:",repr(path),repr(obj),repr(target),repr(self.anchordist),repr(self.parts)
+
+        #Get partner if defined.
+        existing_partner = None
+        if path:
+            existing_partner =  _container_walk(target.get_root(),path)
+
+        if  existing_partner is not target:
+            if existing_partner is not None:
+                if not isinstance(obj,MMUnstorableAttribute):
+                    existing_partner.set_value(CreateAnchorPoint(existing_partner.get_anchor()),copy = False)
+
+            self.parts['target'] = repr(target) +","+str(self.anchordist)
+            try:
+                del self.parts['anchordist']
+            except KeyError:pass
+            self._process_parts()
+        else:
+            #Self connect is a special case and we need to repair the target part broken by assign (lear the anchordist)
+            self.parts['target'] = ":".join(self.partner_path) +","+str(self.anchordist)
+
+        print "cnnect_to end:",repr(self.mode),repr(obj),repr(self.anchorp),repr(self.anchordist),repr(self.parts)
 
     def _compose(self,obj = None ):
-        if self.valid: return
+        print repr(self.link_to_node()), repr(obj)
+        self.link_to_node = weakref.ref(obj)
+        print "compose_moode:",repr(self.mode),repr(obj),repr(self.anchorp),repr(self.anchordist),repr(self.parts)
+        if not self.mode:
+            #Iniitialise from parts.
+            return
+
         if obj is None: raise BidiCantCreate("Cannot compose as owned by None") 
         self.logger.debug( "%s _compose (%r,%s)" % (object.__repr__(self) ,obj, self.parts))
         #Now we have a handle on the system find our objects etc,
 
-        #Check our anchor.
-        self.logger.debug( "anchordist-> %r" % self.anchordist)
-        self.logger.debug( "anchor-> %r" % self.anchorp)
-        if "anchor" in self.parts: self.logger.debug( "anchorpart-> %s" % self.parts["anchor"])
-        
-        anchor = self.get_anchor(obj)
-        if anchor is None:
-            #Out anchor point does not exist - this is a raw move which has problems.
-            raise BiDiLinkTargetMismatch("No anchor point defined")
+        if self.mode == 'connect_to_gestate':
+            npartner =  _container_walk(obj.get_root(),self.partner_path)
+            self.anchor = self.get_anchor(obj = obj)
+            #We set us and out parnter to mutually point at each other.
+            # it is importat to move ourselves first, to chortcut recursion.
+            self._connect_to(npartner,path = self.old_partner_path, obj=obj)
+            # buyt only do our end if we are 'unstorable'
+            if not isinstance(obj,MMUnstorableAttribute):
+                _resolve_value(npartner)._connect_to(obj,obj = npartner)
 
-        #Ifind anchordist from obj and anchorpoint is not already set
-        # then ensure anchorp is validated.
-        if not self.anchordist:
-            if self.anchorp is None:
-                self.anchorp = self.get_anchor(obj)
-            self.logger.debug( "fixing up  anchor-> %r" % self.anchorp)
-            anchorpath   = repr(self.anchorp).split(":")
-            #Verify anchor is an direct owner of obj - we can do this via it MMpath.
-            if repr(obj)[:len(repr(self.anchorp))] != repr(self.anchorp):
-                raise BiDiLinkTargetMismatch("Anchor not in line owner %s,%s"%(repr(obj),repr(self.anchorp)))
-            objpath = repr(obj).split(":")
-            self.anchordist = len(objpath) - len(anchorpath) 
-            self.parts["anchordist"]=str(self.anchordist)
-            if "anchor" in self.parts: del self.parts["anchor"]
-            self.anchorp  = self.get_anchor(obj)
-            self.logger.debug("new anchordist-> %s" % self.anchordist)
+        elif self.mode == 'anchor_point_gestate':
+            #
+            # This state is create when we are assign an anchorpoint, but must wait
+            # for compose to find an anchordist for the parts.
+            #
+            # If we were connected before an assignment changed we must alway
+            # reset our old partner back to anchor point state.
+            #
+            oldp =  _container_walk(obj.get_root(),self.old_partner_path)
+            if not isinstance(obj,MMUnstorableAttribute):
+                if oldp is not None:
+                    oldp.set_value(CreateAnchorPoint(oldp.get_anchor()),copy = False)
 
-        #If only and anchor point the only thing left to do is clear the
-        # cached target if it exists.
-        if self.partner_path is None:
-            #self.obj = None
-            self.logger.debug("Completing ap with anchordist %i", self.anchordist)
-            return
-        elif "target" in self.parts:
-            #If supposedly connected fixup target part - in case of a dummy anchordist.
-            target_str,oldanchordist =  self.parts["target"].rsplit(",",1)
-            self.parts["target"]     =  target_str + "," + str( int (self.anchordist))
-            if "anchordist" in self.parts: del self.parts["anchordist"]
+            self.anchordist = _measure_path_diff(obj,self.anchorp)
+            self.parts = {'anchordist' : str( self.anchordist) }
+            self._process_parts()
 
-
-        ##At this point all our get methods can return something useful so we say we're valid.
-        self.valid = True
-        self.logger.debug("getting partner")
-        #Ok this is a full link do the real work here..
-        try:
-            partner  = _container_walk(obj.get_root(),self.partner_path)
-        except KeyError:
-            #Our partner is not instantiated yet, it's compose will invoke
-            #us again so lets just wait 
-            self.logger.debug("Early escape - no partner")
-            return 
-
-        self.logger.debug("composing connected links")
-
-        self.obj = partner.get_anchor()
-        if partner.get_value().get_type() == self.get_type():
-            pv = partner.get_value()
-            self.logger.debug( "A> %r %r %r" % ( self.anchorp , self.obj , pv.obj))
-
-            #if pv.obj is None:
-                #The other object hasn't composed properly itself,(or is an anchor)
-                #(probably because we hadn't been created at that point)
-                #we should do that then to the do we need moved check.
-                #pv._compose(partner)
-
-            #Don't modifiy the parner of an unstoreable, and ensure partner defined.
-            if not isinstance(obj,MMUnstorableAttribute) and pv.obj is not self.get_anchor(obj):
-                #This is where we handle a moved link from an existing destination,
-                # we need to  move the link back to use and back the old destination
-                #Do partner Fixup
-                ptarget_str = repr(obj)
-                pval = MMDLinkValue( parts = {'target': ptarget_str +","+str(pv.anchordist or 0)} )  
-                self.logger.debug( "pval> %s "%pval.parts)
-                partner.set_value( pval )
-            else:
-                self.logger.debug( "B> %r %r"%(pv.obj , self.obj))
-            # if our partner moves..
         else:
-            self.logger.debug("Error detected: %s %s" % ( partner.get_value().get_type() ,self.get_type()))
-            raise BiDiCantCreate("type mismatch with partner %s != %s" % ( partner.get_value().get_type() ,self.get_type()))
-       
-        self.logger.debug("Completing lk with anchordist %i", self.anchordist)
-        self.valid = True
+            ###There is a awkward corner case here that our partner doesn't
+            #  point back to us.
+            npartner =  _container_walk(obj.get_root(),self.partner_path)
+            if npartner is not None:
+                npartner_partner =  _container_walk(obj.get_root(),_resolve_value(npartner).partner_path)
+                if npartner_partner is not obj and  not isinstance(obj,MMUnstorableAttribute):
+                    _resolve_value(npartner)._connect_to(obj,obj = npartner)
 
+
+
+        #elif self.mode == 'copied_composed':
+        #    assert False
+
+        self.mode = 'composed'
+#        #Check our anchor.
+#        self.logger.debug( "anchordist-> %r" % self.anchordist)
+#        self.logger.debug( "anchor-> %r" % self.anchorp)
+#        if "anchor" in self.parts: self.logger.debug( "anchorpart-> %s" % self.parts["anchor"])
+#        
+#        anchor = self.get_anchor(obj)
+#        if anchor is None:
+#            #Out anchor point does not exist - this is a raw move which has problems.
+#            raise BiDiLinkTargetMismatch("No anchor point defined")
+#
+#        #Ifind anchordist from obj and anchorpoint is not already set
+#        # then ensure anchorp is validated.
+#        if not self.anchordist:
+#            if self.anchorp is None:
+#                self.anchorp = self.get_anchor(obj)
+#            self.logger.debug( "fixing up  anchor-> %r" % self.anchorp)
+#            anchorpath   = repr(self.anchorp).split(":")
+#            #Verify anchor is an direct owner of obj - we can do this via it MMpath.
+#            if repr(obj)[:len(repr(self.anchorp))] != repr(self.anchorp):
+#                raise BiDiLinkTargetMismatch("Anchor not in line owner %s,%s"%(repr(obj),repr(self.anchorp)))
+#            objpath = repr(obj).split(":")
+#            self.anchordist = len(objpath) - len(anchorpath) 
+#            self.parts["anchordist"]=str(self.anchordist)
+#            if "anchor" in self.parts: del self.parts["anchor"]
+#            self.anchorp  = self.get_anchor(obj)
+#            self.logger.debug("new anchordist-> %s" % self.anchordist)
+#
+#        #If only and anchor point the only thing left to do is clear the
+#        # cached target if it exists.
+#        if self.partner_path is None:
+#            #self.obj = None
+#            self.logger.debug("Completing ap with anchordist %i", self.anchordist)
+#            return
+#        elif "target" in self.parts:
+#            #If supposedly connected fixup target part - in case of a dummy anchordist.
+#            target_str,oldanchordist =  self.parts["target"].rsplit(",",1)
+#            self.parts["target"]     =  target_str + "," + str( int (self.anchordist))
+#            if "anchordist" in self.parts: del self.parts["anchordist"]
+#
+#
+#        ##At this point all our get methods can return something useful so we say we're valid.
+#        self.valid = True
+#        self.logger.debug("getting partner")
+#        #Ok this is a full link do the real work here..
+#        try:
+#            partner  = _container_walk(obj.get_root(),self.partner_path)
+#        except KeyError:
+#            #Our partner is not instantiated yet, it's compose will invoke
+#            #us again so lets just wait 
+#            self.logger.debug("Early escape - no partner")
+#            return 
+#
+#        self.logger.debug("composing connected links")
+#
+#        self.obj = partner.get_anchor()
+#        if partner.get_value().get_type() == self.get_type():
+#            pv = partner.get_value()
+#            self.logger.debug( "A> %r %r %r" % ( self.anchorp , self.obj , pv.obj))
+#
+#            #if pv.obj is None:
+#                #The other object hasn't composed properly itself,(or is an anchor)
+#                #(probably because we hadn't been created at that point)
+#                #we should do that then to the do we need moved check.
+#                #pv._compose(partner)
+#
+#            #Don't modifiy the parner of an unstoreable, and ensure partner defined.
+#            if not isinstance(obj,MMUnstorableAttribute) and pv.obj is not self.get_anchor(obj):
+#                #This is where we handle a moved link from an existing destination,
+#                # we need to  move the link back to use and back the old destination
+#                #Do partner Fixup
+#                ptarget_str = repr(obj)
+#                pval = MMDLinkValue( parts = {'target': ptarget_str +","+str(pv.anchordist or 0)} )  
+#                self.logger.debug( "pval> %s "%pval.parts)
+#                partner.set_value( pval )
+#            else:
+#                self.logger.debug( "B> %r %r"%(pv.obj , self.obj))
+#            # if our partner moves..
+#        else:
+#            self.logger.debug("Error detected: %s %s" % ( partner.get_value().get_type() ,self.get_type()))
+#            raise BiDiCantCreate("type mismatch with partner %s != %s" % ( partner.get_value().get_type() ,self.get_type()))
+#
+#        self.logger.debug("Completing lk with anchordist %i", self.anchordist)
+#        self.logger.debug("Completing lk with parts %r", self.parts)
+#        self.valid = True
+#
 
     def __copy__(self):
-        self.logger.debug("MMDL:__copy__")
+        self.mode = 'copied_'+self.mode
         cpy = super(MMDLinkValue,self).__copy__()
-        if hasattr(self,"anchordist"):
-            self.logger.debug("MMDL:dist->%r",self.anchordist)
-            cpy.anchordist = self.anchordist
+        #`if hasattr(self,"anchordist"):
+        #`     self.logger.debug("MMDL:dist->%r",self.anchordist)
+        #`     cpy.anchordist = self.anchordist
+
+        #`if hasattr(self,"anchorp"):
+        #`     cpy.anchorp = self.anchorp
+
+
+        #`assert cpy.parts or cpy.anchordist or cpy.anchorp ,"%r"%cpy
+        cpy.mode = 'copied_'+self.mode
         return cpy
 
     def get_object(self, obj = None ):
@@ -429,8 +619,8 @@ class MMDLinkValue(MMAttributeValue):
         Returns None if disconnected.
         """
         if self.obj is None:
-            self.obj = self.get_partner(obj)
-            if self.obj is not None: self.obj =self.obj.get_anchor()
+            obj = self.get_partner(obj)
+            if obj is not None: self.obj = obj.get_anchor()
         return self.obj
             
 
@@ -459,6 +649,7 @@ class MMDLinkValue(MMAttributeValue):
         to when we connect."""
         if obj is None: raise ValueError("Anchor is now relative - must pass home object")
         if self.anchordist is None:
+            print self.parts,repr(self.anchorp)
             if self.anchorp is not None: return self.anchorp
             ##NOTE If the line below is raising KeyError('anchor') the problem occured
             #      before we got here!

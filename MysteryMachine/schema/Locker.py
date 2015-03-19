@@ -117,5 +117,17 @@ Reader = Locker('read',0)
 Reader.__doc__ = """
 This decorator should be used on a method which retruns a value 
 based on it's nodes state.
+"""
 
+ValueWriter = Locker('write','obj')
+ValueWriter.__doc__ = """
+This decorator should be used on a method which modifies the
+state. used for MMAtributeValue nodes
+
+"""
+
+ValueReader = Locker('read','obj')
+ValueReader.__doc__ = """
+This decorator should be used on a method which retruns a value 
+based on it's state. Used on Attribute Values not Nodes.
 """

@@ -168,7 +168,7 @@ class _AttrMeta(type):
 class Error():
     pass
         
-class MMAttributeValue (MMBase ):
+class MMAttributeValue (SchemaCommon ):
   """
    This is the base class of MMAtributes actual value. Each 'type' of Attribure
    should have it's own speciallisation of this class. It is through this object
@@ -284,7 +284,7 @@ class MMAttributeValue (MMBase ):
          if self.__class__ is other.__class__:
              self.parts =  other.parts        
          else:
-             raise TypeError()
+             raise TypeError(type(other))
      else:
          #TODO Clever code here to handle appropriate value
          # setting. Raise error while unimplemented. 

@@ -35,7 +35,30 @@ import logging
 import weakref
 
 
-class MMBase(object):
+
+class SchemaCommon(object):
+    """This is class which handles the utility bits and piesces which are used by schema
+    related claess such as MMAttribueValue which aren't actaully nodes
+    """
+
+    def canonicalise(self,name):
+        ##This keeps it synchronized with the definition
+        # of identifier in parsetools/grammar.py
+        try:
+           #Supress leading dot from the test.
+           tstname = name
+           if tstname[0] == '.': tstname = tstname[1:]
+           #Check that the identifier is good enough to match it.
+           identifier.parseString(tstname,parseAll=True)    
+        except pyparsing.ParseException:
+           raise ValueError("`%s` is not valid in the MysteryMachine Namespace" % name)
+
+        return name.lower()
+
+
+
+
+class MMBase(SchemaCommon):
 
   """
    This is base class which handles all the stuff which is common to all the nodes
@@ -109,21 +132,6 @@ class MMBase(object):
     This is usually the owner.
     """
     return self.owner
-
-  def canonicalise(self,name):
-    ##This keeps it synchronized with the definition
-    # of identifier in parsetools/grammar.py
-    try:
-       #Supress leading dot from the test.
-       tstname = name
-       if tstname[0] == '.': tstname = tstname[1:]
-       #Check that the identifier is good enough to match it.
-       identifier.parseString(tstname,parseAll=True)    
-    except pyparsing.ParseException:
-       raise ValueError("`%s` is not valid in the MysteryMachine Namespace" % name)
-
-    return name.lower()
-  
 
   def get_nodeid(self,):
      owner = self.get_ancestor()

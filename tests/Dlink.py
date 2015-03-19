@@ -37,6 +37,8 @@ import sys
 
 #logging.basicConfig(level=logging.DEBUG)
 #logging.getLogger("MysteryMachine.schema.MMDLinkValue").setLevel(logging.DEBUG)
+glogger = logging.getLogger("MysteryMachine.schema.MMDLinkValue")
+
 
 class DlinkTests(unittest.TestCase):
     def setUp(self):
@@ -77,22 +79,25 @@ class DlinkTests(unittest.TestCase):
         self.assertEquals(self.object2["link"].get_anchor(),self.object2)        
  
     def testMove(self):
+        """This behaviour is needed so simpleton UI don't need to mocuh
+        extra support for Dlink, they can ue Unstored, and then move/copy"""
         dlk.CreateBiDiLink(self.object1,"link",self.object2,"link" )
-        self.assertEquals(self.object1["link"].get_object(),self.object2)        
+        self.assertEquals(self.object1["link"].get_object(),self.object2)
+        self.assertEquals(self.object2["link"].get_object(),self.object1)
         
         #Do move and check all three values
         object3 = self.system.NewObject("Dummy") 
         object3["newlink"]=dlk.CreateAnchorPoint(object3) 
         object3["newlink"]=self.object2["link"] 
-        self.assertEquals(self.object1["link"].get_object(),object3)        
-        self.assertEquals(object3["newlink"].get_object(),self.object1)        
-        self.assertEquals(self.object2["link"].get_object(),None)        
-        self.assertEquals(self.object1["link"].get_partner(),object3["newlink"])        
-        self.assertEquals(object3["newlink"].get_partner(),self.object1["link"])        
-        self.assertEquals(self.object2["link"].get_partner(),None)        
-        self.assertEquals(self.object1["link"].get_anchor(),self.object1)        
-        self.assertEquals(self.object2["link"].get_anchor(),self.object2)        
-        self.assertEquals(object3["newlink"].get_anchor(),object3)        
+        self.assertEquals(self.object1["link"].get_object(),object3)
+        self.assertEquals(object3["newlink"].get_object(),self.object1)
+        self.assertEquals(self.object2["link"].get_object(),None)
+        self.assertEquals(self.object1["link"].get_partner(),object3["newlink"])
+        self.assertEquals(object3["newlink"].get_partner(),self.object1["link"])
+        self.assertEquals(self.object2["link"].get_partner(),None)
+        self.assertEquals(self.object1["link"].get_anchor(),self.object1)
+        self.assertEquals(self.object2["link"].get_anchor(),self.object2)
+        self.assertEquals(object3["newlink"].get_anchor(),object3)
         
         def raiseerror(obj,attrname):
             obj[attrname]=self.object2["link"] 
@@ -225,6 +230,8 @@ class DlinkTests(unittest.TestCase):
         self.assertEquals(   self.object2["uobjlink1"].get_object() , None )
         self.assertEquals(   self.object3["uobjlink1"].get_object() , None )
         self.assertRaises(KeyError,self.object1.__getitem__,"foo")
+        ##Move the unstored connection to a real attribute
+        print "T"
         self.object1["ulink2"] = attr
         self.assertEquals(self.object1["ulink2"].get_object(),self.object3)
         self.assertEquals(self.object3["uobjlink1"].get_object(),self.object1)
@@ -240,13 +247,28 @@ class DlinkTests(unittest.TestCase):
         self.assertEquals(self.object3["uobjlink1"].get_object(),self.object1)
    
     def testConnectTwice(self):
+#        glogger.setLevel(logging.DEBUG)
+#        glogger.debug('start')
         #Test that the value can be set multiple times with a problems
         self.object3["uobjlink1"] = dlk.CreateAnchorPoint(self.object3)
         self.object2["uobjlink1"] = dlk.CreateAnchorPoint(self.object2)
+        
+        glogger.debug('connect 1.')
         self.object3["uobjlink1"] = dlk.ConnectTo(self.object2["uobjlink1"] )
-        self.object3["uobjlink1"] = dlk.ConnectTo( self.object2["uobjlink1"] )
+        glogger.debug('connect 1 - complete')
         self.assertEquals(self.object2["uobjlink1"].get_object(),self.object3)
         self.assertEquals(self.object3["uobjlink1"].get_object(),self.object2)
+        self.assertEquals(self.object3["uobjlink1"].get_partner(),self.object2["uobjlink1"])
+        self.assertEquals(self.object2["uobjlink1"].get_partner(),self.object3["uobjlink1"])
+
+
+        glogger.debug('connect 2.')
+        self.object3["uobjlink1"] = dlk.ConnectTo( self.object2["uobjlink1"] )
+        glogger.debug('connect 2 - complete')
+        self.assertEquals(self.object2["uobjlink1"].get_object(),self.object3)
+        self.assertEquals(self.object3["uobjlink1"].get_object(),self.object2)
+#        glogger.debug('done')
+#        glogger.setLevel(logging.WARN)
 
 
     def testUnstoredWithShadow(self):
@@ -294,10 +316,13 @@ class DlinkTests(unittest.TestCase):
         self.assertRaises(TypeError,try_connect,self.object2['link1'],self.object3["link1"])
         self.assertEqual(self.object3["link1"].get_anchor(),self.object3)
         self.assertEqual(self.object3["link1"].get_object(),None)
+        self.assertEqual(self.object2["link1"].get_raw(),'')
 
         self.assertRaises(TypeError,try_connect,self.object3['link1'],self.object2["link1"])
+        #try_connect(self.object3['link1'],self.object2["link1"])
         self.assertEqual(self.object3["link1"].get_anchor(),self.object3)
         self.assertEqual(self.object3["link1"].get_object(),None)
+        self.assertEqual(self.object2["link1"].get_raw(),'')
 
 
 def getTestNames():
