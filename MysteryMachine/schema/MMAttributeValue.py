@@ -333,12 +333,12 @@ class MMAttributeValue_BasicText(MMAttributeValue):
             self.parts["txt"] = str(self.value)
 
     def _compose(self,obj):
-       encoding = obj.get_root().get_encoding()
-       decode = codecs.getdecoder(encoding)
-       #Ensure text values can be transcribed in the system encoding
-       # will rasise an exception we will propagate if not decodeable.
-       decode(self.parts["txt"])
-       pass
+        if obj is not None:
+            encoding = obj.get_root().get_encoding()
+            decode = codecs.getdecoder(encoding)
+            #Ensure text values can be transcribed in the system encoding
+            # will rasise an exception we will propagate if not decodeable.
+            decode(self.parts["txt"])
 
 class MMAttributeValue_UnicodeText(MMAttributeValue):
     """

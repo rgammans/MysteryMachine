@@ -24,6 +24,7 @@ Tests for the MysteryMachine.Schema MMObject  module
 from MysteryMachine import * 
 from MysteryMachine.schema.MMSystem import * 
 from MysteryMachine.schema.MMObject import MMObject
+from MysteryMachine.schema.Locker import Writer
 from MysteryMachine.schema.MMAttribute import * 
 
 from MysteryMachine.store.dict_store import *
@@ -46,9 +47,9 @@ class ObjectTests(unittest.TestCase):
         self.logger = logging.getLogger("MysteryMachine.schema.MMObject.tests")
         self.logger.debug( "-----STARTING NEW TEST---")
         self.mpath = tempfile.mkdtemp(prefix="mysmac")
-        self.system=MMSystem.OpenUri("attrfile:"+self.mpath)
+        #self.system=MMSystem.OpenUri("attrfile:"+self.mpath)
         
-        #self.system=MMSystem.Create("dict:ObjectTests")
+        self.system=MMSystem.Create("dict:ObjectTests")
         self.system.NewCategory( "Template" )
         self.dummyparent             = self.system.NewObject( "Template" )
         self.dummyparent[".defname"] = "name"
@@ -274,7 +275,6 @@ class ObjectTests(unittest.TestCase):
        self.object["another"] ="brick in the wall"
        self.assertEquals(update.count,lastcount)
        if self.exception: raise self.exception
-
 
     def test_iter_looks_at_xaction_state(self,):
         """ do test inside a xaction to chack that 'in' looks at

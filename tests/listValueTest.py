@@ -88,9 +88,11 @@ class ListValTest(unittest.TestCase):
         self.assertEquals(str(val[1] )  , "second")      
         self.assertEquals(str(val[2] )  , "third")      
         val.append("fourth")
+        val._compose(None)
         self.assertEquals(val.count(),4)
         self.assertEquals(str(val[3])  , "fourth")
         val.insert(2,"2 and half'th")
+        val._compose(None)
         self.assertEquals(str(val[0] )  , "first")      
         self.assertEquals(str(val[1] )  , "second")      
         self.assertEquals(str(val[2])  ,  "2 and half'th")
@@ -101,6 +103,7 @@ class ListValTest(unittest.TestCase):
         self.assertEquals(len(list(iter(val))),5)
         self.assertEquals(len(val),5)
         val.insert(0,"zeroth")
+        val._compose(None)
         self.assertEquals(str(val[0] )  , "zeroth")      
         self.assertEquals(str(val[1] )  , "first")      
         self.assertEquals(str(val[2] )  , "second")      
@@ -120,6 +123,7 @@ class ListValTest(unittest.TestCase):
         self.assertFalse("third" in val)
         self.assertEquals(val.count(),5)
         val[3]="third" 
+        val._compose(None)
         self.assertEquals(str(val[0] )  , "zeroth")      
         self.assertEquals(str(val[1] )  , "first")      
         self.assertEquals(str(val[2] )  , "second")      
@@ -196,12 +200,14 @@ class ListValTest(unittest.TestCase):
         # - array should be  ["primary", "second" , "some fate"].
         attr.append("some fate")
         val.append("some fate")
+        val._compose(None)
         self.assertEquals(system.store.attrs[attr_id],(val.get_type(),val.get_parts()))
         self.assertEquals(str(attr["2"]) ,"some fate" )        
 
         val = copy.copy( obj["test"].get_value())
         attr.insert(2,"some date")
         val.insert(2,"some date")
+        val._compose(None)
         # - array should be  ["primary", "second" ,"some date" ,"some fate"].
         self.assertEquals(system.store.attrs[attr_id],(val.get_type(),val.get_parts()))
         self.assertEquals(str(attr["2"]) ,"some date" )        

@@ -50,10 +50,13 @@ class MMListAttribute(MMAttributeValue):
 
         super(MMListAttribute,self).__init__(self,*args,**kwargs)
         self.special = ["0element"]
+        self.uncomposed = {}
         if self.value is not None:
             #Value overrides parts, but create a dummy part for emptylists
             self.parts = { "0element" : "" }
             for item in self.value:
+
+                print "ila",item
                 self.append(item)
 
         self.exports+= ["GetStableIndex", "__iter__" , "__contains__", 
@@ -64,17 +67,32 @@ class MMListAttribute(MMAttributeValue):
         ##Returns the elements of the array - remove any special parts
         for k,v in self.parts.iteritems():
             if k not in self.special:
-                    yield k         
+                    print k
+                    yield k
+
+        for k in self.uncomposed.keys():
+            print k
+            yield k
+
 
     def _elementvalues(self):
         ##Returns the elements of the array - remove any special parts
         for k,v in self.parts.iteritems():
             if k not in self.special:
-                    yield v         
+                    yield v
 
+        for v in self.uncomposed.values():
+            yield self._convert_to_str(None,v,None)
+
+
+    def __copy__(self,):
+        cpy = super(MMListAttribute ,self).__copy__()
+        cpy.uncomposed = dict(self.uncomposed)
+        return cpy
 
     def __contains__(self,val , obj = None ):
         val = self._convert_to_str(None,val,obj)
+        print "CF:",val, list(self._elementvalues())
         return val in self._elementvalues()
 
     def __len__(self, obj = None ):
@@ -90,11 +108,17 @@ class MMListAttribute(MMAttributeValue):
 
     def __delitem__(self,index ,obj = None):
         key = self.GetStableIndex(index,obj)
-        del self.parts[key]
+        if key in self.uncomposed:
+            del self.uncomposed[key]
+ 
+        if key in self.parts:
+            del self.parts[key]
         if obj is not None: obj._do_notify()
 
     def __getitem__(self,index , obj = None):
         key = self.GetStableIndex(index,obj)
+        if key in self.uncomposed:
+            return self.uncomposed[key]
         return self._convert_to_val(key,self.parts[key],obj)        
 
     def __iter__(self, obj = None):
@@ -121,9 +145,10 @@ class MMListAttribute(MMAttributeValue):
         key   = str(_Key(key_a).between(key_b))
 
         if obj is not None:
-             obj[key] = item
-             obj._do_notify()
-        else: self._write(key,item,obj)
+            obj[key] = item
+            obj._do_notify()
+        else:
+            self.uncomposed[key] = CreateAttributeValue(item)
 
 
 
@@ -142,30 +167,62 @@ class MMListAttribute(MMAttributeValue):
         if obj is not None:
              obj[lastkey] = item
              obj._do_notify()
-        else: self._write(lastkey,item,obj)
+        else: 
+            self.uncomposed[lastkey] =  CreateAttributeValue(item)
+
+
+    #
+    #
+    # Parts are not defined to be set until _compose has completed
+    #   which applies to subojbects as well
+    #
+    # This means append(x, obj=None) - must stash repose in another
+    #    array then bring them out into parts after call _compose on them!
+    #
+    #  which means having a suppliemnetal dict for not fully included items!
+
+    def _compose(self, obj ):
+        done = []
+        for k,i in self.uncomposed.items():
+            if obj:
+                tobj = obj[k]
+            else:
+                self.logger.warn("compose without an obj for %s"%k)
+                tobj = None
+            print "L compose",i,repr(obj),repr(tobj)
+            i._compose(tobj)
+            self._write(k,i,obj)
+            done += [ k ]
+        for k in done:
+            del self.uncomposed[k]
 
     def _write(self,key,value,obj = None):
         self.parts[key] = self._convert_to_str(key,value,obj)
-        if obj is not None:
-            obj._writeback()
+
 
     def _convert_to_str(self,key , v, obj = None):
         #Force value Into an MMAttributeValue Object
         v = CreateAttributeValue(v,copy = False)
-        if len(v.get_parts()) != 1:
+        l =len(v.get_parts())
+        if l > 1:
             raise TypeError("MMListAttribute only supports single part values %s",v.get_parts().keys())
-        
-        value = v.get_parts().iteritems().next()
-        #We can safely use ':' as a seperator as it isn't
-        # allowed in  type or part names.
-        return v.get_type()+":"+value[0]+":"+value[1]
+        elif l == 0:
+            return v.get_type()
+        else:
+            value = v.get_parts().iteritems().next()
+            #We can safely use ':' as a seperator as it isn't
+            # allowed in  type or part names.
+            return v.get_type()+":"+value[0]+":"+value[1]
 
     def _convert_to_val(self, key ,v, obj = None):
         #Limit split so that we don't lose data after ':' in the 
         #value.
         data = v.split(":",2)
-        return MakeAttributeValue(data[0],
-                                  parts= { data[1]: data[2]} )
+        if len(data) == 3:
+            parts =  { data[1]: data[2]}
+        else:
+            parts = {}
+        return MakeAttributeValue(data[0],parts = parts )
 
 
 

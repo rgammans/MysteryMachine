@@ -80,6 +80,7 @@ class fakeParent:
         self.updated = False
         self.store = mock_store()
         self.tm = TransactionManager(mock_lockman(),self.store)
+        self.cache = {}
 
     def Updated(self):
         return self.updated
@@ -100,3 +101,9 @@ class fakeParent:
     def get_encoding(self):
         return "ascii"
 
+    def _new_item(self,k,v):
+        self.cache[k] = v
+        v._new()
+
+    def __getitem__(k):
+        return self.cache[v]

@@ -241,7 +241,9 @@ class DlinkTests(unittest.TestCase):
         self.assertRaises(KeyError,self.object1.__getitem__,"foo")
         #Test that the value can be set multiple times with a problems
         self.object3["uobjlink1"] = dlk.CreateAnchorPoint(self.object3)
+        self.assertEquals(attr.get_anchor(),self.object1)
         self.object1["ulink2"] = attr
+        self.assertEquals(self.object1["ulink2"].get_anchor(),self.object1)
         self.object3["uobjlink1"] = dlk.ConnectTo(self.object1["ulink2"] )
         self.assertEquals(self.object1["ulink2"].get_object(),self.object3)
         self.assertEquals(self.object3["uobjlink1"].get_object(),self.object1)
