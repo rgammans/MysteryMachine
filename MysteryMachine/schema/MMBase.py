@@ -298,7 +298,7 @@ class MMContainer(MMBase):
         super(MMContainer,self).__init__(self,*args,**kwargs)
         self.deleted_items= []
         self.new_items = [ ]
-        self._invalidate_cache()        
+        self._invalidate_cache()
 
     def _invalidate_cache(self,):
         self.cache = weakref.WeakValueDictionary()
@@ -320,7 +320,7 @@ class MMContainer(MMBase):
             item = func(*args)
             self.cache[key] = item
             self._do_compose(item)
-        
+
         return item
 
     def _do_compose(self,item): pass
@@ -336,16 +336,6 @@ class MMContainer(MMBase):
             return not item.is_deleted
         #Catch any thing which drops through
         return False
-
-    @Reader
-    def _iter(self, **kwargs):
-        val_guard = kwargs.get('val_guard',None)
-        for k,v in self.cache.items():
-            #Check the value agaisnt the guard/filter fn.
-            if callable(val_guard) and not val_guard(v): continue
-
-            #TODO: Does reading is_deleted require a reader lock on v?
-            if not v.is_deleted: yield k
 
 
     @Reader
@@ -380,11 +370,14 @@ class MMContainer(MMBase):
             guard = lambda x:x[0] != '.'
 
         seen = set()
-        for k in self._iter(**kwargs):
+        for k,v in self.cache.items():
             if not guard(k): continue
             seen.add(k)
-            yield k
+            #TODO: Does reading is_deleted require a reader lock on v?
+            if not v.is_deleted: yield k
 
+        ##Because we've added deleted items, to seen we don't
+        # yield them when we find them in the store
         for k in storefn():
             if not guard(k): continue
             if k not in seen and not self._is_item_deleted(k):
@@ -430,5 +423,3 @@ class MMContainer(MMBase):
         self.deleted_items = [ ]
         self.new_items = [ ]
         super(MMContainer,self).discard()
-
-

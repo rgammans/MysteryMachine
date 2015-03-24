@@ -289,7 +289,14 @@ class MMAttributeValue (SchemaCommon ):
          #TODO Clever code here to handle appropriate value
          # setting. Raise error while unimplemented. 
          raise TypeError()
-    
+
+  def can_assign_to(self,other):
+    """
+    Provides an opporitunity to  raise and prevent the 
+        other = self
+    assignment from working"""
+    return True
+
   def __copy__(self):
      self.logger.debug( "AV_c:Entered")
      return self.__class__(parts = _copy.copy(self.parts))
@@ -491,12 +498,10 @@ class ShadowAttributeValue(MMAttributeValue):
         #self.logger.setLevel(logging.DEBUG)
         self.logger.debug("Created forward for %s[%s] " % ( repr(self.obj), self.attrname) )
 
-    def __getattr__(self,attrname):
-        self.logger.debug(attrname)
-        fwd_to = getattr(self._get_target(),attrname)
-        return fwd_to
 
-    def _get_target(self):
+    def shadow_deref(self,):
+        """Dereference shadow - useful in some rare instances where shadows
+        work slighty differently"""
         p = self._get_parent()
         #If there is no parent raise ReferenceError
         #to indicate invalid attribute. - the same
@@ -508,7 +513,20 @@ class ShadowAttributeValue(MMAttributeValue):
             t = p[self.attrname]
         except KeyError ,e: raise ReferenceError(e.message)
 
-        return t.get_value()
+        return t
+
+
+    def _compose(self,obj = None):
+        #Disable this as our target need to trigger compose not us!
+        pass
+
+    def __getattr__(self,attrname):
+        self.logger.debug(attrname)
+        fwd_to = getattr(self._get_target(),attrname)
+        return fwd_to
+
+    def _get_target(self):
+        return self.shadow_deref().get_value()
 
     def _get_parent(self):
         p = self.obj.get_parent()

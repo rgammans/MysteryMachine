@@ -248,6 +248,7 @@ def ConnectTo(attribute):
     You use this by assigning an existing anchop point to the result
     from this function.
     """
+    print "Cti Type error >?"
     if not isinstance(attribute,MMAttribute):
         raise TypeError("Can only ConnectTo an MMAttribute")
     if attribute.get_value().get_type() !=  _value_typename:
@@ -255,11 +256,16 @@ def ConnectTo(attribute):
 
     anchorname = repr(attribute.get_anchor())
     attrname   = repr(attribute)
+    if  attrname[:len(anchorname)] != anchorname:
+        raise ValueError("attribute not decesended from anchor %s /< %s"%(anchorname,attrname))
+
+    foreign   =  attrname[len(anchorname)+1:]
     #foreign =attribute.name
     #print "CTi:",attribute.get_anchor() ,  foreign
-    print "CTi:",anchorname, attrname
+    print "CTi:",anchorname, attrname,foreign
+
     return MMDLinkValue(target = attribute.get_anchor() , 
-                        foreign=attrname[len(anchorname)+1:],
+                        foreign=foreign,
 
     ## TODO Doesm't this change brak list container mode see __init__
 
@@ -274,8 +280,6 @@ def CreateAnchorPoint(obj):
     """
     return MMDLinkValue(anchor = obj ,mode = "anchor_point_seed")
 
-def no_weak():
-    return None
 
 class MMDLinkValue(MMAttributeValue):
     typename =  _value_typename
@@ -292,7 +296,6 @@ class MMDLinkValue(MMAttributeValue):
         self.mode           = kwargs.get("mode",'')
         self.anchordist     = None
 
-        self.link_to_node = no_weak
 
         if len(self.parts) == 0:
             #Validate we have enough data..
@@ -315,7 +318,7 @@ class MMDLinkValue(MMAttributeValue):
              self.mode = 'init_from_parts'
              self._process_parts()
 
-        self.exports += [ "get_object", "get_partner" , "get_anchor"]
+        self.exports += [ "get_object", "get_partner" , "get_anchor" ,'disconnect']
         self.valid = False 
         self.in_assignment = False
         if ( (self.mode[:10] != 'connect_to' )  and
@@ -323,6 +326,10 @@ class MMDLinkValue(MMAttributeValue):
 
             self.mode = "copied_initialised!"
 
+    def can_assign_to(self,other):
+        if other.get_type() != _value_typename:
+            raise TypeError("Can only ConnectTo bidilinks")
+    
     def assign(self,other):
       """Called by MMAttribute when an value assignment occurs - not exported
 
@@ -336,6 +343,7 @@ class MMDLinkValue(MMAttributeValue):
 
       """
       self.logger.debug( "in assign")
+      print  "in assign" ,repr(other.parts)
       if self.__class__ is other.__class__:
           self.valid = False
           with _member_guard(self,"in_assignment") as assign_guard:
@@ -393,6 +401,10 @@ class MMDLinkValue(MMAttributeValue):
 
 
     @ValueWriter
+    def disconnect(self, obj = None):
+        obj.set_value(CreateAnchorPoint(self.get_anchor(obj=obj)),copy = False)
+    
+    @ValueWriter
     def _connect_to(self, target, **kwargs):
         """Internal function set partner apth, and clears exsitign partner"""
         obj = kwargs.get('obj',None)
@@ -407,7 +419,7 @@ class MMDLinkValue(MMAttributeValue):
         if  existing_partner is not target:
             if existing_partner is not None:
                 if not isinstance(obj,MMUnstorableAttribute):
-                    existing_partner.set_value(CreateAnchorPoint(existing_partner.get_anchor()),copy = False)
+                    existing_partner.disconnect()
 
             ##The int() wrapping is desgin to cause a fastfailure if anchordist is 
             # invalid
@@ -427,9 +439,7 @@ class MMDLinkValue(MMAttributeValue):
         print "cnnect_to end:",repr(self.mode),repr(obj),repr(self.anchorp),repr(self.anchordist),repr(self.parts)
 
     def _compose(self,obj = None ):
-        print repr(self.link_to_node()), repr(obj)
-        self.link_to_node = weakref.ref(obj)
-        print "compose_moode:",repr(self.mode),repr(obj),repr(self.anchorp),repr(self.anchordist),repr(self.parts)
+        print "compose_moode:",repr(self.mode),repr(obj),repr(type(obj.get_value())),repr(self.anchorp),repr(self.anchordist),repr(self.parts)
         if not self.mode:
             #Iniitialise from parts.
             return
@@ -469,7 +479,7 @@ class MMDLinkValue(MMAttributeValue):
             oldp =  _container_walk(obj.get_root(),self.old_partner_path)
             if not isinstance(obj,MMUnstorableAttribute):
                 if oldp is not None:
-                    oldp.set_value(CreateAnchorPoint(oldp.get_anchor()),copy = False)
+                    oldp.disconnect()
 
             self.anchordist = _measure_path_diff(obj,self.anchorp)
             self.parts = {'anchordist' : str( self.anchordist) }
@@ -517,9 +527,16 @@ class MMDLinkValue(MMAttributeValue):
 
         Returns None if disconnected.
         """
+        print "GO",type(obj.get_value()),repr(self.parts)
+        if obj.is_shadow():
+            print "GO2",repr(obj.get_value().shadow_deref()),repr(self.parts)
+
+        
         if self.obj is None:
             obj = self.get_partner(obj)
+            print "go part",repr(obj)
             if obj is not None: self.obj = obj.get_anchor()
+
         return self.obj
 
 
@@ -548,7 +565,7 @@ class MMDLinkValue(MMAttributeValue):
         to when we connect."""
         if obj is None: raise ValueError("Anchor is now relative - must pass home object")
         if self.anchordist is None:
-            print self.parts,repr(self.anchorp)
+            print "ga", repr(self.parts),repr(self.anchorp)
             if self.anchorp is not None: return self.anchorp
             ##NOTE If the line below is raising KeyError('anchor') the problem occured
             #      before we got here!
@@ -556,6 +573,12 @@ class MMDLinkValue(MMAttributeValue):
             #      one way to cause this, although I intend to raise a custom error for this
             #      ealier in the control path!
             else: return _container_walk(obj.get_root(),self.parts["anchor"].split(":"))
+
+        ##If we are connected (partner_path is not None) and  a shadow, deref the shadow.
+        if obj.is_shadow() and self.partner_path is not None:
+            obj = obj.get_value().shadow_deref()
+
+        print "ga2",  self.anchordist, repr(obj)
         return _walk_back(obj,self.anchordist)
 
     def _validate(self, attr = None):

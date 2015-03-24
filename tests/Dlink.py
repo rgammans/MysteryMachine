@@ -57,7 +57,7 @@ class DlinkTests(unittest.TestCase):
         self.object1                  = self.system.NewObject("Dummy") 
         self.object2                  = self.system.NewObject("Dummy") 
         self.object3                  = self.system.NewObject("Dummy") 
-        self.object1.set_parent(self.parent)       
+        self.object1.set_parent(self.parent)
 
         #self.logger.debug( "dummy => " ,repr(self.dummyparent))
         #self.logger.debug( "parent => " ,repr(self.parent))
@@ -207,7 +207,13 @@ class DlinkTests(unittest.TestCase):
         self.object1["link2"] = dlk.CreateAnchorPoint(self.object1)
         self.dummyparent["objlink1"] = dlk.ConnectTo( self.object1["link2"])
         self.assertEquals(self.object1["link2"].get_object(),self.dummyparent)
-        self.assertEquals(self.object2["objlink1"].get_object(),self.object1)
+        self.assertEquals(self.dummyparent["objlink1"].get_object(),self.object1)
+        self.assertEquals(self.dummyparent["objlink1"].get_anchor(),self.dummyparent)
+ 
+        #This read seem to f*ck things up.
+        self.object2["objlink1"].get_object()
+
+        self.assertEquals(self.object1["link2"].get_object(),self.dummyparent)
         self.assertEquals(self.dummyparent["objlink1"].get_object(),self.object1)
         self.assertEquals(self.dummyparent["objlink1"].get_anchor(),self.dummyparent)
         ##This tests on a connected object the anchorpoint shows as the obj from
@@ -217,6 +223,7 @@ class DlinkTests(unittest.TestCase):
         # is the second point under shadowing semantics
         #
         self.assertEquals(self.object2["objlink1"].get_anchor(),self.dummyparent)
+        self.assertEquals(self.object2["objlink1"].get_object(),self.object1)
 
 
     def testUnstored(self):
@@ -311,20 +318,20 @@ class DlinkTests(unittest.TestCase):
 
     def test_attempting_to_connect_non_bidi_raises_LinkError(self,):
         self.object3["link1"] = dlk.CreateAnchorPoint(self.object3)
-        self.object2['link1'] = ''
-        def try_connect(src,target):
-            target = dlk.ConnectTo(src)
+        self.object2['notlink'] = ''
+        def try_connect(src,target,tattr):
+            target[tattr] = dlk.ConnectTo(src)
 
-        self.assertRaises(TypeError,try_connect,self.object2['link1'],self.object3["link1"])
+        self.assertRaises(TypeError,try_connect,self.object2['notlink'],self.object3,"link1")
         self.assertEqual(self.object3["link1"].get_anchor(),self.object3)
         self.assertEqual(self.object3["link1"].get_object(),None)
-        self.assertEqual(self.object2["link1"].get_raw(),'')
+        self.assertEqual(self.object2["notlink"].get_raw(),'')
 
-        self.assertRaises(TypeError,try_connect,self.object3['link1'],self.object2["link1"])
+        self.assertRaises(TypeError,try_connect,self.object3['link1'],self.object2,"notlink")
         #try_connect(self.object3['link1'],self.object2["link1"])
         self.assertEqual(self.object3["link1"].get_anchor(),self.object3)
         self.assertEqual(self.object3["link1"].get_object(),None)
-        self.assertEqual(self.object2["link1"].get_raw(),'')
+        self.assertEqual(self.object2["notlink"].get_raw(),'')
 
 
 def getTestNames():
