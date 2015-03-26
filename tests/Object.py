@@ -270,11 +270,23 @@ class ObjectTests(unittest.TestCase):
 
        lastcount = update.count 
 
+        ## Test notify behvour imteraction with parents
+       self.val['inh'] = 'xxx'
+       self.parent['inh'] = 'xxx'
+       testexpect(self.object)
+       self.assertEquals(update.count,lastcount)
+
+       self.object['inh'] = 'xxx'
+       self.assertGreater(update.count,lastcount)
+       lastcount = update.count 
+
+
        self.object.unregister_notify(update)
        self.val["another"] ="brick in the wall"
        self.object["another"] ="brick in the wall"
        self.assertEquals(update.count,lastcount)
        if self.exception: raise self.exception
+
 
     def test_iter_looks_at_xaction_state(self,):
         """ do test inside a xaction to chack that 'in' looks at
