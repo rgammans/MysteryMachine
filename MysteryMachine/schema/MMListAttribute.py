@@ -56,7 +56,7 @@ class MMListAttribute(MMAttributeValue):
             self.parts = { "0element" : "" }
             for item in self.value:
 
-                print "ila",item
+                self.logger.debug( "ila  %r",item)
                 self.append(item)
 
         self.exports+= ["GetStableIndex", "__iter__" , "__contains__", 
@@ -67,11 +67,9 @@ class MMListAttribute(MMAttributeValue):
         ##Returns the elements of the array - remove any special parts
         for k,v in self.parts.iteritems():
             if k not in self.special:
-                    print k
                     yield k
 
         for k in self.uncomposed.keys():
-            print k
             yield k
 
 
@@ -92,7 +90,7 @@ class MMListAttribute(MMAttributeValue):
 
     def __contains__(self,val , obj = None ):
         val = self._convert_to_str(None,val,obj)
-        print "CF:",val, list(self._elementvalues())
+        self.logger.debug("list CF: %s | %s ",val, list(self._elementvalues()))
         return val in self._elementvalues()
 
     def __len__(self, obj = None ):
@@ -189,7 +187,7 @@ class MMListAttribute(MMAttributeValue):
             else:
                 self.logger.warn("compose without an obj for %s"%k)
                 tobj = None
-            print "L compose",i,repr(obj),repr(tobj)
+            self.logger.debug( "L compose %s %r %r",i,obj,tobj)
             i._compose(tobj)
             self._write(k,i,obj)
             done += [ k ]

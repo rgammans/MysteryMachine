@@ -202,7 +202,7 @@ def _measure_path_diff(frm,to):
         if f is None: break
         if t is None: count += 1
 
-    print repr(frm), "->", repr(to), "= len ",count
+    self.logger.debug(" %r -> %r = len %s",frm,to,count)
     return count
 
 
@@ -248,7 +248,7 @@ def ConnectTo(attribute):
     You use this by assigning an existing anchop point to the result
     from this function.
     """
-    print "Cti Type error >?"
+    self.logger.debug( "Cti init>?")
     if not isinstance(attribute,MMAttribute):
         raise TypeError("Can only ConnectTo an MMAttribute")
     if attribute.get_value().get_type() !=  _value_typename:
@@ -260,9 +260,8 @@ def ConnectTo(attribute):
         raise ValueError("attribute not decesended from anchor %s /< %s"%(anchorname,attrname))
 
     foreign   =  attrname[len(anchorname)+1:]
-    #foreign =attribute.name
-    #print "CTi:",attribute.get_anchor() ,  foreign
-    print "CTi:",anchorname, attrname,foreign
+
+    self.logger.debug( "CTi: %s , %s, %s",anchorname, attrname,foreign)
 
     return MMDLinkValue(target = attribute.get_anchor() , 
                         foreign=foreign,
@@ -310,7 +309,6 @@ class MMDLinkValue(MMAttributeValue):
                     self.partner_path = None
                 else:
         #            ###Fallback to stuff
-                    print "oops",self.mode,self.anchorp
                     #if self.anchordist:
                     self.parts["anchordist"]='1'#str(self.anchordist)
                     self._process_parts()
@@ -343,7 +341,6 @@ class MMDLinkValue(MMAttributeValue):
 
       """
       self.logger.debug( "in assign")
-      print  "in assign" ,repr(other.parts)
       if self.__class__ is other.__class__:
           self.valid = False
           with _member_guard(self,"in_assignment") as assign_guard:
@@ -356,19 +353,19 @@ class MMDLinkValue(MMAttributeValue):
                 self.anchordist = None
                 self.anchorp = other.anchorp
                 self.mode = 'anchor_point_gestate'
-                print "APG:",self.parts,other.parts,self.partner_path
+                self.logger.debug( "APG: %s | %s | %s",self.parts,other.parts,self.partner_path)
                 self.parts= other.parts
             elif other.mode == 'connect_to_seed':
                 self.parts =  { 'target' :other.parts['target'] }
                 assert self.anchorp or self.anchordist
-                print "c_t_seed", repr(self.anchorp), repr( self.anchordist), self.partner_path,other.partner_path
+                self.logger.debug( "connect_to_seed: %r | %r | %s | %s", self.anchorp,  self.anchordist, self.partner_path,other.partner_path)
                 self.mode = 'connect_to_gestate'
                 self.old_partner_path = self.partner_path
                 self.partner_path = other.partner_path
             else:
                 if other.parts == self.parts: return
                 #Native assiginment/or move.
-                print "XYZZY %s %r %r"%(other.mode,self.parts,other.parts)
+                self.logger.debug("\tother %s %r %r",other.mode,self.parts,other.parts)
                 self.old_partner_path = self.partner_path
                 self.partner_path = other.partner_path
                 self.parts = other.parts
@@ -382,7 +379,6 @@ class MMDLinkValue(MMAttributeValue):
 
     def _process_parts(self):
        self.logger.debug( "_pp>%s"%self.parts)
-       print ( "_pp>%s"%self.parts)
        if "target" in self.parts:
             attributename,sniplen = self.parts["target"].rsplit(",",1)
             attributename = attributename.split(":")
@@ -409,7 +405,7 @@ class MMDLinkValue(MMAttributeValue):
         """Internal function set partner apth, and clears exsitign partner"""
         obj = kwargs.get('obj',None)
         path = kwargs.get('path',self.partner_path)
-        print "cnnect_to moode:",repr(path),repr(obj),repr(target),repr(self.anchordist),repr(self.parts)
+        self.logger.debug( "connect_to mode: %r | %r | %r | %r | %r",path,obj,target,self.anchordist,self.parts)
 
         #Get partner if defined.
         existing_partner = None
@@ -436,10 +432,9 @@ class MMDLinkValue(MMAttributeValue):
 
             self.parts['target'] = ":".join(self.partner_path) +","+str(int(self.anchordist))
 
-        print "cnnect_to end:",repr(self.mode),repr(obj),repr(self.anchorp),repr(self.anchordist),repr(self.parts)
 
     def _compose(self,obj = None ):
-        print "compose_moode:",repr(self.mode),repr(obj),repr(type(obj.get_value())),repr(self.anchorp),repr(self.anchordist),repr(self.parts)
+        self.logger.debug("compose_moode: %r | %r | %r | %r | %r | %r",self.mode,obj,type(obj.get_value()),self.anchorp,self.anchordist,self.parts)
         if not self.mode:
             #Iniitialise from parts.
             return
@@ -475,7 +470,6 @@ class MMDLinkValue(MMAttributeValue):
             # If we were connected before an assignment changed we must alway
             # reset our old partner back to anchor point state.
             #
-            print "K"
             oldp =  _container_walk(obj.get_root(),self.old_partner_path)
             if not isinstance(obj,MMUnstorableAttribute):
                 if oldp is not None:
@@ -504,7 +498,7 @@ class MMDLinkValue(MMAttributeValue):
     def __copy__(self):
         #print "cpy",self.mode
         mode = 'copied_'+self.mode#[:-4]+"gestate"
-        print "copy",self.mode,self.parts
+        self.logger.debug("copy",self.mode,self.parts
         ##Uncomment this for different behaviour
         #FIXME WHY!
         #x=str(self.anchorp)
@@ -527,14 +521,11 @@ class MMDLinkValue(MMAttributeValue):
 
         Returns None if disconnected.
         """
-        print "GO",type(obj.get_value()),repr(self.parts)
         if obj.is_shadow():
-            print "GO2",repr(obj.get_value().shadow_deref()),repr(self.parts)
 
         
         if self.obj is None:
             obj = self.get_partner(obj)
-            print "go part",repr(obj)
             if obj is not None: self.obj = obj.get_anchor()
 
         return self.obj
@@ -565,7 +556,6 @@ class MMDLinkValue(MMAttributeValue):
         to when we connect."""
         if obj is None: raise ValueError("Anchor is now relative - must pass home object")
         if self.anchordist is None:
-            print "ga", repr(self.parts),repr(self.anchorp)
             if self.anchorp is not None: return self.anchorp
             ##NOTE If the line below is raising KeyError('anchor') the problem occured
             #      before we got here!
@@ -578,7 +568,6 @@ class MMDLinkValue(MMAttributeValue):
         if obj.is_shadow() and self.partner_path is not None:
             obj = obj.get_value().shadow_deref()
 
-        print "ga2",  self.anchordist, repr(obj)
         return _walk_back(obj,self.anchordist)
 
     def _validate(self, attr = None):
