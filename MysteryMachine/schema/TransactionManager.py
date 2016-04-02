@@ -208,6 +208,23 @@ class TransactionManager(object):
         self.state = 'xaction_aborted' 
 
     def _do_commit(self):
+        ##If no write locks are held we have a fast path.
+        # we don't need to lock the store as no modifications are
+        # needed.
+        if not self.xaction.wlocked:
+            self._release_allr()
+            #Should, be no write locks held, but let call release anyway!.
+            self._release_allw()
+            self.logger.debug( "release")
+            self.state = 'xaction_commited'
+            return
+
+
+        ##
+        ## The meat, we have some node with write lock so 
+        ## we need to save those updates back to the store
+        ##
+
         self.state = "tx_commit_1"
         txn = self.store.start_store_transaction() #Begin rollbackable xaction
         self._release_allr()
