@@ -125,7 +125,7 @@ class MMAttribute (MMAttributeContainer):
      return self.owner
 
   @Reader
-  def __str__(self):
+  def __unicode__(self):
      """
 
      @return string :

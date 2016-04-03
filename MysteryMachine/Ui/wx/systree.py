@@ -62,7 +62,7 @@ def _node_name(node):
     #contain attirbutes..
     if isinstance(node,MMAttribute):
         return node.name
-    else:return str(node) 
+    else:return unicode(node) 
 
 
 

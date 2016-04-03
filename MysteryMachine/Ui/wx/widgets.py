@@ -53,7 +53,7 @@ def _node_name(node):
     #contain attirbutes..
     if isinstance(node,MMAttribute):
         return node.name
-    else:return str(node) 
+    else:return unicode(node) 
 
 
 def _pop(seq):
@@ -121,7 +121,7 @@ class MMTreeView(wx.TreeCtrl):
 
         self.notifyclosure = NotifyClosure(self,self.node_notifier)
 
-        self.rootItem = self.AddRoot(str(self.system),-1,-1,wx.TreeItemData(obj=self.system))
+        self.rootItem = self.AddRoot(unicode(self.system),-1,-1,wx.TreeItemData(obj=self.system))
         self.notifyclosure.register(self.system)
         #Use the empty string as the db path for the root node.
         self.nodes = { '' : self.rootItem }

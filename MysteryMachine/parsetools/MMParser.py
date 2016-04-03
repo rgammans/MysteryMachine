@@ -146,7 +146,7 @@ class MMParser (object):
     nodes = self.ProcessRawRst(rst_string,src,src_stack)
     result = ""
     for n in nodes:
-      result += str(n)
+      result += unicode(n)
     self.logger.debug( "String->'%s',len %s"  % (result ,len(nodes)))
     if len(nodes) == 1:
       #Supress outer xml container.
@@ -181,9 +181,9 @@ def role_handler(role, rawtext, text, lineno, inliner,
                 # not our own.
                 if isinstance(rst,MMBase):
                     current_parser = _findParser(rst)
-                
+
                 #Return to docutils to get docutils node representation.
-                nodes += current_parser.ProcessRawRst(str(rst),src = repr(rst) ,
+                nodes += current_parser.ProcessRawRst(unicode(rst),src = repr(rst) ,
                                                       src_stack=content + [ text ] )
              except Exception:
                 import traceback

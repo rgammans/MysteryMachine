@@ -87,7 +87,7 @@ class BasicMMAttributeValidator(MysterySchemaValidatorBase):
         super(BasicMMAttributeValidator,self).__init__(*args,**kwargs)
 
     def TransferToWindow(self):
-        self.GetWindow().SetValue(str(self.attribute))
+        self.GetWindow().SetValue(unicode(self.attribute))
         return True 
 
     def TransferFromWindow(self):
@@ -245,7 +245,7 @@ class MMRefAttributeValidator(MysterySchemaValidatorBase):
         super(MMRefAttributeValidator,self).__init__(*args,**kwargs)
 
     def TransferToWindow(self):
-        self.GetWindow().SetLabel("Reference to " + str(self.attribute.getSelf()))
+        self.GetWindow().SetLabel(u"Reference to " + unicode(self.attribute.getSelf()))
         self.GetWindow().GetParent().Layout()
         return True 
 

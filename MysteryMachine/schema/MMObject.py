@@ -264,13 +264,13 @@ class MMObject (MMAttributeContainer):
 
 
   @Reader
-  def __str__(self):
+  def __unicode__(self):
     # def name attribute contains the instructions for a human
     # readable interpreation of this object. Normally "mm:`:name`"
     #
     # Fall back to Schema ID if defname attribute doesnot exist
     try:
-        name = str(self[".defname"])
+        name = unicode(self[".defname"])
     except KeyError: name=self.get_nodeid()
     return self.parser.GetString(name,repr(self))
 

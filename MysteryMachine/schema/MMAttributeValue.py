@@ -220,7 +220,7 @@ class MMAttributeValue (SchemaCommon ):
     return str(self.__class__)+"(\""+self.get_raw()+"\")"
 
 
-  def __str__(self):
+  def __unicode__(self):
     return self.get_raw()
 
   def get_raw(self, obj = None):
@@ -538,8 +538,8 @@ class ShadowAttributeValue(MMAttributeValue):
         #anyway
         return _copy.copy(self._get_target())
 
-    def __str__(self):
-        return self._get_target().__str__()
+    def __unicode__(self):
+        return self._get_target().__unicode__()
         
     def get_raw_rst(self, obj = None):
         self.logger.debug("%s[%s].raw_rst ( obj = %s ) "% (  repr(self.obj), self.attrname , repr(obj) ))

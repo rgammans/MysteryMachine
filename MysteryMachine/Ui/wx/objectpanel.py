@@ -57,7 +57,7 @@ class ObjectPanel(wx.PyPanel):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
         self.title = wx.StaticText(self,ID_LABEL)
-        self.title.SetLabel(repr(self.obj) +" - \"" +str(self.obj)+"\"") 
+        self.title.SetLabel(repr(self.obj) +" - \"" +unicode(self.obj)+"\"") 
         self.sizer.Add(self.title,0)
 
         #Walk down the inheritance hierachy Finding each object.
@@ -134,7 +134,7 @@ class _object_section(wx.PyPanel):
         self.obj = obj
         super(_object_section,self).__init__(parent,-1)
         self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
-        box = wx.StaticBox(self,-1, label = str(obj))
+        box = wx.StaticBox(self,-1, label = unicode(obj))
         self.sizer = wx.StaticBoxSizer(box,wx.VERTICAL)
         self.SetSizer(self.sizer)
         for attr in obj:

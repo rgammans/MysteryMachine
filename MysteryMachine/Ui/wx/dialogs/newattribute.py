@@ -79,7 +79,7 @@ class NewAttributeDialog(wx.Dialog):
     
         self.namefield =wx.TextCtrl(self,wx.ID_ANY)       
         self.sizer.Add(self.namefield,0,wx.EXPAND)
-        self.namefield.SetValue(str(self.name))
+        self.namefield.SetValue(unicode(self.name))
         self.namefield.Show(self.writemethod == "set_value")
         
         self.typechoice = wx.Choice(self,self.__class__.ID_CHOICE,choices =sorted(GetAttributeTypeList()) )
