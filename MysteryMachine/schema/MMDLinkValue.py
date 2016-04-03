@@ -498,7 +498,7 @@ class MMDLinkValue(MMAttributeValue):
     def __copy__(self):
         #print "cpy",self.mode
         mode = 'copied_'+self.mode#[:-4]+"gestate"
-        self.logger.debug("copy",self.mode,self.parts
+        self.logger.debug("copy",self.mode,self.parts)
         ##Uncomment this for different behaviour
         #FIXME WHY!
         #x=str(self.anchorp)
@@ -521,9 +521,6 @@ class MMDLinkValue(MMAttributeValue):
 
         Returns None if disconnected.
         """
-        if obj.is_shadow():
-
-        
         if self.obj is None:
             obj = self.get_partner(obj)
             if obj is not None: self.obj = obj.get_anchor()
