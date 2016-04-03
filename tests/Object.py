@@ -288,6 +288,19 @@ class ObjectTests(unittest.TestCase):
        if self.exception: raise self.exception
 
 
+    def test_shadowing_looks_at_xaction_state(self,):
+        """ do test inside a xaction to chack that 'in' looks at
+        chnages to the current state"""
+        @Writer
+        def test_new(obj):
+            obj['.defname'] ='x'
+            obj['.defname']
+            del obj['.defname']
+            self.assertNotEquals(obj['.defname'],'x')
+
+        test_new(self.object)
+
+
     def test_iter_looks_at_xaction_state(self,):
         """ do test inside a xaction to chack that 'in' looks at
         chnages to the current state"""

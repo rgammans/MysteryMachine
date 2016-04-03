@@ -108,7 +108,8 @@ class MMObject (MMAttributeContainer):
 
     attr = self._get_item(attrname , self._do_getitem , attrname, parent)
     if attr.is_deleted:
-        raise KeyError(attrname)
+        #Look at wheher we need to find an iherited version
+        return self._do_getshadowitem(attrname,parent)
 
     if type(attr.get_value()) is ShadowAttributeValue:
         if not parent or not parent.has(attrname):
@@ -124,16 +125,21 @@ class MMObject (MMAttributeContainer):
     if self.store.HasAttribute(attrname):
         return self._make_attr(attrname) 
     else:
-        if parent is None:
-           #No Parent so raise no attrname.
-           raise KeyError(attrname)
-        
-        #Ensure the attribute can be fetched - if not parent will
-        # raise an exception.
-        pattr = parent[attrname]
-        attr  = MMAttribute(attrname,ShadowAttributeValue(self,attrname=attrname,object=self),
-                            self,copy = False) 
-        return attr        
+        return self._do_getshadowitem(attrname,parent)
+
+  def _do_getshadowitem(self,attrname,parent):
+    """this is the internal function to handle tho item
+        not found in the self, but might be inherited path"""
+    if parent is None:
+       #No Parent so raise no attrname.
+       raise KeyError(attrname)
+
+    #Ensure the attribute can be fetched - if not parent will
+    # raise an exception.
+    pattr = parent[attrname]
+    attr  = MMAttribute(attrname,ShadowAttributeValue(self,attrname=attrname,object=self),
+                        self,copy = False) 
+    return attr
 
 
   @Writer
