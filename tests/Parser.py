@@ -60,12 +60,12 @@ class ParsersTests(unittest.TestCase):
 
     def testParser(self):
         self.assertEquals(self.c["carries"].GetFullExpansion(),"The one ring")
-        self.assertEquals(str(self.c),"Frodo")
+        self.assertEquals(unicode(self.c),"Frodo")
         self.p['.defname'] =  ":mm:`:name` :mm:`:lname`"
         self.p['lname'] = ""
         self.c['lname'] = "Baggins"
-        self.assertEquals(str(self.c),"Frodo Baggins")
-        self.assertEquals(str(self.i),"The one ring ")
+        self.assertEquals(unicode(self.c),"Frodo Baggins")
+        self.assertEquals(unicode(self.i),"The one ring ")
         #Test Invalid syntax
         self.c['foo'] = ':mm:`not_a_macro`'
         #We shouldn't raise but will have docutils XML reporting a ParseException
@@ -73,19 +73,19 @@ class ParsersTests(unittest.TestCase):
         self.assertTrue(re.search("<error",foo_str))
         self.assertTrue(re.search("ParseException",foo_str))
         #Test settings
-        self.assertEquals(str(self.i['bike'].GetFullExpansion()),"hovercraft")
+        self.assertEquals(unicode(self.i['bike'].GetFullExpansion()),"hovercraft")
         self.c['test']=":mm:`:carries:bike`"
-        self.assertEquals(str(self.c['test'].GetFullExpansion()),"hovercraft")
+        self.assertEquals(unicode(self.c['test'].GetFullExpansion()),"hovercraft")
         #Test mm roel state after recursion - eg state is restored on stack pop.
         self.c['test2']=":mm:`:carries:bike` :mm:`:name`" 
-        self.assertEquals( str(self.c['test2'].GetFullExpansion()),"hovercraft Frodo")
+        self.assertEquals( unicode(self.c['test2'].GetFullExpansion()),"hovercraft Frodo")
         #test literal values are handled
         self.c['test3']=":mm:`\"A Literal value\"`" 
-        self.assertEquals( str(self.c['test3'].GetFullExpansion()),"A Literal value")
+        self.assertEquals( unicode(self.c['test3'].GetFullExpansion()),"A Literal value")
 
 
     def testUnicode(self):
-        self.assertEquals(str(self.c2),u"Frodo")
+        self.assertEquals(unicode(self.c2),u"Frodo")
         
 
     def testCycle(self):
@@ -94,7 +94,7 @@ class ParsersTests(unittest.TestCase):
         a=self.c["cycle"].GetFullExpansion()
         #Set up something that might look like a cycle but isn't.
         self.c["not_a_cycle"]=":mm:`"+repr(self.i)+":bike`"
-        self.assertEquals(str(self.c["not_a_cycle"].GetFullExpansion()),"hovercraft")
+        self.assertEquals(unicode(self.c["not_a_cycle"].GetFullExpansion()),"hovercraft")
 
 def getTestNames():
     	return [ 'Parser.ParserTests' ] 

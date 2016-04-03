@@ -141,10 +141,10 @@ class attribValTest(unittest.TestCase):
 
 
     def testUnicode(self):
-        text = u"Some unicode text"
+        text = u"Some unicode text this is a pound sign \xa3, this is a special char \u2019"
         attr = CreateAttributeValue(text)
         self.assertEquals(attr.get_type(),"simple_utf8")
-        self.assertEquals(str(attr),text)
+        self.assertEquals(unicode(attr),text)
 
 
     def testGetAttributeTypes(self):

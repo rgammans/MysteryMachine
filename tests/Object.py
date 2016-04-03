@@ -85,16 +85,16 @@ class ObjectTests(unittest.TestCase):
 
     def testdefname(self):
         self.logger.debug( "----starting defname test------")
-        self.assertEquals(str(self.dummyparent),"name")
+        self.assertEquals(unicode(self.dummyparent),"name")
         self.object["name"]="test"
         self.logger.debug( "--- next assert----")
-        self.assertEquals(str(self.object),"test")
-        self.assertEquals(str(self.object2),repr(self.object2))
+        self.assertEquals(unicode(self.object),"test")
+        self.assertEquals(unicode(self.object2),repr(self.object2))
         self.logger.debug( "----completed defname test------")
 
     def testAttrRef(self):
         self.object["data"] ="some data"
-        self.assertEquals(str(self.object["data"]),"some data")
+        self.assertEquals(unicode(self.object["data"]),"some data")
         def noAttrTst(obj):
             return obj["nodata"]
         self.assertRaises(KeyError,noAttrTst,self.object)
@@ -109,8 +109,8 @@ class ObjectTests(unittest.TestCase):
         self.sys2.NewCategory( "Dummy" )
         obj  = self.sys2.NewObject("Dummy")
         obj["data"] = "soemdata"
-        self.assertEquals(str(obj["data"]),"soemdata")
-        self.assertEquals(str(obj["DATa"]),"soemdata")
+        self.assertEquals(unicode(obj["data"]),"soemdata")
+        self.assertEquals(unicode(obj["DATa"]),"soemdata")
         self.assertRaises(KeyError,noAttrTst,obj) 
 
         obj["atref"]=obj["data"].getRef()
@@ -122,26 +122,26 @@ class ObjectTests(unittest.TestCase):
     def testParentRef(self):
         p=self.object.get_parent()
         p["test"] = "test"
-        self.assertEquals(str(self.object["test"]),str(p["test"]))
+        self.assertEquals(unicode(self.object["test"]),unicode(p["test"]))
         self.object["test"] = "other"
-        self.assertNotEquals(str(self.object["test"]),str(p["test"]))
+        self.assertNotEquals(unicode(self.object["test"]),unicode(p["test"]))
         #Test parent update
         p[".defname"] = "parent"
         #Test parent de-ref
         self.object[".defname"]= "object" 
-        self.assertEquals(str(self.object), "object")
-        self.assertEquals(str(p), "parent")
+        self.assertEquals(unicode(self.object), "object")
+        self.assertEquals(unicode(p), "parent")
         #Test deltete and parent ref.
         del self.object[".defname"]
-        self.assertEquals(str(self.object), "parent")
+        self.assertEquals(unicode(self.object), "parent")
 
     def testDefaultParent(self):
         obj2 = self.system.NewObject("Dummy")
-        self.assertEquals(str(obj2[".defname"]),"name") 
+        self.assertEquals(unicode(obj2[".defname"]),"name") 
         #Test parent de-ref
         obj2[".defname"]= "object" 
-        self.assertEquals(str(obj2), "object")
-        self.assertEquals(str(self.dummyparent), "name")
+        self.assertEquals(unicode(obj2), "object")
+        self.assertEquals(unicode(self.dummyparent), "name")
  
     def testInheritedEval(self):
         p=self.object.get_parent()
@@ -157,7 +157,7 @@ class ObjectTests(unittest.TestCase):
         self.parent[".secret"] = "test"
         #Hold ref , to ensure attr stays in cache,
         s = self.object[".secret"]
-        self.assertEquals("test",str(self.object[".secret"]))
+        self.assertEquals("test",unicode(self.object[".secret"]))
  
 
     def testParentAbuse(self):
@@ -172,18 +172,18 @@ class ObjectTests(unittest.TestCase):
     def testBreakParentRef(self):
         self.parent["testattr"] = "somedata"
         self.dummyparent["testattr"] = "otherdata"
-        self.assertEquals(str(self.object["testattr"]),"somedata")
+        self.assertEquals(unicode(self.object["testattr"]),"somedata")
         self.object.set_parent(MMNullReferenceValue())
         self.assertRaises(KeyError,self.object.__getitem__,"testattr")
 
         myobj = self.system.NewObject("dummy")
-        self.assertEquals(str(myobj["testattr"]),"otherdata")
+        self.assertEquals(unicode(myobj["testattr"]),"otherdata")
         myobj = self.system.NewObject("dummy",MMNullReferenceValue())
         self.assertRaises(KeyError,myobj.__getitem__,"testattr")
 
         #Check when a reference the shadow value is still held
         self.object.set_parent(self.parent)
-        self.assertEquals(str(self.object["testattr"]),"somedata")
+        self.assertEquals(unicode(self.object["testattr"]),"somedata")
         v = self.object["testattr"]
         self.object.set_parent(MMNullReferenceValue())
         #Test fetch of disappeared attribute raises KeyErrpr
@@ -246,7 +246,7 @@ class ObjectTests(unittest.TestCase):
                 attr = [ x.name for x in obj]
                 for k,v in self.val.iteritems():
                     self.assertTrue(k in attr,"%s not in attributes"%k)
-                    self.assertEquals(str(obj[k]),v)
+                    self.assertEquals(unicode(obj[k]),v)
             except Exception, e:
                 self.exception =e
 
@@ -321,6 +321,8 @@ class ObjectTests(unittest.TestCase):
 
         test_new(self.object)
         test_del(self.object)
+
+
 
     def test_contains_looks_at_xaction_state(self,):
         """ do test inside a xaction to chack that 'in' looks at

@@ -388,7 +388,7 @@ class MMSystem (MMAttributeContainer):
         attribute = MakeAttributeValue(*(self.store.GetAttribute(".defname")))
         if hasattr(attribute,"_compose"):
             attribute._compose(self)
-        return str(attribute)
+        return unicode(attribute)
     return None
 
   def _make_encoding(encoding):

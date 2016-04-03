@@ -69,7 +69,7 @@ class sysTests(unittest.TestCase):
         self.assertRaises(LookupError,setObj,cat) 
         cat[".dummy"] = "data"
         self.assertEqual(type(cat[".dummy"]) , MMAttribute)
-        self.assertEqual(str(cat[".dummy"]),"data")
+        self.assertEqual(unicode(cat[".dummy"]),"data")
         o12=self.sys.NewObject("One",None)
         o12id = repr(o12).split(":")[-1]
         self.assertEquals(cat[o12id],o12)
@@ -94,11 +94,11 @@ class sysTests(unittest.TestCase):
         self.assertEquals(cat.get_root(),self.sys)
         
         #Cat object name.
-        self.assertEquals(str(cat),"one")
+        self.assertEquals(unicode(cat),"one")
         self.assertEquals(repr(cat),"one")
         cat[".defname"] = "Test"
         self.assertEquals(repr(cat),"one")
-        self.assertEquals(str(cat),"Test")
+        self.assertEquals(unicode(cat),"Test")
 
     def testObjects(self):
         #Check empty categories are..
@@ -190,8 +190,8 @@ class sysTests(unittest.TestCase):
         # __init__ del calls them ok.
         # Test open / create semanitcs.
         self.assertEquals(UnEscapeSystemUri(EscapeSystemUri("dict:test")),"dict:test")
-        self.assertEquals(EscapeSystemUri("attrfile:"+self.mpath),str(self.sys))
-        self.assertTrue(GetLoadedSystemByName(str(self.sys)) is self.sys)
+        self.assertEquals(EscapeSystemUri("attrfile:"+self.mpath),unicode(self.sys))
+        self.assertTrue(GetLoadedSystemByName(unicode(self.sys)) is self.sys)
       
      
 
@@ -243,14 +243,14 @@ class sysTests(unittest.TestCase):
 
 
     def testNaming(self):
-        self.assertEquals(repr(self.sys),str(self.sys))
+        self.assertEquals(repr(self.sys),unicode(self.sys))
         rname=repr(self.sys)
         testname= u"A test name"
         self.sys.set_name(testname)
         self.assertEquals(self.sys.get_name(),testname)
-        self.assertEquals(str(self.sys),testname)
+        self.assertEquals(unicode(self.sys),testname)
         self.assertEquals(repr(self.sys),rname)
-        self.assertEquals(str(self.sys[".defname"]),testname)
+        self.assertEquals(unicode(self.sys[".defname"]),testname)
 
 
     def testNotify(self):
