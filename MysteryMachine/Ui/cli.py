@@ -109,9 +109,9 @@ class UiBase(object):
         os.system(editor +" "+ filename)
         if self.in_curses: 
             curses.reset_prog_mode()
-             try:
-                 bpython.cli.stdscr.redrawwin()
-             except NameError,AttributeError:
+            try:
+                bpython.cli.stdscr.redrawwin()
+            except NameError,AttributeError:
                 #This means we bython is updated or we are not 
                 #uses the curses implemenation
                 pass
