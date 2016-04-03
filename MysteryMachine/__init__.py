@@ -210,7 +210,10 @@ class _LibraryContext(object):
     
         #Define the logger early so that it is ready for use if not configured.
         self.logger = logging.getLogger("MysteryMachine")
-        logging.getLogger("").addHandler(logging.StreamHandler(sys.stderr)) 
+        #.. and enuser there is at least one handler
+        alllog = logging.getLogger("")
+        if len(alllog.handlers) < 1:
+            alllog.addHandler(logging.StreamHandler(sys.stderr))
 
         self.argv = args
         self.cmdline_options,self.args=_parse_options(self.argv)
@@ -260,7 +263,13 @@ class _LibraryContext(object):
         If an extension with mainloop has been registered and select call it.
         """
         if self.Ui is not None:
-            self.Ui.Run()
+            ##Asking for permisson so a sane error message van be displayed.
+            # We don't try to catch an exception here as rechnically any
+            # exception could be thrown by Run().
+            if hasattr(self.Ui,'Run') and _myCallable(self.Ui.Run):
+                self.Ui.Run()
+            else:
+                raise RuntimeError("Didn't locate a valid user interface")
 
 
     def GetArgv(self):
