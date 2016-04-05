@@ -82,7 +82,12 @@ class dict_store(Base):
     def _GenericDelete(self,name):
         dbpath = self.canonicalise(name)
         d = self._walkPath(dbpath[:-1])
-        del d[dbpath[-1]]
+        lpath = dbpath[-1]
+        try:
+            del d[lpath]
+        #If it's not there we don't need to delete it...
+        except KeyError:pass
+
 
     DeleteCategory= _GenericDelete
     DeleteObject =  _GenericDelete

@@ -296,6 +296,8 @@ class Base(object):
         """
         Removes and attribute name attrname from the store.
 
+        Does not fail if the atrtibute does not exists
+
         You are expected to override this for your own store.
         """ 
 

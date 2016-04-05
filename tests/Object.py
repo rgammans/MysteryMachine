@@ -58,7 +58,7 @@ class ObjectTests(unittest.TestCase):
         self.parent[".defname"]      =":mm:`:name`"
         
         self.system.NewCategory( "Dummy" ,defaultparent =self.dummyparent)
-        self.object                  = self.system.NewObject("Dummy") 
+        self.object  = self.system.NewObject("Dummy") 
         self.object.set_parent(self.parent)       
 
         self.object2                  = self.system.NewObject("Template") 
@@ -299,6 +299,42 @@ class ObjectTests(unittest.TestCase):
             self.assertNotEquals(obj['.defname'],'x')
 
         test_new(self.object)
+
+
+    def test_commit_delete_hits_store(self,):
+        """ do test inside a xaction to chack that 'in' looks at
+        chnages to the current state"""
+        @Writer
+        def test_1(obj):
+            obj['val'] ='x'
+
+        @Writer
+        def test_2(obj):
+            del obj['val']
+
+
+        object1  = self.system.NewObject("Dummy") 
+        test_1(object1)
+        n_id = object1['val'].get_nodeid()
+
+        # Keep a reference to the atttribute around, to verify the in cache path
+        n = object1['val']
+        self.assertTrue(object1.get_root().store.HasAttribute(n_id ))
+        test_2(object1)
+        self.assertFalse(object1.get_root().store.HasAttribute(n_id ))
+
+
+
+        object2  = self.system.NewObject("Dummy") 
+        test_1(object2)
+        n_id = object2['val'].get_nodeid()
+
+        # KDOn't eep a reference to the atttribute around, to verify the in cache path
+        ## XXX - OFFn = object1['val']
+        self.assertTrue(object2.get_root().store.HasAttribute(n_id ))
+        test_2(object2)
+        self.assertFalse(object2.get_root().store.HasAttribute(n_id ))
+
 
 
     def test_iter_looks_at_xaction_state(self,):

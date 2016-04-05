@@ -332,9 +332,10 @@ class MMAttribute (MMAttributeContainer):
   def _writeback(self,): pass
  
   def writeback(self,):
+    store = self.get_root().store
+    if not self.is_deleted:
         self.logger.debug("writing back a %s to %r"%(self.valueobj.get_type(),self))
         #print ("writing back a %s to %r"%(self.valueobj.get_type(),self))
-        store = self.get_root().store
         #Don't writeback if our parent is also an attribute, as then
         # it is it's resopnibility to do store stuf
         ancestor = self.get_ancestor()
@@ -344,6 +345,8 @@ class MMAttribute (MMAttributeContainer):
         else: 
             self.logger.debug("\tterminated writeback as contained by %r"%ancestor)
         self.oldvalue = None
+    else:
+        store.DelAttribute(self.get_nodeid())
 
   def start_write(self,*args):
         #print ("preparing write to %r"%self)
