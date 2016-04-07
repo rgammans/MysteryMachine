@@ -362,6 +362,7 @@ class MMContainer(MMBase):
         and checks against the cache, and (hence) current transcation state
         """
         inc_hidden = kwargs.get('inc_hidden', False)
+        val_guard = kwargs.get('val_guard', lambda x:True)
 
         if inc_hidden:
             #guard returns false on hidden
@@ -372,6 +373,7 @@ class MMContainer(MMBase):
         seen = set()
         for k,v in self.cache.items():
             if not guard(k): continue
+            if not val_guard(v): continue
             seen.add(k)
             #TODO: Does reading is_deleted require a reader lock on v?
             if not v.is_deleted: yield k

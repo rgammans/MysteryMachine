@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#/!/usr/bin/env python
 #   			grammarTest.py - Copyright Roger Gammans
 # 
 #
@@ -40,6 +40,7 @@ class foo(MMBase):
 class bar(object):
     def __init__(self,owner):
          self.owner = owner 
+         self.is_deleted = False
     def __hash__(self):
          return hash(self.owner)
     def __eq__(self,o):
@@ -88,7 +89,24 @@ class BaseTest(unittest.TestCase):
             m._invalidate_item(1)
             self.assertRaises(KeyError ,m.cache.__getitem__,1)
             self.assertFalse(m._get_item(1,bar,"one") is v)
-         
+
+
+    def testContainerEnum(self):
+        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml"]) as g:
+            m = MMContainer()
+            m.owner = fakeParent()
+            v = bar("one")
+            m._set_item("1",v)
+            self.assertIn("1",list(m._EnumX(lambda :[".hidden","nothidden"],)))
+            self.assertNotIn(".hidden",list(m._EnumX(lambda :[".hidden","nothidden"],)))
+            self.assertIn("nothidden",list(m._EnumX(lambda :[".hidden","nothidden"],)))
+            self.assertIn(".hidden",list(m._EnumX(lambda :[".hidden","nothidden"],inc_hidden = True)))
+            #Check valguard
+            self.assertNotIn("1",list(m._EnumX(lambda :[],val_guard = lambda x:x is not v)))
+
+
+
+
     def testNotify(self):
         def update(obj):
             update.count+=1
