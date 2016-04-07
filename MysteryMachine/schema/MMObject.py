@@ -195,12 +195,13 @@ class MMObject (MMAttributeContainer):
         seen.add(key)
         yield key
 
-    parent = self.get_parent()
-    if parent is not None:
-        for key in parent.EnumAttributes(**kwargs):
-            if key not in seen:
-                seen.add(key)
-                yield key
+    if inc_parent:
+        parent = self.get_parent()
+        if parent is not None:
+            for key in parent.EnumAttributes(**kwargs):
+                if key not in seen:
+                    seen.add(key)
+                    yield key
 
   @Reader
   def __contains__(self,name):

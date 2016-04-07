@@ -205,6 +205,10 @@ class ObjectTests(unittest.TestCase):
         self.assertTrue("name" in self.object)
         self.assertTrue("attr1" in self.object)
         names = [ "attr1" , "name" ]
+        #Set parent attribure and chec it is ignore where should be.
+        p=self.object.get_parent()
+        p["attr_none"]="fooo"
+ 
         self.assertEquals(set( o.name for o in  iter(self.object)) , set( names ))
         fndNames= []
         for k,v in self.object.iteritems():
@@ -227,9 +231,9 @@ class ObjectTests(unittest.TestCase):
         for a in attrk:
             self.assertTrue(a in names)
 
-        p=self.object.get_parent()
-        p["attr_none"]="fooo"
-        attrk = list(self.object.EnumAttributes())
+        attrknp = list(self.object.EnumAttributes(inc_parent = False))
+        attrk = list(self.object.EnumAttributes(inc_parent = True))
+        self.assertGreater(attrk,attrknp)
         self.assertEqual(len(attrk),3)
         #Check contains is false for inherited
         ok =False
