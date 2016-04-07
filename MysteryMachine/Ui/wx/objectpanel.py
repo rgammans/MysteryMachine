@@ -80,27 +80,27 @@ class ObjectPanel(wx.PyPanel):
 
     def _syncUi(self):
         current = self.obj
-        done = []
+        done = set()
         for base_panel in self.GetChildren():
             if not isinstance(base_panel,_object_section): continue
             panel_obj = base_panel.get_object()
-            
+
             if current is not panel_obj:
                 #What exaclty ? Hmm.
                 #This mean we're out of touch with the parent seq.
                 #And we need to rewrite the sequence from here down.
                 raise RuntimeError("NYI: Parent heirachy change detected")
             else:
-                done_in_current =  [ ]
+                done_in_current =  set()
                 for attrib_panel in base_panel.GetChildren():
                     if not isinstance(attrib_panel,_attribute_section): continue
                     attribute = attrib_panel.attribute
                     #If the attribute has been removed or overridden remove the panel.
                     if (attribute.name not in current) or (attribute.name in done):
                         base_panel.remove(attrib_panel)
-                    else: done_in_current += [ attribute.name ]
+                    else: done_in_current.add( attribute.name )
                 #Add panels for new attributes..
-                done += done_in_current
+                done.update( done_in_current)
                 for attrib_obj in current:
                     if attrib_obj.name in done: continue
                     base_panel.add(_attribute_section(base_panel,-1,attrib_obj,self.obj))
@@ -141,7 +141,6 @@ class _object_section(wx.PyPanel):
             #Skip if in ignore list..
             if attr.name in overridden_list: continue 
             self.add(_attribute_section(self,-1,attr,top_object))
-            
 
 
     def add(self,panel):
@@ -174,30 +173,51 @@ class _attribute_section(wx.PyPanel):
         self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
         self.attribute = attribute
         self.top = top_object
-        at_top = not self.attribute.is_shadow()
+        self.at_top = parent.obj is top_object
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         label = wx.StaticText(self,-1,label = self.attribute.name)
         headingsizer = wx.BoxSizer(wx.HORIZONTAL)
         headingsizer.Add(label)
-        headingsizer.Add(wx.Button(self,self.__class__.ID_MYBUTTON,label ="Delete" if at_top else "Override"))
-        wx.EVT_BUTTON(self, self.__class__.ID_MYBUTTON, self.onDelete if at_top else self.onOverride)
+        self.button = wx.Button(self,self.__class__.ID_MYBUTTON,label ="Delete" if self.at_top else "Override")
+        headingsizer.Add(self.button)
+        wx.EVT_BUTTON(self, self.__class__.ID_MYBUTTON, self.eventfn)
+        self.mode  = self.onDelete if self.at_top else self.onOverride
         sizer.Add(headingsizer)
         self.widget=GetWidgetFor(self.attribute,parent = self)
-        self.widget.Enable(at_top)
+        self.widget.Enable(self.at_top)
         self.widget.Layout()
         sizer.Add(self.widget,0,wx.EXPAND)
+
+
+    def eventfn(self,evt):
+        ##We modify the node, so lets get the update target
+        # independently and keep it out of the way in
+        # case of multiupdates.
+        panel_to_refresh = self.GetParent().GetParent()
+        if self.mode:
+            self.mode(evt)
+        else:
+            #logger.warning("button action not defined")
+            pass
+        panel_to_refresh.TransferDataToWindow()
 
     def onDelete(self,evt):
         print "on-delete"
         name = self.attribute.name
         owner =self.attribute.get_ancestor()
         del owner[name]
-        self.GetParent().GetParent().TransferDataToWindow()
-
 
     def onOverride(self,evt):
         print "on-overrride"
         name = self.attribute.name
         self.top[name] = self.attribute
-        self.GetParent().GetParent().TransferDataToWindow()
+
+    def TransferDataToWindow(self,):
+        super(_attribute_section,self).TransferDataToWindow()
+        self.mode  = self.onDelete if self.at_top else self.onOverride
+        self.button.SetLabel("Delete" if self.at_top else "Override")
+
+
+
+
