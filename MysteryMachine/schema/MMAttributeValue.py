@@ -308,7 +308,7 @@ class MMAttributeValue (SchemaCommon ):
 
   def __hash__(self):
      #FIXME: Identical valued but distict obj return the same hash
-     return hash(["MMAttributeVal" , self.get_type() , self.get_parts()])
+     return hash(("MMAttributeVal" , self.get_type() , tuple(sorted(self.get_parts().items())),{}),)
 
 
 class MMAttributeValue_Raw(MMAttributeValue):
