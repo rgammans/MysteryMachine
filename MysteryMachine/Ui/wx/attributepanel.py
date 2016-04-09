@@ -26,16 +26,13 @@ import wx
 from MysteryMachine.schema.MMAttribute import MMAttribute
 from MysteryMachine.schema.MMSystem import MMSystem
 
+from MysteryMachine.Ui.wx import event_handler
+import logging
+
 from attribute_controls import *
 
-Ui_Id = 2000
-def NewUI_ID():
-  global Ui_Id
-  Ui_Id += 1
-  return Ui_Id 
-
-ID_LABEL        = NewUI_ID()
-ID_CONTENT        = NewUI_ID()
+ID_LABEL        = wx.NewId()
+ID_CONTENT        = wx.NewId()
 
 class AttributePanel(wx.Panel):
     def __init__(self,parent,attribute):
@@ -62,5 +59,6 @@ class AttributePanel(wx.Panel):
     def getPanelName(self):
         return repr(self.attribute)
 
+    @event_handler()
     def onFocusLostFromContent(self,evt):
         self.attribute.set_value(self.content.GetValue())

@@ -30,6 +30,8 @@ import MysteryMachine
 from MysteryMachine.schema.MMSystem import MMSystem
 from MysteryMachine.schema.MMAttribute import MMAttribute
 from MysteryMachine.schema.MMObject import MMObject
+from MysteryMachine.Ui.wx import event_handler
+import logging
 
 import functools
 
@@ -130,9 +132,11 @@ class MMTreeView(wx.TreeCtrl):
         wx.EVT_TREE_ITEM_EXPANDING(self ,self.id,  self.onExpanding )
         wx.EVT_WINDOW_DESTROY(self,self.onDestroy)
 
+    @event_handler()
     def onDestroy(self,event):
         self.notifyclosure.unregister_all()
  
+    @event_handler()
     def onExpanding(self,evt):
         itemid = evt.GetItem()
         localroot = self.GetItemData(itemid).GetData()

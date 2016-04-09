@@ -34,22 +34,18 @@ from MysteryMachine.schema.MMSystem import MMSystem
 from dialogs.objectpicker import ObjectPicker, EVT_OBJECTPICKED_EVENT
 from dialogs.newattribute import NewAttributeDialog
 
+from MysteryMachine.Ui.wx import event_handler
+import logging
+
 import widgets
 import functools
 
-Ui_Id = 2000
-def NewUI_ID():
-  global Ui_Id
-  Ui_Id += 1
-  return Ui_Id 
-
-
-ID_TREECTRL    = NewUI_ID()
-ID_MENU_RENAME = NewUI_ID()
-ID_MENU_NEW_CAT= NewUI_ID()
-ID_MENU_NEW_OBJ= NewUI_ID()
-ID_MENU_NEW_ATTR=NewUI_ID()
-ID_MENU_CHANGE_PARENT= NewUI_ID()
+ID_TREECTRL    = wx.NewId()
+ID_MENU_RENAME = wx.NewId()
+ID_MENU_NEW_CAT= wx.NewId()
+ID_MENU_NEW_OBJ= wx.NewId()
+ID_MENU_NEW_ATTR=wx.NewId()
+ID_MENU_CHANGE_PARENT= wx.NewId()
 
 
 def object_iter(root,iterator):
@@ -116,6 +112,7 @@ class TreePanel(wx.Panel):
     def getPanelName(self):
         return u"System Explorer"
 
+    @event_handler()
     def onRenameItem(self,evt):
         caption = "Change name of "+repr(self.menu_on_item)
         title   = ""
@@ -132,6 +129,7 @@ class TreePanel(wx.Panel):
                     
         self.tree.SetItemText(self.menu_on_itemid,_node_name(self.menu_on_item))
 
+    @event_handler()
     def onNewCategory(self,evt):
         newstr = wx.GetTextFromUser("Category names are limited to numbers and lower case letters",caption = "Reference name for category")
         if newstr:
@@ -140,17 +138,21 @@ class TreePanel(wx.Panel):
             except Exception , e:
                 wx.MessageBox(str(e))
         
+    @event_handler()
     def onNewObject(self,evt):
         self.system.NewObject(repr(self.menu_on_item))
         
+    @event_handler()
     def onNewAttribute(self,evt):
         dlg = NewAttributeDialog(self,-1,owner = self.menu_on_item ,title ="Enter initial value")
         dlg.Show()
 
+    @event_handler()
     def onItemActivated(self,evt):
         node = self.tree.GetItemData(evt.GetItem()).GetData()
         self.GetTopLevelParent().NewSchemaView(node) 
 
+    @event_handler()
     def onRightClick(self,evt):
         itemid = evt.GetItem()
         localroot = self.tree.GetItemData(itemid).GetData()
@@ -159,12 +161,14 @@ class TreePanel(wx.Panel):
         print "onRightClick on %r " % localroot
         self.PopupMenu(_popupmenus[localroot.__class__.__name__])
 
+    @event_handler()
     def onChangeParent(self,evt):
         print "change parent"
         dlg = ObjectPicker(self,-1,title ="Choose new parent",system = self.system,
                             action = functools.partial(self.onNewParentChosen,self.menu_on_item))
         dlg.Show()
 
+    @event_handler()
     def onNewParentChosen(self,parent,item):
         print "chosen " + str(item)
         parent.set_parent(item)

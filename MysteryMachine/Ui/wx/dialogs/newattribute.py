@@ -34,13 +34,6 @@ from MysteryMachine.schema.MMAttributeValue import GetAttributeTypeList
 from MysteryMachine.Ui.wx.attribute_controls import GetWidgetFor
 
 
-Ui_Id = wx.ID_HIGHEST
-def NewUI_ID():
-  global Ui_Id
-  Ui_Id += 1
-  return Ui_Id 
-
-
 def _apply_default(name,default,kwargs):
     if name not in kwargs: kwargs[name] = default
 
@@ -56,7 +49,7 @@ class NewAttributeDialog(wx.Dialog):
     This ask the user the type of the atribute and presents and
     appropriate widget for the user to enter the data into.
     """
-    ID_CHOICE = NewUI_ID()
+    ID_CHOICE = wx.NewId()
 
     def __init__(self,parent,id,*args,**kwargs):
         _apply_default('size',(400,400),kwargs)

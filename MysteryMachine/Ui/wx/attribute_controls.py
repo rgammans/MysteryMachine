@@ -22,16 +22,12 @@ import wx
 import functools
 
 from widgets import  NotifyClosure
+from MysteryMachine.Ui.wx import event_handler
+import logging
 
 _Factory = {}
 
-Ui_Id = wx.ID_HIGHEST
-def NewUI_ID():
-  global Ui_Id
-  Ui_Id += 1
-  return Ui_Id 
-
-ID_LABEL        = NewUI_ID()
+ID_LABEL = wx.NewId()
 
 
 def _pop(seq):
@@ -64,11 +60,10 @@ class MysterySchemaValidatorBase(wx.PyValidator):
     def __init__(self,*args,**kwargs):
         super(MysterySchemaValidatorBase,self).__init__(*args)
         self.attribute = kwargs.get('attribute')
-        if self.attribute is not None: self.attribute.register_notify(self.notifychange)        
 
+        self.notify = NotifyClosure(self,self.notifychange)
+        self.notify.register(self.attribute)
 
-    def __del__(self):
-        if self.attribute is not None: self.attribute.unregister_notify(self.notifychange)        
 
     def notifychange(self,attribute):
         assert attribute == self.attribute,"Misrouted notify"
@@ -86,10 +81,12 @@ class BasicMMAttributeValidator(MysterySchemaValidatorBase):
     def __init__(self,*args,**kwargs):
         super(BasicMMAttributeValidator,self).__init__(*args,**kwargs)
 
+    @event_handler(level = logging.ERROR, debug_tb  =True)
     def TransferToWindow(self):
         self.GetWindow().SetValue(unicode(self.attribute))
         return True 
 
+    @event_handler(level = logging.ERROR, debug_tb  =True)    
     def TransferFromWindow(self):
         if self.GetWindow().IsModified():
             self.attribute.set_value(self.GetWindow().GetValue())
@@ -98,7 +95,7 @@ class BasicMMAttributeValidator(MysterySchemaValidatorBase):
 def _writeback(ctrl,event): 
     ctrl.GetValidator().TransferFromWindow()
 
-ID_ATTRTEXTCTRL = NewUI_ID()
+ID_ATTRTEXTCTRL = wx.NewId()
 def simple_wx_widget(parent,attribute):
 
         # XXX
@@ -130,8 +127,8 @@ _Factory["simple_utf8"] = simple_wx_widget
 
 
 class _listitem_wx_widget(wx.PyPanel):
-    ID_DELETE = NewUI_ID()
-    ID_INSERT = NewUI_ID()
+    ID_DELETE = wx.NewId()
+    ID_INSERT = wx.NewId()
     def __init__(self,parent,item,index):
         super(_listitem_wx_widget,self).__init__(parent,-1)
         self.item = item
@@ -152,10 +149,12 @@ class _listitem_wx_widget(wx.PyPanel):
         wx.EVT_BUTTON(self,self.__class__.ID_DELETE,self.onDelete)
         wx.EVT_BUTTON(self,self.__class__.ID_INSERT,self.onInsert)
 
+    @event_handler()
     def onDelete(self,evt):
         attr = self.item.get_ancestor()
         del attr[self.item.name]
 
+    @event_handler()
     def onInsert(self,evt):
        from dialogs.newattribute import NewAttributeDialog
        dlg = NewAttributeDialog(self,-1,owner = self.item.get_ancestor() ,title ="Enter initial value",
@@ -172,7 +171,7 @@ class _listitem_wx_widget(wx.PyPanel):
         self.index_label.SetLabel(str(idx)) 
 
 class _list_wx_widget(wx.PyPanel):
-    ID_APPENDBUTTON = NewUI_ID()
+    ID_APPENDBUTTON = wx.NewId()
     def __init__(self,parent,attribute):
         super(_list_wx_widget,self).__init__(parent,-1)
         self.attribute = attribute
@@ -231,6 +230,7 @@ class _list_wx_widget(wx.PyPanel):
         self.GetTopLevelParent().Layout()
 
  
+    @event_handler()
     def onAppend(self,evt):
        from dialogs.newattribute import NewAttributeDialog
        dlg = NewAttributeDialog(self,-1,owner = self.attribute ,title ="Enter initial value",
@@ -244,20 +244,23 @@ class MMRefAttributeValidator(MysterySchemaValidatorBase):
     def __init__(self,*args,**kwargs):
         super(MMRefAttributeValidator,self).__init__(*args,**kwargs)
 
+    @event_handler(level = logging.ERROR, debug_tb  =True)
     def TransferToWindow(self):
         self.GetWindow().SetLabel(u"Reference to " + unicode(self.attribute.getSelf()))
         self.GetWindow().GetParent().Layout()
         return True 
 
+    @event_handler(level = logging.ERROR, debug_tb  =True)
     def UpdateValue(self,new_value):
         self.attribute.set_value(new_value)
         #Update display.
         self.TransferToWindow()
  
 class _ref_wx_widget(wx.PyPanel):
-    ID_OPENBUTTON   = NewUI_ID()
-    ID_CHANGEBUTTON = NewUI_ID()
-    ID_EXPANDBUTTON = NewUI_ID()
+    ID_OPENBUTTON   = wx.NewId()
+    ID_CHANGEBUTTON = wx.NewId()
+    ID_EXPANDBUTTON = wx.NewId()
+
     def __init__(self,parent,attribute):
         super(_ref_wx_widget,self).__init__(parent,wx.ID_ANY)
         self.attribute = attribute  
@@ -298,6 +301,7 @@ class _ref_wx_widget(wx.PyPanel):
             self.sizer.Add(self.exp_panel)
         else: print "error: %s is not what i expected"%myframe
 
+    @event_handler()
     def onExpandTarget(self,evt):  
  
         if self.expandbutton.GetLabel() == "Expand":
@@ -310,12 +314,14 @@ class _ref_wx_widget(wx.PyPanel):
 
         self.GetTopLevelParent().Layout()
      
+    @event_handler()
     def onChangeTarget(self,evt): 
         from dialogs.objectpicker import ObjectPicker
         dlg = ObjectPicker(self,-1,title ="Chose new target",system = self.attribute.get_root(),
                             action = self.label.GetValidator().UpdateValue)
         dlg.Show()
 
+    @event_handler()
     def onOpenTarget(self,evt):
         frame = self.GetTopLevelParent()
         frame.NewSchemaView(self.attribute.getSelf())
@@ -327,6 +333,7 @@ class BidiAnchorValidator(MysterySchemaValidatorBase):
     def __init__(self,*args,**kwargs):
         super(BidiAnchorValidator,self).__init__(*args,**kwargs)
 
+    @event_handler(level = logging.ERROR, debug_tb  =True)
     def TransferToWindow(self):
         anchor = self.attribute.get_anchor()
         if anchor is not None:
@@ -334,6 +341,7 @@ class BidiAnchorValidator(MysterySchemaValidatorBase):
             self.GetWindow().Layout()
         return True
    
+    @event_handler(level = logging.ERROR, debug_tb  =True)
     def TransferFromWindow(self):
         name = self.GetWindow().GetStringSelection()
         node = self.attribute
@@ -348,18 +356,21 @@ class BidiAnchorValidator(MysterySchemaValidatorBase):
         self.TransferToWindow()
 
 class BidiDestValidator(MMRefAttributeValidator):
+
+    @event_handler(level = logging.ERROR, debug_tb  =True)
     def TransferToWindow(self):
         super(BidiDestValidator,self).TransferToWindow()
         #Disable the anchor movement of the reference is set.
         self.GetWindow().GetParent().anchors.Enable(self.attribute.get_object() is None)
 
+    @event_handler(level = logging.ERROR, debug_tb  =True)
     def UpdateValue(self,new_value):
         import MysteryMachine.schema.MMDLinkValue as dlk
         self.attribute.set_value( dlk.ConnectTo(new_value))
         self.TransferToWindow()
  
 class _bidi_wx_widget(_ref_wx_widget):
-    ID_ANCHORCHOICE = NewUI_ID()
+    ID_ANCHORCHOICE = wx.NewId()
     def __init__(self,parent,attribute):
         super(_bidi_wx_widget,self).__init__(parent,attribute)
         #sizer = self.GetSizer()
