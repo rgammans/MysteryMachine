@@ -60,6 +60,7 @@ class ObjectPanel(wx.PyPanel):
         self.title.SetLabel(repr(self.obj) +" - \"" +unicode(self.obj)+"\"") 
         self.sizer.Add(self.title,0)
 
+        self.attr_widgets_map = { }
         #Walk down the inheritance hierachy Finding each object.
         current = self.obj
         done = []
@@ -67,7 +68,8 @@ class ObjectPanel(wx.PyPanel):
             print repr(current)
             panel, included  = self._buildObjectPanel(current,done,self.obj)
             self.sizer.Add(panel,0,wx.EXPAND)
-            done += included
+            done += included.values()
+            self.attr_widgets_map.update(included)
             #Hide empty panel - but leave them to simply our sync algorithm
             if not included:  panel.Show(False)
             current = current.get_parent()

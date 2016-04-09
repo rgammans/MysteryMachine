@@ -83,7 +83,7 @@ class BasicMMAttributeValidator(MysterySchemaValidatorBase):
 
     @event_handler(level = logging.ERROR, debug_tb  =True)
     def TransferToWindow(self):
-        self.GetWindow().SetValue(unicode(self.attribute))
+        self.GetWindow().SetValue(unicode(self.attribute.get_raw()))
         return True 
 
     @event_handler(level = logging.ERROR, debug_tb  =True)    
