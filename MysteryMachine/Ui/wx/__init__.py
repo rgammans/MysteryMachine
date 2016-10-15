@@ -455,6 +455,10 @@ class MMWxApp(wx.PySimpleApp):
     def Run(self):
        with MysteryMachine.StartApp(self.args) as ctx:
             self.ctx = ctx
+            if self.ctx.args:
+                sysname = self.ctx.args.pop()
+                sys = ctx.OpenUri(sysname)
+                self.OpenFrame(sys)
             self.MainLoop()
        self.ctx = None
 
