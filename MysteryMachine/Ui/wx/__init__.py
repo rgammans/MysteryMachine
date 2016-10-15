@@ -164,7 +164,7 @@ class MainWindow(wx.Frame):
     AboutInfo.SetWebSite(WEBSITE)
 
     def __init__(self,parent,id,title,size):
-        wx.Frame.__init__(self,parent,id,title)
+        wx.Frame.__init__(self,parent,id,title,size=size)
         self.app = None
         #Create menu.
         self.menu=wx.MenuBar()
@@ -213,7 +213,7 @@ class MainWindow(wx.Frame):
 
         self.helpMenu.Append(ID_ABOUT,"&About Mystery Machine")
         wx.EVT_MENU(self, ID_ABOUT, self.OnAboutMM)        
-
+        self.split = wx.SplitterWindow(self,)
 
         self.SetMenuBar(self.menu)
         self.status=wx.StatusBar(self)
@@ -263,7 +263,7 @@ class MainWindow(wx.Frame):
     def AssignSystem(self,sys):
         import systree
         if sys:
-            parent = self
+            parent = self.split
             self.nb = wx.aui.AuiNotebook(parent)
             panel = systree.TreePanel(parent,sys) 
             self.SetTitle("MysteryMachine - %s" % (sys  or ""))
@@ -272,17 +272,10 @@ class MainWindow(wx.Frame):
 
             self.sizer =  wx.BoxSizer(wx.VERTICAL)
             self.sizer.Add(self.nb,1,wx.EXPAND)    
-            self.SetSizer(self.sizer)
-
-            self.logwin = wx.SashWindow(self,-1)
-            self.sizer.Add(self.logwin)
-            self.logwin.SetSashVisible(wx.SASH_TOP,True)
-            #self.logwin.SetSizer(wx.BoxSizer(wx.VERTICAL))
-            self.logpanel = LogPanel(self.logwin)
-            self.logwin.Layout()
-
-
+            self.logpanel = LogPanel(parent)
+            self.split.SplitHorizontally(self.nb, self.logpanel,-50)
             self.Layout()
+
         else:
             self.sizer.Remove(self.nb)
             for page_nr in range(self.nb.GetPageCount()):
@@ -408,7 +401,7 @@ class MMWxApp(wx.App):
         self.SetVendorName("Roger Gammans")
         self.SetAppName("MysteryMachine")
 
-        win=MainWindow(None  ,-1,"MysteryMachine", size=(400,200))
+        win=MainWindow(None  ,-1,"MysteryMachine", size=(500,600))
         self.SetTopWindow(win)
         win.SetApp(self)
         win.Show()

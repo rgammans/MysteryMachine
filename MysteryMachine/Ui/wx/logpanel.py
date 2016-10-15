@@ -61,11 +61,10 @@ class LogPanel(wx.PyPanel):
         log_message_ctrl = wx.TextCtrl(self,wx.NewId(), style = wx.TE_MULTILINE )
         self.logger  =wx.LogTextCtrl(log_message_ctrl)
 
-        box_sizer.Add( log_message_ctrl)
+        box_sizer.Add( log_message_ctrl,1,wx.EXPAND)
         self.SetSizer(box_sizer)
         self.Fit()
 
-        #self.Bind(wx.EVT_CLOSE, self._on_close)
 
 
 
