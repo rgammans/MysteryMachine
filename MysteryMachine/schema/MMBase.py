@@ -199,7 +199,7 @@ class MMBase(SchemaCommon):
                     to_remove += [ fn ]
                 #warn about any exceptions from notify.
                 except Exception, e: 
-                    self.logger.warn(e)
+                    self.logger.warn(e,exc_info = 1)
         for entry in to_remove:
             self.notify.remove(entry)
                 

@@ -34,15 +34,15 @@ class loggingHandler(logging.Handler):
     def emit(self,msg):
         print msg,msg.levelname,msg.levelno
         if msg.levelno <= logging.DEBUG:
-            wx.LogDebug(str(msg))
+            wx.LogDebug(msg.getMessage())
         elif msg.levelno <= logging.INFO:
-            wx.LogInfo(str(msg))
+            wx.LogInfo(msg.getMessage())
         elif msg.levelno <= logging.WARNING:
-            wx.LogWarning(str(msg))
+            wx.LogWarning(msg.getMessage())
         elif msg.levelno <= logging.ERROR:
-            wx.LogWarning(str(msg))
+            wx.LogWarning(msg.getMessage())
         else: 
-            wx.LogError(str(msg))
+            wx.LogError(msg.getMessage())
             wx.MessageBox("Critical Error",str(msg),wx.OK | wx.ICON_ERROR)
 
 
@@ -58,7 +58,7 @@ class LogPanel(wx.PyPanel):
 
     def buildUi(self):
         box_sizer = wx.BoxSizer(orient=wx.VERTICAL)
-        log_message_ctrl = wx.TextCtrl(self,wx.NewId(), style = wx.TE_MULTILINE )
+        log_message_ctrl = wx.TextCtrl(self,wx.NewId(), style = wx.TE_MULTILINE | wx.SUNKEN_BORDER | wx.TE_READONLY)
         self.logger  =wx.LogTextCtrl(log_message_ctrl)
 
         box_sizer.Add( log_message_ctrl,1,wx.EXPAND)

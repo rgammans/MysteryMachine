@@ -117,6 +117,8 @@ class MMTreeView(wx.TreeCtrl):
     """Treectrl widget show a complete MMSystem"""
     def __init__(self,parent,id,*args,**kwargs):
         self.system = _get_argument('system',kwargs)
+        self.logger = logging.getLogger("MysteryMachine.Ui.wx.widgets.TreeView")
+
 
         super(MMTreeView,self).__init__(parent,id,**kwargs)
         self.id = id
@@ -166,7 +168,14 @@ class MMTreeView(wx.TreeCtrl):
         else:
             iterator = localroot.__iter__()
 
-        schema_nodes = sorted(iterator,key=_node_name)
+        try:
+            schema_nodes = sorted(iterator,key=_node_name)
+        except TypeError as e:
+            ##Most likely casue of a type erros is a non-iterable node.
+            # log this at the debug lvel but return.
+            self.logger.debug(e,exc_info =1)
+            return
+
  
         ##Walk both lists backward until they are empty,
         # each list pass should remove an elemnt from one or both lists
