@@ -125,6 +125,7 @@ import logging
 import weakref
 import itertools
 
+logger    = logging.getLogger("MysteryMachine.schema.MMDLinkValue")
 _value_typename = "bidilink"
 
 class _member_guard:
@@ -202,7 +203,7 @@ def _measure_path_diff(frm,to):
         if f is None: break
         if t is None: count += 1
 
-    self.logger.debug(" %r -> %r = len %s",frm,to,count)
+    logger.debug(" %r -> %r = len %s",frm,to,count)
     return count
 
 
@@ -248,7 +249,7 @@ def ConnectTo(attribute):
     You use this by assigning an existing anchop point to the result
     from this function.
     """
-    self.logger.debug( "Cti init>?")
+    logger.debug( "Cti init>?")
     if not isinstance(attribute,MMAttribute):
         raise TypeError("Can only ConnectTo an MMAttribute")
     if attribute.get_value().get_type() !=  _value_typename:
@@ -261,7 +262,7 @@ def ConnectTo(attribute):
 
     foreign   =  attrname[len(anchorname)+1:]
 
-    self.logger.debug( "CTi: %s , %s, %s",anchorname, attrname,foreign)
+    logger.debug( "CTi: %s , %s, %s",anchorname, attrname,foreign)
 
     return MMDLinkValue(target = attribute.get_anchor() , 
                         foreign=foreign,
