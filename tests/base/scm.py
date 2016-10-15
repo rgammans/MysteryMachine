@@ -37,6 +37,11 @@ def getfiles_and_changelog(store):
             files = list( cl[0].manifest() )
         return cl, files
 
+def DeleteFile(store,name,):
+     if store.supports_txn: store.start_store_transaction()
+     f = os.unlink(os.path.join(store.get_path(),name))
+     store.Remove_file(name)
+     if store.supports_txn: store.commit_store_transaction()
 
 def WriteFile(store,name,content):
      if store.supports_txn: store.start_store_transaction()
@@ -109,6 +114,27 @@ class scmTests(object):
             os.unlink(os.path.join(self.store.get_path(),"test2"))
         except Exception: pass
         self.doCleanTst()
+
+    def testSCM_remove_add_the_same_file(self):
+        """ This tests for a delete/recreate error where teh csm is told
+        to remove the file but not add it back again"""
+        WriteFile(self.store,"test1","Test data")
+        self.store.commit("commit msg")
+        #Check size of changelog + files contained.
+        clog  ,files = getfiles_and_changelog(self.store)
+        self.assertEquals(len(clog),1)
+        self.assertEquals(len(files),1)
+
+        DeleteFile(self.store,"test1",)
+        #Use different data as some scm fail if to commit if not changes are in the
+        # source files
+        WriteFile(self.store,"test1","Test data1")
+        self.store.commit("commit msg")
+        clog  ,files = getfiles_and_changelog(self.store)
+        self.assertEquals(len(clog),2)
+        self.assertEquals(len(files),1)
+
+
 
     def doCleanTst(self):
         self.store.lock()

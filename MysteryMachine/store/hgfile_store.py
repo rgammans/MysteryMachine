@@ -66,8 +66,8 @@ class HgStoreMixin(object):
             self._Add_file(filename)
 
     def _Add_file(self,filename):
-        if filename not in (x[4] for x in self.repo.manifest()):
-            self.repo.add( files = [ os.path.join(self.path,filename)  ]) 
+        self.repo.add( files = [ os.path.join(self.path,filename)  ]) 
+
     def Remove_file(self,filename):
         if self.supports_txn:
             self.filechanges.append(("r",filename,))
