@@ -107,7 +107,6 @@ class OpenUriDialog(wx.Dialog):
 
     @event_handler(level = logging.ERROR)
     def onDoLoad(self,evt):
-        print "inDoload"
         uri = self.combobox.GetValue() + ":" + self.textctrl.GetValue()
         sys = self.action(uri)
         wx.GetApp().OpenFrame(sys)
@@ -116,7 +115,6 @@ class OpenUriDialog(wx.Dialog):
 
     @event_handler()
     def onCancel(self,evt):
-        print "o-uri cancelled"
         self.Close()
         self.Destroy()
 
@@ -230,7 +228,6 @@ class MainWindow(wx.Frame):
 
 
     def OnNew(self,event):
-        print "onnew"
         dialog = OpenUriDialog(None , -1 , title = "Chose Uri to store new sytem" , caption = "Enter scheme and Uri" , action = _create_new)
         #Set some default values here so users don't need to worry.
         dialog.combobox.SetValue("hgafile")
@@ -240,13 +237,11 @@ class MainWindow(wx.Frame):
 
     @event_handler()
     def OnAboutMM(self,event):
-        print self.__class__.AboutInfo
         wx.AboutBox(self.__class__.AboutInfo)
 
     @event_handler()
     def OnOpenFile(self,event):
         packfile = wx.FileSelector("Open a MysteryMachine Packfile",wildcard="*.mmpack")
-        print packfile
         sys = self.app.ctx.OpenPackFile(packfile)
         self.app.OpenFrame(sys)
 
@@ -372,7 +367,7 @@ class MainWindow(wx.Frame):
 
     @event_handler()
     def OnRevert(self,event):
-        print "onrevertr"
+        print "onrevert"
         pass
     
     @event_handler(level = logging.ERROR)
@@ -385,7 +380,6 @@ class MainWindow(wx.Frame):
 
     @event_handler(level = logging.ERROR)
     def OnClose(self,event):
-        print "onclose"
         #TODO: Check if system is saved.
         self.app.CloseFrame(self)
 
@@ -403,13 +397,14 @@ class MainWindow(wx.Frame):
         self.app = app
 
 
-class MMWxApp(wx.PySimpleApp):
-    def __init__(self,options  = []):
-        wx.PySimpleApp.__init__(self)
+class MMWxApp(wx.App):
 
-        self.args = options
+    def __init__(self,**kwargs):
+        self.args = kwargs.pop('options',[])
         self.ctx  = None
+        super( MMWxApp ,self).__init__(**kwargs)
 
+    def OnInit(self,):
         self.SetVendorName("Roger Gammans")
         self.SetAppName("MysteryMachine")
 
@@ -420,7 +415,8 @@ class MMWxApp(wx.PySimpleApp):
 
         self.frames  =  { None: win }
         self.systems =  { win: None }
-    
+        return True
+
     def OpenFrame(self,system):
         """Assigns a system to a Frame.
 
@@ -455,7 +451,7 @@ class MMWxApp(wx.PySimpleApp):
     def Run(self):
        with MysteryMachine.StartApp(self.args) as ctx:
             self.ctx = ctx
-            if self.ctx.args:
+            while self.ctx.args:
                 sysname = self.ctx.args.pop()
                 sys = ctx.OpenUri(sysname)
                 self.OpenFrame(sys)
@@ -468,7 +464,7 @@ def main():
     from MysteryMachine.Main import process_args 
 
     options = process_args()
-    ui = MMWxApp(options)
+    ui = MMWxApp(options = options)
 
     ui.Run()
 
