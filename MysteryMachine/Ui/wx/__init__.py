@@ -137,11 +137,8 @@ class ScrolledTab(scrolled.ScrolledPanel):
 
     def Add(self,panel):
         self.innerpanel =panel
-        self.GetSizer().Add(panel,1,wx.EXPAND)
-        self.innerpanel.FitInside()
-        self.innerpanel.Show(True)
+        self.sizer.Add(panel,1,wx.EXPAND)
         self.Layout()
-        self.SetAutoLayout(True)
         self.SetupScrolling()
 
     def getPanelName(self):    
@@ -225,6 +222,7 @@ class MainWindow(wx.Frame):
         self.panel = None
         self.Layout()
 
+        print self.Size
 
 
     def OnNew(self,event):
@@ -265,13 +263,10 @@ class MainWindow(wx.Frame):
         if sys:
             parent = self.split
             self.nb = wx.aui.AuiNotebook(parent)
-            panel = systree.TreePanel(parent,sys) 
+            panel = systree.TreePanel(self.nb,sys) 
             self.SetTitle("MysteryMachine - %s" % (sys  or ""))
-        
             self.AddPanel(panel)
 
-            self.sizer =  wx.BoxSizer(wx.VERTICAL)
-            self.sizer.Add(self.nb,1,wx.EXPAND)    
             self.logpanel = LogPanel(parent)
             self.split.SplitHorizontally(self.nb, self.logpanel,-50)
             self.Layout()
@@ -313,6 +308,7 @@ class MainWindow(wx.Frame):
 
     def AddPanel(self,panel):
         self.nb.AddPage(panel,panel.getPanelName())
+        panel.Layout()
 
 
     def GetNewNodePanel(self,parent,schema_node):
@@ -343,7 +339,8 @@ class MainWindow(wx.Frame):
         schema_node must be a node in a MysteryMachine.schema.
         """
         
-        panel = ScrolledTab(self,-1)
+        panel = ScrolledTab(self.nb,-1)
+
         innerpanel = self.GetNewNodePanel(panel,schema_node)
         if innerpanel is None:
              panel.Destroy()

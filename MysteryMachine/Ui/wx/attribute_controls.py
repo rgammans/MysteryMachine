@@ -127,7 +127,7 @@ _Factory["simple"]      = simple_wx_widget
 _Factory["simple_utf8"] = simple_wx_widget
 
 
-class _listitem_wx_widget(wx.PyPanel):
+class _listitem_wx_widget(wx.Panel):
     ID_DELETE = wx.NewId()
     ID_INSERT = wx.NewId()
     def __init__(self,parent,item,index):
@@ -171,7 +171,7 @@ class _listitem_wx_widget(wx.PyPanel):
     def set_index(self,idx):
         self.index_label.SetLabel(str(idx)) 
 
-class _list_wx_widget(wx.PyPanel):
+class _list_wx_widget(wx.Panel):
     ID_APPENDBUTTON = wx.NewId()
     def __init__(self,parent,attribute):
         super(_list_wx_widget,self).__init__(parent,-1)
@@ -257,7 +257,7 @@ class MMRefAttributeValidator(MysterySchemaValidatorBase):
         #Update display.
         self.TransferToWindow()
  
-class _ref_wx_widget(wx.PyPanel):
+class _ref_wx_widget(wx.Panel):
     ID_OPENBUTTON   = wx.NewId()
     ID_CHANGEBUTTON = wx.NewId()
     ID_EXPANDBUTTON = wx.NewId()

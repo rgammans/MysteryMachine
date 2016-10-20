@@ -62,7 +62,7 @@ class ObjectPanel(wx.PyPanel):
 
         #Walk down the inheritance hierachy Finding each object.
         current = self.obj
-        done = []
+        done = [ ]
         while current is not None:
             panel, included = self._buildObjectPanel(current,done,self.obj)
             self.sizer.Add(panel,0,wx.EXPAND)
@@ -70,7 +70,7 @@ class ObjectPanel(wx.PyPanel):
             #Hide empty panel - but leave them to simply our sync algorithm
             if not included:  panel.Show(False)
             current = current.get_parent()
-        
+
         self.notify = NotifyClosure(self,self.node_changed)
         self.notify.register(self.obj)
 
@@ -116,7 +116,7 @@ class ObjectPanel(wx.PyPanel):
         section = _object_section(self,obj,overridden_list,top_object)
         return section, section.get_included()
 
-class _object_section(wx.PyPanel):
+class _object_section(wx.Panel):
     """This is a Ui Sub-panel , of ObjectPanel that only shows the attribute set directlt
     on the object it reflects.
     If obj and tob_obj are no thte same it is in a read-only mode.
@@ -133,7 +133,7 @@ class _object_section(wx.PyPanel):
         self.obj = obj
         super(_object_section,self).__init__(parent,-1)
         self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
-        box = wx.StaticBox(self,-1, label = unicode(obj))
+        box = wx.StaticBox(self, -1, label = unicode(obj))
         self.sizer = wx.StaticBoxSizer(box,wx.VERTICAL)
         self.SetSizer(self.sizer)
         for attr in obj:
