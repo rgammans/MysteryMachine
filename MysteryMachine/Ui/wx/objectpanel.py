@@ -42,7 +42,7 @@ class ObjectPanel(wx.PyPanel):
         with a read/write sub-panel of attributes set at the top-level and readonly sub-panels of what is inherited"""
 
     def __init__(self,parent,obj):
-        super(ObjectPanel,self).__init__(parent,-1,wx.DefaultPosition,wx.Size(0,0))
+        super(ObjectPanel,self).__init__(parent,-1,wx.DefaultPosition,)
         self.obj = obj
         self.buildUi()
         self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
@@ -64,8 +64,7 @@ class ObjectPanel(wx.PyPanel):
         current = self.obj
         done = []
         while current is not None:
-            print repr(current)
-            panel, included  = self._buildObjectPanel(current,done,self.obj)
+            panel, included = self._buildObjectPanel(current,done,self.obj)
             self.sizer.Add(panel,0,wx.EXPAND)
             done += included
             #Hide empty panel - but leave them to simply our sync algorithm
