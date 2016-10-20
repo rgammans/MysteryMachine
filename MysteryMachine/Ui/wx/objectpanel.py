@@ -59,6 +59,7 @@ class ObjectPanel(wx.PyPanel):
         self.title = wx.StaticText(self,ID_LABEL)
         self.title.SetLabel(repr(self.obj) +" - \"" +unicode(self.obj)+"\"") 
         self.sizer.Add(self.title,0)
+        self.notify = NotifyClosure(self,self.node_changed)
 
         #Walk down the inheritance hierachy Finding each object.
         current = self.obj
@@ -71,8 +72,7 @@ class ObjectPanel(wx.PyPanel):
             if not included:  panel.Show(False)
             current = current.get_parent()
 
-        self.notify = NotifyClosure(self,self.node_changed)
-        self.notify.register(self.obj)
+
 
     def node_changed(self,node):
         self.TransferDataToWindow()
@@ -114,6 +114,7 @@ class ObjectPanel(wx.PyPanel):
 
     def _buildObjectPanel(self,obj,overridden_list,top_object):
         section = _object_section(self,obj,overridden_list,top_object)
+        self.notify.register(obj)
         return section, section.get_included()
 
 class _object_section(wx.Panel):
