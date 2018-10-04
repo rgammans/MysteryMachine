@@ -8,7 +8,7 @@ import logging
 
 class First(Extension):
 	def __init__(self):
-		self.logger = logger.getLogger("MysteryMachine.Extensions.First")
+		self.logger = logging.getLogger("MysteryMachine.Extensions.First")
 		Extension.__init__(self)
 
 	def activate(self):

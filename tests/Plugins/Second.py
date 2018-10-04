@@ -8,7 +8,7 @@ import logging
 
 class Second(Extension):
 	def __init__(self):
-		self.logger = logging.getLoggger("MysteryMachine.Extensions.Second")
+		self.logger = logging.getLogger("MysteryMachine.Extensions.Second")
 		Extension.__init__(self)
 
 	def activate(self):
