@@ -8,3 +8,4 @@
 ^dist/
 \.orig$
 \.old$
+\.tox/*
