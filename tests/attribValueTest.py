@@ -50,9 +50,10 @@ class ObjectProxy(MMObject):
         return self.name
     def get_root(self):
         return SystemProxy()
+
     def __eq__(self,other):
         #Fake - equals as required for this test.
-        return self.name
+        return self.name == other.name
 
 
 class SystemProxy(fakeParent): 

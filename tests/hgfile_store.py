@@ -58,18 +58,23 @@ class BasicStore(Base):
         f.close()
         self.Add_file(name)
 
+uniq_name = 1
 class hgstoreTests(scmTests, unittest.TestCase):
+    
     def setUp(self):
+        global uniq_name
+
         self.testpath = None
         self.ctx = StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])
         try:
             self.testpath = tempfile.mkdtemp("mysmachg")
         except Exception:
             pass
-        self.testtype = type("HgTestStore", (HgStoreMixin , BasicStore ), {'uriScheme':"hgbasic"} )
+        uniq_name += 1
+        self.testtype = type("HgTestStore", (HgStoreMixin , BasicStore ), {'uriScheme':"hgbasic"+str(uniq_name)} )
         #Ensure delte - will create again in a moment
         os.rmdir(self.testpath)
-        self.store= self.testtype("hgbasic:"+self.testpath,create = True)
+        self.store= self.testtype("hgbasic"+str(uniq_name)+":"+self.testpath,create = True)
         self.has_scm = True
   
     def tearDown(self):
