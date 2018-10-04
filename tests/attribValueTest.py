@@ -55,6 +55,8 @@ class ObjectProxy(MMObject):
         #Fake - equals as required for this test.
         return self.name == other.name
 
+    def __hash__(self,):
+        return hash(self.name)
 
 class SystemProxy(fakeParent): 
     """A slight more advanced mock system"""
