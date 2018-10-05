@@ -61,13 +61,9 @@ PY_MODULES  = [
                 #'pyparsing',
                ]
 
-#Mercurial doesn't install with easy_install. 
-EZ_PACKAGES   = ["docutils" , 
-#                 "mercurial" ,
-#                 "bpython" ,    # We add bpython back in later...
-                 "pyparsing>1.5" ,
-                 "python-hglib",
-                 "PyYaml"]
+##Read dependencies in from requirements.txt
+with open("requirements.txt") as f:
+    EZ_PACKAGES  = f.readlines()
 
 
 TESTSDIR = "tests"
@@ -185,21 +181,15 @@ def _do_test(path_prefix=[]):
     if path == None:
         path = add_path
     else:
-    	path = path+os.pathsep+add_path
+        path = path+os.pathsep+add_path
     
     if path: os.putenv("PYTHONPATH",path)
 
     for python in PYTHONS:
-	sys.stderr.write( "Testing under %s:\n" % python )
-	#TODO: should this inner loop go inside tests/__init__.py ?
-	for module in os.listdir('tests/'):
-		#Turn filenmae into module name
-		testname , replaced =re.subn(STRIP,"",module)
-		# SKip invalid module names
-		if not replaced: continue
-		#run tests.
-		sys.stderr.write("Running %s (%s)" % (module,python) )
-		os.system("%s %s/%s" % ( python,  TESTSDIR, module))
+        sys.stderr.write( "Testing under %s:\n" % python )
+        #run tests.
+        sys.stderr.write("Running tests with %s" % (python) )
+        os.system("%s -m unittest discover -p '*.py' -s %s" % ( python,  TESTSDIR ))
 
 
 

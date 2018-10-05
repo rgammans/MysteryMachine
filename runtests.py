@@ -29,11 +29,11 @@ import re
 PYTHONEXES ={
     'python2.5' : '../testenvs/py25/bin/python',
     'python2.6' : '../testenvs/py26/bin/python',
-    'python2.7' : '../testenvs/py27/bin/python',
+    'python2.7' : '../testenvs/py27b/bin/python',
     #'python2.7' : 'python2.7',
     }
 
-TEST_PYS  =( ('python2.5',[]), (  'python2.6', []), ( 'python2.7', []) ,('python2.7', ['-3',]), )
+TEST_PYS  =( ('python2.7', ['-3',]), )
 
 
 UNITTEST ='/usr/lib/python2.6/unittest.py'
