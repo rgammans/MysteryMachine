@@ -61,13 +61,15 @@ class ObjectPanel(wx.PyPanel):
         self.sizer.Add(self.title,0)
         self.notify = NotifyClosure(self,self.node_changed)
 
+        self.attr_widgets_map = { }
         #Walk down the inheritance hierachy Finding each object.
         current = self.obj
         done = [ ]
         while current is not None:
             panel, included = self._buildObjectPanel(current,done,self.obj)
             self.sizer.Add(panel,0,wx.EXPAND)
-            done += included
+            done += included.values()
+            self.attr_widgets_map.update(included)
             #Hide empty panel - but leave them to simply our sync algorithm
             if not included:  panel.Show(False)
             current = current.get_parent()
