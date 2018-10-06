@@ -81,7 +81,7 @@ def zunpack(azip,workdir):
                 #Found dir entry in zip
                 try :
                     os.mkdir(path)
-                except OSError ,e:
+                except OSError  as e:
                     #Ignore file exists error
                     if e.errno != 17: raise e
             else:

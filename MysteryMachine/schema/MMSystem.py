@@ -112,7 +112,7 @@ class MMSystem (MMAttributeContainer):
   def __unicode__(self):
     try:
        name = self[".defname"].get_raw()
-    except Exception, e:
+    except Exception as e:
        self.logger.debug(str(e))
        name = repr(self)
     return name
@@ -543,7 +543,7 @@ class MMCategory(MMAttributeContainer):
     def __unicode__(self):
         try:
             name = self[".defname"].get_raw()
-        except Exception, e:
+        except Exception as e:
             self.logger.debug(str(e))
             name = repr(self)
         return name

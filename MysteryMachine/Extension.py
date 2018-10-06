@@ -35,13 +35,13 @@ class Extension (IPlugin):
    :author: R Gammans`
   """
   def __init__(self):
-	IPlugin.__init__(self)
+    IPlugin.__init__(self)
 
   def getInterfaces(self):
-	raise Exception("This function must be overriden")
+    raise Exception("This function must be overriden")
 
 
   def getMixinTargets(self):
-	raise Exception("This function must be overriden")
+    raise Exception("This function must be overriden")
 
 

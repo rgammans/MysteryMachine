@@ -253,7 +253,7 @@ class ListValTest(unittest.TestCase):
             self.exception = None
             try:
                 self.assertEquals(unicode(obj[-1]) , self.val)
-            except Exception, e:
+            except Exception as e:
                 self.exception =e
 
 

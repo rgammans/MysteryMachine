@@ -511,7 +511,7 @@ class ShadowAttributeValue(MMAttributeValue):
 
         try:
             t = p[self.attrname]
-        except KeyError ,e: raise ReferenceError(e.message)
+        except KeyError  as e: raise ReferenceError(e.message)
 
         return t
 

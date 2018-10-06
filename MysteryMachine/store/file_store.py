@@ -171,10 +171,10 @@ class filestore(Base):
         catpath = os.path.join( *can_catpath)
         try:
             self.tlog.Create_Dir(self.tx,catpath)
-        except OSError, e:
+        except OSError as e:
             #Ignore Directory already exists errors .
             if e.errno != errno.EEXIST: raise
-        except WindowsError, e:
+        except WindowsError as e:
             #Ignore Directory already exists errors .
 	    if e.errno != 183: raise
         else:

@@ -46,7 +46,7 @@ class floggerTests(unittest.TestCase):
         try:
             shutil.rmtree(self.dirname)
             #os.rmdir(self.dirname)
-        except BaseException, e:
+        except BaseException as e:
             print e
 
 

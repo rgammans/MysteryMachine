@@ -22,11 +22,11 @@
 #
 #
 
-import Extension
-from ExtensionInfo import ExtensionInfo 
-import TrustedPluginManager
-from CorePluginManager import   CorePluginManager 
-from VersionNr import VersionNr
+from . import Extension
+from .ExtensionInfo import ExtensionInfo 
+from . import TrustedPluginManager
+from .CorePluginManager import   CorePluginManager 
+from .VersionNr import VersionNr
 
 import os
 import itertools

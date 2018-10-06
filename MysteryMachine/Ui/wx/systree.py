@@ -135,7 +135,7 @@ class TreePanel(wx.Panel):
         if newstr:
             try:
                 self.menu_on_item.NewCategory(newstr)
-            except Exception , e:
+            except Exception as e:
                 wx.MessageBox(str(e))
         
     @event_handler()

@@ -260,7 +260,7 @@ class sysTests(unittest.TestCase):
                 attr = list( obj.EnumCategories())
                 for k in self.cats:
                     self.assertTrue(k in attr,"%s not in categories"%k)
-            except Exception, e:
+            except Exception as e:
                 self.exception =e
 
        def update(obj):

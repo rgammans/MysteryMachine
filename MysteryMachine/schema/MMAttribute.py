@@ -193,7 +193,7 @@ class MMAttribute (MMAttributeContainer):
 
      try:
         self.valueobj.assign(val)
-     except Exception, e:
+     except Exception as e:
         if str(e): self.logger.warn(e)
         val = CreateAttributeValue(val,copy)
         ##Check assignment is valid

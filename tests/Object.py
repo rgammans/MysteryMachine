@@ -251,7 +251,7 @@ class ObjectTests(unittest.TestCase):
                 for k,v in self.val.iteritems():
                     self.assertTrue(k in attr,"%s not in attributes"%k)
                     self.assertEquals(unicode(obj[k]),v)
-            except Exception, e:
+            except Exception as e:
                 self.exception =e
 
        def update(obj):

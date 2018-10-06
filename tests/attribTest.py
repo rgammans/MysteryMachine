@@ -137,7 +137,7 @@ class attribTest(unittest.TestCase):
             self.exception = None
             try:
                 self.assertEquals(unicode(obj) , self.val)
-            except Exception, e:
+            except Exception as e:
                 self.exception =e
 
 

@@ -279,7 +279,7 @@ class ReplaceAll_Operation(JournaledOperation):
         #If we are creating a file we need to fsync the directory
         try:
             os.stat(self.target)
-        except OSError, e:
+        except OSError as  e:
             if e.errno == errno.ENOENT:
                 self.fobjs += [directory(os.path.dirname(self.target))]
 
@@ -359,7 +359,7 @@ class DeleteFile_Operation(SingleDentry_Operation):
         self.add_fds()
         try:
             os.unlink(self.target)
-        except SystemErrors, e:
+        except SystemErrors as e:
             import errno
             #Ignore missing file during recovery. 
             if not self.recovery_mode and e.errno != errno.ENOENT:
@@ -398,7 +398,7 @@ class CreateDir_Operation(SingleDentry_Operation):
         try:
             os.mkdir(self.target)
             #print "mkdir %s"%self.target
-        except OSError, e:
+        except OSError as e:
             #Ignore Directory already exists errors .
             if e.errno != errno.EEXIST:
                raise
@@ -560,7 +560,7 @@ class LazyFSMap(object):
         entries = []
         try:
            entries = os.listdir(os.path.join(self.home,parent))
-        except OSError, e:
+        except OSError as e:
            if e.errno != errno.ENOENT:
               raise
            else:

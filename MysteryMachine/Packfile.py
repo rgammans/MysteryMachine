@@ -86,7 +86,7 @@ def GetStoreBases(line,flags):
     #TODO: Error reporting - this command is untrusted remember
     try:
         schemename,req_version = re.split('\s+',line)
-    except ValueError, e:
+    except ValueError as e:
         raise Exceptions.CoreError("Invalid schema spec at line %i (error:%s)"%(flags['line_nr'],e.message))
         
     flags["schema"] = schemename
@@ -151,11 +151,11 @@ def OpenPackFile(filename):
     # but that has been deprecated in favour of a more complex .format file.
     try:
         formatfile = file(os.path.join(workdir,".format"))
-    except IOError , e:
+    except IOError as e:
         try:
             modlogger.debug("Loader cant find .format, falling back to .formatver")
             formatfile = file(os.path.join(workdir,".formatver"))
-        except IOError, e2:
+        except IOError as e2:
             raise (e2 , e)
 
     version = VersionNr(formatfile.readline())

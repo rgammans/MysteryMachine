@@ -331,7 +331,7 @@ class _LibraryContext(object):
             try: 
                 self.logger.debug("opt %s , tries importing %s",name,modname)
                 __import__(modname,globals())
-            except ImportError, e:
+            except ImportError as e:
                 self.logger.debug("Import failed (%s)",str(e))
             #No import each parent...,
             for sz in range(1,len(elements)):
@@ -339,9 +339,9 @@ class _LibraryContext(object):
                     modname = ".".join(elements[0:-sz]) 
                     self.logger.debug("opt %s , tries importing %s",name,modname)
                     __import__(modname,globals())
-                except ImportError, e:
+                except ImportError as e:
                     self.logger.debug("Import failed (%s)",str(e))
-            
+
             #Ok we've imported eveything named so try to walk up to find 
             # the callable so we can create an instance. 
             self.logger.debug( "MM:cfg %s" % elements[0])

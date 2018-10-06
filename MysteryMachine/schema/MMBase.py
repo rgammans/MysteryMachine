@@ -195,10 +195,10 @@ class MMBase(SchemaCommon):
                 try:
                     fn(self)
                 #A reference error will occur in fn no longer exists.
-                except ReferenceError, e:
+                except ReferenceError as e:
                     to_remove += [ fn ]
                 #warn about any exceptions from notify.
-                except Exception, e: 
+                except Exception as e: 
                     self.logger.warn(e,exc_info = 1)
         for entry in to_remove:
             self.notify.remove(entry)

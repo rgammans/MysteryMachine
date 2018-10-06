@@ -247,7 +247,7 @@ class MainWindow(wx.Frame):
     def OnSave(self,event):
         try:
             self.sys.SaveAsPackFile()
-        except NoPackFileName , e:
+        except NoPackFileName as e:
             self.OnSaveAs(event)
 
     @event_handler(level = logging.CRITICAL)

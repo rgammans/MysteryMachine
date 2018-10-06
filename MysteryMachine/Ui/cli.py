@@ -87,7 +87,7 @@ class UiBase(object):
         f.close()
         try:
             os.remove(fname)
-        except (WindowsError,OSError), e:
+        except (WindowsError,OSError) as e:
             self.logger.warn(str(e))
             pass
         return "".join(newval)

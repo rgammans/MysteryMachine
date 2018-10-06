@@ -95,7 +95,7 @@ def Locker(locktype,arg):
             node = None
             try:
                 node = args[arg]
-            except TypeError ,e:
+            except TypeError as e:
                 node = kwargs[arg]
             with GenericLock(node,locktype) as l:
                 return f(*args,**kwargs)

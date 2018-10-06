@@ -101,7 +101,7 @@ class ConfigYaml(object):
         try:
             f = file(self.filename,"r")
             self.cfg = yaml.safe_load(f)
-        except IOError, e:
+        except IOError as e:
             self.logger.warn(str(e))
             self.logger.warn("Using empty config")
             self.cfg = { }

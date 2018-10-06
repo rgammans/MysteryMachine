@@ -87,7 +87,7 @@ class HgStoreMixin(object):
         print "%r"%msg
         try:
             rv = self.repo.commit(message=msg,user ="foo" )
-        except hglib.error.CommandError, c:
+        except hglib.error.CommandError as c:
             print "E:",c.err
             print "R:",c.ret
             print "O:",c.out
