@@ -48,18 +48,26 @@ class ExtensionInfo (PluginInfo):
     """
     Create a plugin info instance.
     """
-    PluginInfo.__init__(self,plugin_name,plugin_path)
-    self.points = { }
-    if self.parser.has_section(EXTENSION_POINT_SECTION_NAME):
-        for opt in self.parser.options(EXTENSION_POINT_SECTION_NAME):
-            provides = self.parser.get(EXTENSION_POINT_SECTION_NAME,opt)
-            provides = re.split("\s*,\s*",provides)
-            if len(provides) > 0:
-                provides[0] = provides[0].strip()
-                provides[-1] = provides[-1].rstrip()
-                self.points[opt.lower()]=provides
-
+    super(ExtensionInfo,self).__init__(plugin_name,plugin_path)
+    self._points = { }
     self.secureID= ExtensionSecureID.fromPathName(self.path+".py")
+
+
+  @property
+  def points(self,):
+    #Details is set after __init__ so we have to lazyily evaluate points
+    if not self._points:
+        if self.details.has_section(EXTENSION_POINT_SECTION_NAME):
+            for opt in self.details.options(EXTENSION_POINT_SECTION_NAME):
+                provides = self.details.get(EXTENSION_POINT_SECTION_NAME,opt)
+                provides = re.split("\s*,\s*",provides)
+                if len(provides) > 0:
+                    provides[0] = provides[0].strip()
+                    provides[-1] = provides[-1].rstrip()
+                    self._points[opt.lower()]=provides
+        
+
+    return self._points
 
   def getName(self):
     """

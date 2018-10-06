@@ -50,7 +50,7 @@ class TrustExtManTest(unittest.TestCase):
         self.plugin_info = None
 
     def testTrusted(self):
-        plugins = self.myPluginManager.getPluginCandidates()
+        plugins = list(self.myPluginManager.getCandidateInfo())
         self.assertEqual(len(plugins),1)
         for plugin_info in plugins:
             self.plugin_info = plugin_info
@@ -73,18 +73,18 @@ class TrustExtManTest(unittest.TestCase):
         for reject in self.myPluginManager.getRejectedPluginInfo():
             self.myPluginManager.trustPlugin(reject)
 
-        plugins = self.myPluginManager.getPluginCandidates()
+        plugins = list(self.myPluginManager.getCandidateInfo())
         self.assertEqual(len(plugins),2)
         self.assertEqual(len(self.config),2)
 
     def testUntrust(self):
         # check the number of plugins
-        plugins = self.myPluginManager.getPluginCandidates()
+        plugins = list(self.myPluginManager.getCandidateInfo())
         self.assertEqual(len(plugins),1)
         rejects = list( self.myPluginManager.getRejectedPluginInfo())
         self.assertEqual(len(rejects),1)
         self.myPluginManager.untrustPlugin(plugins[0])
-        plugins = self.myPluginManager.getPluginCandidates()
+        plugins = list(self.myPluginManager.getCandidateInfo())
         rejects = list( self.myPluginManager.getRejectedPluginInfo())
         self.assertEqual(len(rejects),2)
         self.assertEqual(len(plugins),0)

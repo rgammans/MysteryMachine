@@ -81,6 +81,7 @@ class ExtensionLib(object):
     #    self.known_extentions = cfg['extensions']['known']
         self.helpers=dict()
         self.mixins=dict()
+        self._loadedPlugins  = []
 
     def register_helper(self,cls,helper_factory):
         """
@@ -166,14 +167,11 @@ class ExtensionLib(object):
         Generates the list of extension names known about.
         """
         # Iterate through system plugins
-        for plugin in self.trusted_man.getPluginCandidates():
+        for plugin in self.trusted_man.getCandidateInfo():
              yield plugin
-        for plugin in self.trusted_man.getPluginsLoaded():
-            yield plugin
-
 
         #Do trusted plugins
-        for plugin in self.plugin_man.getPluginCandidates():
+        for plugin in self.plugin_man.getCandidateInfo():
              yield plugin
         
         # Return rejected plugins.
@@ -181,7 +179,7 @@ class ExtensionLib(object):
             yield plugin
     
         #Return loaded plugins.
-        for plugin in self.plugin_man.getPluginsLoaded():
+        for plugin in self._loadedPlugins:
             yield plugin
 
     def findPluginByFeature(self,extension_point,featurecode, version = None ):
@@ -190,7 +188,7 @@ class ExtensionLib(object):
         in extension point 'extension_point'.
         """
 
-        for plugin in itertools.chain(self.plugin_man.getPluginCandidates(),self.plugin_man.getPluginsLoaded() ,self.trusted_man.getPluginCandidates() ,self.trusted_man.getPluginsLoaded()):
+        for plugin in itertools.chain(self.plugin_man.getCandidateInfo(),self._loadedPlugins ,self.trusted_man.getCandidateInfo() , ):
             if plugin.provides(extension_point,featurecode):
                 if VersionNr(None) and  VersionNr(version) <= VersionNr(plugin.version)  : yield plugin
 
@@ -200,7 +198,7 @@ class ExtensionLib(object):
         in extension point 'extension_point'.
         """
         features = set() 
-        for plugin in itertools.chain(self.plugin_man.getPluginCandidates(),self.plugin_man.getPluginsLoaded() ,self.trusted_man.getPluginCandidates() ,self.trusted_man.getPluginsLoaded()):
+        for plugin in itertools.chain(self.plugin_man.getCandidateInfo(),self._loadedPlugins ,self.trusted_man.getCandidateInfo() , ):
             features |= set(plugin.features_on_point(extension_point))
         return features
 
@@ -213,12 +211,15 @@ class ExtensionLib(object):
         """
         if plugin.isLoaded(): return
 
-        if plugin in  self.plugin_man.getPluginCandidates():
+        if plugin in  self.plugin_man.getCandidateInfo():
             self.plugin_man.loadPlugin(plugin)
-        elif plugin in  self.trusted_man.getPluginCandidates():
+        elif plugin in  self.trusted_man.getCandidateInfo():
             self.trusted_man.loadPlugin(plugin)
         else: raise InvalidPlugin(plugin.name)    
 
+        self._loadedPlugins.append(plugin)
+
+
     def IsSystemPlugin(self,plugin):
         return ((plugin in self.trusted_man.getAllPlugins() ) or 
-               (plugin in  self.trusted_man.getPluginCandidates() ) )
+               (plugin in  self.trusted_man.getCandidateInfo() ) )

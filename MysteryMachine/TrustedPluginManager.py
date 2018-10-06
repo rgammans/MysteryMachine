@@ -37,7 +37,7 @@ from ExtensionInfo import *
 import types
 
 
-class TrustedPluginManager (FilteredPluginManager):
+class TrustedPluginManager (cpm.YapsyHelpers,FilteredPluginManager):
 
   """
   Manage the trust policies , and the loading of plugins
@@ -105,7 +105,7 @@ class TrustedPluginManager (FilteredPluginManager):
     """
     self.trustlist[0][plugin.name]=str(plugin.secureID)
     for pluginTuple in self.getRejectedPlugins():
-        if pluginTuple is plugin:
+        if pluginTuple[2] is plugin:
             self.unrejectPluginCandidate(pluginTuple)
     #self.collectPlugins() 
 
@@ -120,8 +120,7 @@ class TrustedPluginManager (FilteredPluginManager):
     @return  :
     @author
     """
-
-    if plugin.is_activated:
+    if plugin.plugin_object and plugin.is_activated:
        plugin.deactivate()
      
     for data in self.trustlist:
@@ -130,11 +129,12 @@ class TrustedPluginManager (FilteredPluginManager):
 
     #Update internal lists.
     for pluginTuple in self.getPluginCandidates():
-        if pluginTuple is plugin:
+        if pluginTuple[2] is plugin:
             self.rejectPluginCandidate(pluginTuple)
     #self.collectPlugins()
 
   def getRejectedPluginInfo(self):
-    for p in self.getRejectedPlugins(): yield p
+    for p in self.getRejectedPlugins():
+        yield p[2]
 
 

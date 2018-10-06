@@ -2,3 +2,4 @@ docutils
 pyparsing>1.5
 python-hglib
 PyYaml
+yapsy

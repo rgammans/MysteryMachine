@@ -39,7 +39,25 @@ from yapsy.PluginManager import *
 from ExtensionInfo import *
 import types
 
-class CorePluginManager(PluginManager):
+class YapsyHelpers:
+    def getCandidateInfo(self,):
+        for infofile_name, opjfile_name, info_obj in self.getPluginCandidates():
+            yield info_obj
+
+
+    def loadPlugin(self,x):
+        ##
+        # This is adirty hack to support working with yapsy 0.12.0 
+        # from unstream, rather than our custom version.
+        #
+        # This loads ALL the plugins when any single plugin is
+        # loaded and ensures candidates is preserved
+        #
+        saved = self._candidates[:]
+        self.loadPlugins()
+        self._candidates = saved
+
+class CorePluginManager(YapsyHelpers,PluginManager):
     pass
 
 

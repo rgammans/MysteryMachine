@@ -25,6 +25,11 @@
 import types
 from copy import copy
 from utils.RichCompare import RichComparisonMixin
+distutils_Ver = None
+try:
+    from distutils.version import Version
+    distutils_Ver = Version
+except ImportError:pass
 
 class VersionNr(RichComparisonMixin):
 
@@ -42,6 +47,8 @@ class VersionNr(RichComparisonMixin):
             self.SetValue(args[0].nrs)
         elif type(args[0]) == types.StringType:
             self.SetValue(args[0].split("."))
+        elif isinstance(args[0],distutils_Ver):
+            self.SetValue(list(args[0].version))
         #Assume list type.
         else:
             self.SetValue(list(args))
