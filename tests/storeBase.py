@@ -24,6 +24,7 @@ Tests for the MysteryMachine MMStore base module
 from MysteryMachine import * 
 from MysteryMachine.store import *
 from MysteryMachine.store.Base import *
+import MysteryMachine.Exceptions
 
 import unittest
 
@@ -46,6 +47,14 @@ class sysTests(unittest.TestCase):
         class teststore(Base):
             uriScheme = "test"
         self.assertTrue(isinstance(GetStore("test:") , teststore))
+
+    def test_duplicate_Registration_raises_a_Dupereg_exception(self):
+        class teststore(Base):
+            uriScheme = "test3"
+        with self.assertRaises(MysteryMachine.Exceptions.DuplicateRegistration):
+            class another_teststore(Base):
+                uriScheme = "test3"
+
 
     def testUriHandlers(self):
         # Test GetPath

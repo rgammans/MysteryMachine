@@ -88,7 +88,7 @@ def RegisterStore(storename,storeclass):
     if storename not in _store_registry:
         _store_registry[storename] = storeclass
     else:
-        raise MysteryMachine.Exceptions.DuplicateRegistration , "%s already registered" % storename
+        raise MysteryMachine.Exceptions.DuplicateRegistration("%s already registered" % storename)
 
 def GetScheme(uri):
     scheme,path = uri.split(":",1)
