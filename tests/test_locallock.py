@@ -26,6 +26,10 @@ import unittest
 import thread, threading
 import time
 
+def start_new_thread( func, args ,kwargs = None):
+    threading.Thread(target = func, args =args,kwargs = kwargs).start()
+
+
 class Node(object):
     def __init__(self,lock):
         self.lock = lock
@@ -58,7 +62,7 @@ class LockManagerTest(unittest.TestCase):
         self.lm.rlock(self.node)
         self.assertTrue(self.node.lock.held())
         self.gotlock= False
-        thread.start_new_thread(writer,())
+        start_new_thread(writer,())
         self.assertTrue(self.node.lock.held())
         time.sleep(1)
         self.assertFalse(self.gotlock)
@@ -83,7 +87,7 @@ class LockManagerTest(unittest.TestCase):
         self.lm.wlock(self.node)
         self.assertTrue(self.node.lock.held())
         self.gotlock= False
-        thread.start_new_thread(writer,())
+        start_new_thread(writer,())
         time.sleep(1)
         self.assertTrue(self.node.lock.held())
         self.assertFalse(self.gotlock)
@@ -107,7 +111,7 @@ class LockManagerTest(unittest.TestCase):
             
         self.lm.wlock(self.node)
         self.gotlock= False
-        thread.start_new_thread(reader,())
+        start_new_thread(reader,())
         time.sleep(1)
         self.assertFalse(self.gotlock)
         self.lm.wunlock(self.node)

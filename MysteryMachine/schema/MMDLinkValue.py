@@ -118,7 +118,7 @@ from MysteryMachine.schema.Locker import ValueReader,ValueWriter
 
 import copy as _copy
 import weakref
-import thread
+import threading
 
 import logging
 import weakref
@@ -134,7 +134,7 @@ class _member_guard:
 
 
     def __enter__(self):
-        setattr(self.obj,self.attribute,thread.get_ident())
+        setattr(self.obj,self.attribute,threading.current_thread().ident)
         return self
     def __exit__(self,*args):
         setattr(self.obj,self.attribute,False)

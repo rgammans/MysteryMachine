@@ -67,7 +67,6 @@ TxF_Enabled = True
 
 
 
-import thread
 import threading
 import time
 import os
@@ -100,6 +99,10 @@ try:
      fdatasync = os.fdatasync
 except AttributeError:
      fdatasync = os.fsync
+
+
+def start_new_thread( func, args ,kwargs = None):
+    threading.Thread(target = func, args =args,kwargs = kwargs).start()
 
 class directory(object):
     """A class for directory which provides fileno() method so direcories can be fsync,
@@ -163,7 +166,7 @@ class JournaledOperation(object):
         if sync:
             self.complete_txn(**kwargs)
         else:
-            thread.start_new_thread(self.complete_txn, () ,kwargs )
+            start_new_thread(self.complete_txn, () ,kwargs )
 
     def dont_do(self,**kwargs):
         if self.callback is not None:
@@ -1044,7 +1047,7 @@ class FileLoggerSimpleFS(object):
         """Internal function. Should be called with id_lock held"""
         modlogger.debug( "rl:%s"%newname)
         if self.logf: 
-            thread.start_new_thread(self._waitlog,(self.logf,self.logname))
+            start_new_thread(self._waitlog,(self.logf,self.logname))
             self.logsync.acquire()
 
         if newname: self.in_use_logs += [ newname ] 

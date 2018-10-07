@@ -27,9 +27,12 @@ from MysteryMachine.schema.TransactionManager import *
 from MysteryMachine.schema.Locker import * 
 from MysteryMachine.store.locallock import LocalLocks
 import unittest
-import thread
+import threading
 from mock.schema_top import mock_store
 import time
+
+def start_new_thread( func, args ,kwargs = None):
+    threading.Thread(target = func, args =args,kwargs = kwargs).start()
 
 class TestError(Exception):
     pass
@@ -176,7 +179,7 @@ class TransactionManagerTest(unittest.TestCase):
         x=self.tm.begin_xaction()
         y=self.tm.start_read(self.node)
         self.gotlock= False
-        thread.start_new_thread(writer,())
+        start_new_thread(writer,())
         time.sleep(1)
         self.assertFalse(self.gotlock)
         self.tm.end_read(self.node,y)
@@ -194,7 +197,7 @@ class TransactionManagerTest(unittest.TestCase):
         x=self.tm.begin_xaction()
         y=self.tm.start_write(self.node)
         self.gotlock= False
-        thread.start_new_thread(writer,())
+        start_new_thread(writer,())
         time.sleep(1)
         self.assertFalse(self.gotlock)
         self.tm.end_write(self.node,y)
@@ -212,7 +215,7 @@ class TransactionManagerTest(unittest.TestCase):
         x=self.tm.begin_xaction()
         y=self.tm.start_write(self.node)
         self.gotlock= False
-        thread.start_new_thread(reader,())
+        start_new_thread(reader,())
         time.sleep(1)
         self.assertFalse(self.gotlock)
         self.tm.end_write(self.node,y)
