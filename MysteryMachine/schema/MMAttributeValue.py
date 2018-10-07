@@ -33,6 +33,7 @@ import types
 import operator
 import copy as _copy
 import codecs
+import six
 
 AttrTypes = dict()
 TypeLookup = dict()
@@ -164,7 +165,9 @@ class _AttrMeta(type):
 #FIXME Remove and replace reference to appropriate exception class
 class Error():
     pass
-        
+
+
+@six.python_2_unicode_compatible
 class MMAttributeValue (SchemaCommon ):
   """
    This is the base class of MMAtributes actual value. Each 'type' of Attribure
@@ -217,7 +220,7 @@ class MMAttributeValue (SchemaCommon ):
     return str(self.__class__)+"(\""+self.get_raw()+"\")"
 
 
-  def __unicode__(self):
+  def __str__(self):
     return self.get_raw()
 
   def get_raw(self, obj = None):
@@ -323,7 +326,7 @@ class MMAttributeValue_BasicText(MMAttributeValue):
     This type is appropriate for String values.
     """
     typename      = "simple"
-    contain_prefs = { str: 100 }
+    contain_prefs = { six.binary_type: 100 }
 
 
     def __init__(self,*args,**kwargs):
@@ -334,7 +337,7 @@ class MMAttributeValue_BasicText(MMAttributeValue):
         MMAttributeValue.__init__(self,*args,**kwargs)
         #Get passed in value.
         if self.value is not None:
-            self.parts["txt"] = str(self.value)
+            self.parts["txt"] = six.binary_type(self.value)
 
     def _compose(self,obj):
         if obj is not None:
@@ -349,10 +352,10 @@ class MMAttributeValue_UnicodeText(MMAttributeValue):
     A single Macro part value type.
 
     This type is appropriate for String values . This type
-    returns unicode as str() and stores in values in utf8
+    returns unicode as an appropriate type and stores in values in utf8
     """
     typename      = "simple_utf8"
-    contain_prefs = { unicode: 120 }
+    contain_prefs = { six.text_type: 120 }
 
 
     def __init__(self,*args,**kwargs):
@@ -368,7 +371,7 @@ class MMAttributeValue_UnicodeText(MMAttributeValue):
         @return unicode :
         @author
         """
-        return unicode(self.parts["txt"],"utf8")      
+        return six.text_type(self.parts["txt"],"utf8")
 
     def get_raw_rst(self, obj = None):
         return self.get_raw(obj)
@@ -461,7 +464,7 @@ class MMNullReferenceValue(MMAttributeValue):
     def get_raw_rst(self,obj = None):
         return ""
 
-
+@six.python_2_unicode_compatible
 class ShadowAttributeValue(MMAttributeValue):
     
     """
@@ -535,8 +538,8 @@ class ShadowAttributeValue(MMAttributeValue):
         #anyway
         return _copy.copy(self._get_target())
 
-    def __unicode__(self):
-        return self._get_target().__unicode__()
+    def __str__(self):
+        return six.text_type(self._get_target())
         
     def get_raw_rst(self, obj = None):
         self.logger.debug("%s[%s].raw_rst ( obj = %s ) "% (  repr(self.obj), self.attrname , repr(obj) ))

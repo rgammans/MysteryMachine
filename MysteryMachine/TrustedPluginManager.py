@@ -35,8 +35,7 @@ trust, and can distinguish between them. (cf. CorePluginManager)
 from yapsy.FilteredPluginManager import *
 from . import CorePluginManager as cpm
 from .ExtensionInfo import *
-import types
-
+import collections
 
 class TrustedPluginManager (cpm.YapsyHelpers,FilteredPluginManager):
 
@@ -67,7 +66,7 @@ class TrustedPluginManager (cpm.YapsyHelpers,FilteredPluginManager):
         
         """
         # Create the base decorator class
-        if type(directories_list) in types.StringTypes:
+        if not isinstance(directories_list,collections.Sequence):
             directories_list = [ directories_list ] 
 
         FilteredPluginManager.__init__(self,decorated_manager,

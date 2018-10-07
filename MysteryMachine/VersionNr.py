@@ -45,7 +45,7 @@ class VersionNr(RichComparisonMixin):
         """
         if type(args[0]) == type(self):
             self.SetValue(args[0].nrs)
-        elif type(args[0]) == types.StringType:
+        elif isinstance(args[0],str):
             self.SetValue(args[0].split("."))
         elif isinstance(args[0],distutils_Ver):
             self.SetValue(list(args[0].version))

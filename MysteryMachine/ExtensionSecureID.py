@@ -38,8 +38,8 @@ class ExtensionSecureID(object):
 
   @classmethod
   def fromPathName(cls,path):
-    input= open(path)
-    hash = hashlib.sha256() 
+    input= open(path,"rb")
+    hash = hashlib.sha256()
     for chunk in input:
       hash.update(chunk)
     return cls(path,hash,"sha256")
@@ -57,7 +57,7 @@ class ExtensionSecureID(object):
     """
     self._path= path
 
-    if isinstance(hashstr,basestring):
+    if isinstance(hashstr,str):
       self._hashtype , self._value = hashstr.split("|")
       self._hash = hashlib.new(self._hashtype)
     else:
