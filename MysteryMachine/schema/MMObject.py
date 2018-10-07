@@ -22,7 +22,7 @@
 #
 #
 
-from MMBase import *
+from .MMBase import *
 from MysteryMachine.schema.Locker import Reader,Writer
 from MysteryMachine.parsetools.MMParser import MMParser , Grammar
 from MysteryMachine.schema.MMAttribute import * 

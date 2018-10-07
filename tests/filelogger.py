@@ -21,6 +21,8 @@
 Tests for the MysteryMachine store filelogger  module
 """
 
+from __future__ import print_function
+
 import unittest
 
 import os
@@ -37,7 +39,6 @@ def dontdo(*args,**kwargs): pass
 class floggerTests(unittest.TestCase):
     def setUp(self,):
         self.dirname  = tempfile.mkdtemp()
-        print self.dirname
         self.flog = fl.FileLogger(self.dirname)
         
 
@@ -47,12 +48,12 @@ class floggerTests(unittest.TestCase):
             shutil.rmtree(self.dirname)
             #os.rmdir(self.dirname)
         except BaseException as e:
-            print e
+            print (e)
 
 
     def filecontents(self,fname):
         try:
-            f =file(os.path.join(self.dirname,fname),"r")
+            f =open(os.path.join(self.dirname,fname),"r")
             contents = "\n".join(f.readlines())
             f.close()
             return contents

@@ -22,4 +22,4 @@
 #
 #
 
-from Globals import GetLoadedSystemByName
+from .Globals import GetLoadedSystemByName

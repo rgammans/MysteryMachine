@@ -22,8 +22,8 @@
 #
 #
 
-from MMBase import *
-from MMAttributeValue import MMAttributeValue , CreateAttributeValue , MMAttributeValue_MMRef , ShadowAttributeValue
+from .MMBase import *
+from .MMAttributeValue import MMAttributeValue , CreateAttributeValue , MMAttributeValue_MMRef , ShadowAttributeValue
 from MysteryMachine.schema.Locker import Reader,Writer
 
 import operator

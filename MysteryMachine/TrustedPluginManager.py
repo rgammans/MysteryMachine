@@ -33,7 +33,8 @@ trust, and can distinguish between them. (cf. CorePluginManager)
 
 """
 from yapsy.FilteredPluginManager import *
-from ExtensionInfo import *
+from . import CorePluginManager as cpm
+from .ExtensionInfo import *
 import types
 
 

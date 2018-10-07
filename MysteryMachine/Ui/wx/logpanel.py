@@ -32,7 +32,6 @@ class loggingHandler(logging.Handler):
         self.level = 0
 
     def emit(self,msg):
-        print msg,msg.levelname,msg.levelno
         if msg.levelno <= logging.DEBUG:
             wx.LogDebug(msg.getMessage())
         elif msg.levelno <= logging.INFO:
@@ -85,7 +84,6 @@ def  log_exceptions(level =logging.INFO, debug_tb = False, logger = "MysteryMach
             except:
                 c, e, tb =sys.exc_info()
                 logger_obj.log(level,str(e))
-                print str(e)
                 if debug_tb:
                     import traceback
                     for line in traceback.format_tb(tb):

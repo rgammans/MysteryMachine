@@ -18,11 +18,12 @@
 #
 #
 
+
 """Recursive  reader-writer locks in Python
 Many readers can hold the lock XOR one and only one writer"""
 
 
-from __future__ import with_statement
+from __future__ import print_function
 import threading
 
 #Based on public domain code from.
@@ -165,45 +166,45 @@ if __name__ == '__main__':
   rwl = RRwLock()
   class Reader(threading.Thread):
     def run(self):
-      print self, 'start'
+      print (self, 'start')
       rwl.acquire_read()
-      print self, 'acquired'
+      print (self, 'acquired')
       time.sleep(5)    
-      print self, 'stop'
+      print (self, 'stop')
       rwl.release()
   class Writer(threading.Thread):
     def run(self):
-      print self, 'start'
+      print (self, 'start')
       rwl.acquire_write()
-      print self, 'acquired'
+      print (self, 'acquired')
       time.sleep(10)    
-      print self, 'stop'
+      print (self, 'stop')
       rwl.release()
   class ReaderWriter(threading.Thread):
     def run(self):
-      print self, 'start'
+      print (self, 'start')
       rwl.acquire_read()
-      print self, 'acquired'
+      print (self, 'acquired')
       time.sleep(5)    
       rwl.acquire_write()
-      print self, 'promoted'
+      print (self, 'promoted')
       time.sleep(5)    
-      print self, 'stop'
+      print (self, 'stop')
       rwl.release()
       rwl.release()
   class WriterWriter(threading.Thread):
     def run(self):
-      print self, 'start'
+      print (self, 'start')
       rwl.acquire_write()
-      print self, 'acquired'
+      print (self, 'acquired')
       time.sleep(10)    
       rwl.acquire_write()
-      print self, 'acquired 2'
+      print (self, 'acquired 2')
       time.sleep(5)    
-      print self, 'stop 2'
+      print (self, 'stop 2')
       rwl.release()
       time.sleep(5)    
-      print self, 'stop'
+      print (self, 'stop')
       rwl.release()
   Reader().start()
   time.sleep(1)

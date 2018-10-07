@@ -21,8 +21,9 @@
 
 """
 Provides an implementation of common dialoos.
-""" 
+"""
 
+import logging
 
 import wx
 import wx.lib.newevent
@@ -33,6 +34,7 @@ from MysteryMachine.schema.MMAttributeValue import MakeAttributeValue
 from MysteryMachine.schema.MMAttributeValue import GetAttributeTypeList
 from MysteryMachine.Ui.wx.attribute_controls import GetWidgetFor
 
+logger = logging.getLogger(__name__)
 
 def _apply_default(name,default,kwargs):
     if name not in kwargs: kwargs[name] = default
@@ -99,7 +101,7 @@ class NewAttributeDialog(wx.Dialog):
 
     def onTypeChanged(self,evt):
         chosen_type = self.typechoice.GetStringSelection()
-        print "type changed ",chosen_type
+        logger.debug("type changed %s"%chosen_type)
         if chosen_type not in self.typepanels:
              tempattr = MMUnstorableAttribute(".temporary",
                                               MakeAttributeValue(chosen_type, {} ),

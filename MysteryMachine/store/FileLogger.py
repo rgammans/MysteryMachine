@@ -49,8 +49,6 @@ This has a number of consequences:-
        qualit of your os's implentation of fsync.
 
 """
-from __future__ import with_statement
-
 
 SystemErrors =  []
 try:
@@ -283,7 +281,7 @@ class ReplaceAll_Operation(JournaledOperation):
             if e.errno == errno.ENOENT:
                 self.fobjs += [directory(os.path.dirname(self.target))]
 
-        self.fobj = file(self.target,"w+")
+        self.fobj = open(self.target,"w+")
         self.fobjs += [ self.fobj ]
         self.fobj.truncate(0)
         self.fobj.write(self.content)
@@ -565,7 +563,6 @@ class LazyFSMap(object):
               raise
            else:
               modlogger.debug("Cant reach:Non existent directory found in it's own parent.")
-              print ("Cant reach:Non existent directory found in it's own parent.")
               return
 
         #Make a dict of files a dir entries., adnd put itoput global name list

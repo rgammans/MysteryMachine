@@ -17,7 +17,6 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-from __future__ import with_statement
 import types
 
 idle_installed=0
@@ -57,7 +56,7 @@ class UiBase(object):
         """
         Launches a text editor allowing an attribute's contents to be editted.
         """
-        print self,attr
+        self.logger.debug("Cli:EA: %s,%s"%(self,attr))
         myval   =  attr.get_value()
         myparts = myval.get_parts()
         if len ( myparts ) == 1:

@@ -86,7 +86,7 @@ def zunpack(azip,workdir):
                     if e.errno != 17: raise e
             else:
                 #Do save actual file
-                outf = file(path,"w")
+                outf = open(path,"w")
                 outf.write(azip.read(inf.filename))
                 outf.close()
 

@@ -1,5 +1,8 @@
+from __future__ import print_function
+
 """Simple reader-writer locks in Python
 Many readers can hold the lock XOR one and only one writer"""
+
 import threading
 
 version = """$Id: rwlock.py,v 1.1 2004/12/22 22:32:00 majid Exp $"""
@@ -89,41 +92,41 @@ if __name__ == '__main__':
   rwl = RWLock()
   class Reader(threading.Thread):
     def run(self):
-      print self, 'start'
+      print (self, 'start')
       rwl.acquire_read()
-      print self, 'acquired'
+      print (self, 'acquired')
       time.sleep(5)    
-      print self, 'stop'
+      print (self, 'stop')
       rwl.release()
   class Writer(threading.Thread):
     def run(self):
-      print self, 'start'
+      print (self, 'start')
       rwl.acquire_write()
-      print self, 'acquired'
+      print (self, 'acquired')
       time.sleep(10)    
-      print self, 'stop'
+      print (self, 'stop')
       rwl.release()
   class ReaderWriter(threading.Thread):
     def run(self):
-      print self, 'start'
+      print (self, 'start')
       rwl.acquire_read()
-      print self, 'acquired'
+      print (self, 'acquired')
       time.sleep(5)    
       rwl.promote()
-      print self, 'promoted'
+      print (self, 'promoted')
       time.sleep(5)    
-      print self, 'stop'
+      print (self, 'stop')
       rwl.release()
   class WriterReader(threading.Thread):
     def run(self):
-      print self, 'start'
+      print (self, 'start')
       rwl.acquire_write()
-      print self, 'acquired'
+      print (self, 'acquired')
       time.sleep(10)    
-      print self, 'demoted'
+      print (self, 'demoted')
       rwl.demote()
       time.sleep(10)    
-      print self, 'stop'
+      print (self, 'stop')
       rwl.release()
   Reader().start()
   time.sleep(1)

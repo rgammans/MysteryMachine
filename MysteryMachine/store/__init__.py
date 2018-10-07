@@ -21,8 +21,6 @@
 """
 """
 
-from __future__ import with_statement
-
 import weakref
 import MysteryMachine
 import MysteryMachine.Exceptions

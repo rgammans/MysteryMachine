@@ -36,7 +36,7 @@ which are distributed with it and are always considered trusted.
 #
 
 from yapsy.PluginManager import *
-from ExtensionInfo import *
+from .ExtensionInfo import *
 import types
 
 class YapsyHelpers:

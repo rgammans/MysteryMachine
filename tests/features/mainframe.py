@@ -120,7 +120,6 @@ def this_entry_is_greyed_out(step):
 @step(u'This entry is not greyed-out')
 def this_entry_is_not_greyed_out(step):
     a = world.focus_obj.click()
-    print "\n%i\n"%a
     assert a , '%s seems to not be clickable' % world.focus_obj
 
 @step(u'Then there is a window named "(.*)"')

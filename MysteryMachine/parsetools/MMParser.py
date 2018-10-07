@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#   			MMParser.py - Copyright roger
+#               MMParser.py - Copyright roger
 # 
 #
 #    This program is free software; you can redistribute it and/or modify
@@ -26,29 +26,28 @@ from docutils.core import  publish_doctree, default_description
 from docutils.parsers.rst import roles
 import docutils.nodes
 
-from grammar import Grammar
+from .grammar import Grammar
 
 from MysteryMachine.schema.MMBase import  MMBase
 
 import re
 import copy
-from exceptions import *    
 
 import logging
 modlogger   = logging.getLogger("MysteryMachine.parsetools.MMParser")
 
 import threading
 class _stack(threading.local):
-	def __init__(self):
-		self.stack = [ ]
-	def pop(self):
-		value = self.stack[0]
-		self.stack = self.stack[1:]
-	def push(self,value):
-		self.stack = [ value ] + self.stack
+    def __init__(self):
+        self.stack = [ ]
+    def pop(self):
+        value = self.stack[0]
+        self.stack = self.stack[1:]
+    def push(self,value):
+        self.stack = [ value ] + self.stack
 
-	def peek(self):
-		return self.stack[0]
+    def peek(self):
+        return self.stack[0]
 
 docutils_stack = _stack()
 
@@ -202,9 +201,9 @@ def role_handler(role, rawtext, text, lineno, inliner,
     return nodes ,msg
 
 def _findParser(obj):
-	while not hasattr(obj,"parser"):
-		obj = obj.owner
-	return obj.parser
+    while not hasattr(obj,"parser"):
+        obj = obj.owner
+    return obj.parser
 
 
 roles.register_canonical_role('mm',role_handler)

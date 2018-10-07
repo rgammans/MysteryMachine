@@ -22,15 +22,12 @@
 #
 #
 
-from __future__ import with_statement
-
 import sys
 
-from MMBase import *
+from .MMBase import *
 from MysteryMachine.parsetools.grammar import Grammar
 
 import logging
-import exceptions
 import sys
 import types
 import operator

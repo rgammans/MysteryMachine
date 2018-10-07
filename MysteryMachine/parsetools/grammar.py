@@ -35,22 +35,22 @@ def Grammar(home):
     QueryExpr  =    BoolExpr + queryOp + ExprText + "/" +ExprText
 
     ExprText   <<  (  ExprField ^ \
-    		          QueryExpr ^ \
+                      QueryExpr ^ \
                       LiteralVal  )
 
     ## Functions for parsing.
     def doBool(s,loc,toks):
-    	modlogger.debug( "getbol\n")
+        modlogger.debug( "getbol\n")
         sense=(toks[1]=="!=")
-    	return sense ^ ( str(toks[0]) == toks[2])
+        return sense ^ ( str(toks[0]) == toks[2])
 
 
     def doQuery(s,loc,toks):
-    	modlogger.debug( "doing query\n")
+        modlogger.debug( "doing query\n")
         if toks[0]:
-    		return toks[2]
-    	else:
-    		return toks[4]
+            return toks[2]
+        else:
+            return toks[4]
 
     def ExprFieldAction(s,loc,toks):
         #In this case our walk will fail so

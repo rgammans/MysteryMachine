@@ -30,7 +30,6 @@ This base modules encapuslates the globals for the mystery machine
 system.
 """
 
-from __future__ import with_statement
 
 import sys
 import types

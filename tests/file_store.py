@@ -60,10 +60,8 @@ class filestoreTests(storeTests,unittest.TestCase):
         except ImportError:
             pass
         path= tempfile.mkdtemp()
-        print "path,",path
         symname = tempfile.NamedTemporaryFile()
         symname = symname.name
-        print "symname",symname
         try:
             os.remove(symname)
         except OSError:
@@ -181,8 +179,6 @@ class test2(filestoreTests):
         os.rmdir(self.mpath)
         self.mpath = prefix + self.mpath
         self.parentpath = os.path.normpath(os.path.expanduser(self.mpath+os.path.sep+".."))
-        print prefix, self.mpath
-        print self.parentpath
         self.tmpexists = os.path.exists(self.parentpath)
         os.makedirs(os.path.expanduser(self.mpath))
 

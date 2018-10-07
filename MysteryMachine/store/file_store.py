@@ -18,8 +18,6 @@
 #
 # 
 
-from __future__ import with_statement
-
 import re
 import MysteryMachine.policies
 from MysteryMachine.store import *

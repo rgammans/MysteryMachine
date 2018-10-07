@@ -158,17 +158,14 @@ class TreePanel(wx.Panel):
         localroot = self.tree.GetItemData(itemid).GetData()
         self.menu_on_itemid = itemid
         self.menu_on_item = localroot
-        print "onRightClick on %r " % localroot
         self.PopupMenu(_popupmenus[localroot.__class__.__name__])
 
     @event_handler()
     def onChangeParent(self,evt):
-        print "change parent"
         dlg = ObjectPicker(self,-1,title ="Choose new parent",system = self.system,
                             action = functools.partial(self.onNewParentChosen,self.menu_on_item))
         dlg.Show()
 
     @event_handler()
     def onNewParentChosen(self,parent,item):
-        print "chosen " + str(item)
         parent.set_parent(item)

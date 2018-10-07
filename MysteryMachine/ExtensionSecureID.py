@@ -38,7 +38,7 @@ class ExtensionSecureID(object):
 
   @classmethod
   def fromPathName(cls,path):
-    input= file(path)
+    input= open(path)
     hash = hashlib.sha256() 
     for chunk in input:
       hash.update(chunk)

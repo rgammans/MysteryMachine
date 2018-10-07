@@ -76,14 +76,14 @@ link can find it correct referent object.
        #Reassign player4 the character that player1 had
         player4["character"] = CreateAnchorPoint(player4)
         player4["character"] = player1["character"]
-        print player1["character"].get_object()
+        print ( player1["character"].get_object() )
 None
     
-        print repr(player1["character"].get_anchor())
+        print ( repr(player1["character"].get_anchor()) )
 player:1
-        print repr(player4["character"].get_object())
+        print ( repr(player4["character"].get_object()) )
 character:2
-        print repr(character2["player"].get_object())
+        print ( repr(character2["player"].get_object()) )
 player:4
 
 These semantic ensure consistency while disallowing
@@ -110,9 +110,8 @@ Shadowing bidilinks
 
 """
 
-from __future__ import with_statement
-from MMAttributeValue import MMAttributeValue
-from MMAttribute import MMAttribute, MMUnstorableAttribute
+from .MMAttributeValue import MMAttributeValue
+from .MMAttribute import MMAttribute, MMUnstorableAttribute
 
 from MysteryMachine.parsetools.grammar import Grammar
 from MysteryMachine.schema.Locker import ValueReader,ValueWriter

@@ -24,7 +24,7 @@
 
 import types
 from copy import copy
-from utils.RichCompare import RichComparisonMixin
+from .utils.RichCompare import RichComparisonMixin
 distutils_Ver = None
 try:
     from distutils.version import Version

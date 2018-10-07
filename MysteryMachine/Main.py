@@ -18,8 +18,6 @@
 #
 # 
 
-from __future__ import with_statement
-
 import MysteryMachine
 import sys
 import os
@@ -49,7 +47,4 @@ def main():
     """
     options = process_args()
     with MysteryMachine.StartApp(options) as MyMM:
-        print MyMM
         MyMM.Run()
-
-

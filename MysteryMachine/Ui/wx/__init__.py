@@ -19,8 +19,6 @@
 # 
 #
 
-from __future__ import with_statement
-
 import MysteryMachine
 from MysteryMachine.Exceptions import *
 
@@ -222,7 +220,6 @@ class MainWindow(wx.Frame):
         self.panel = None
         self.Layout()
 
-        print self.Size
 
 
     def OnNew(self,event):
@@ -357,7 +354,6 @@ class MainWindow(wx.Frame):
 
     @event_handler()
     def OnRevert(self,event):
-        print "onrevert"
         pass
     
     @event_handler(level = logging.ERROR)

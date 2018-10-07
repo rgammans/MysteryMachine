@@ -26,7 +26,6 @@ class Core(Extension):
         #Bring globals into our namespace - to ensure they have a ref.
         self._storeClasses = _storeClasses
         self.logger.debug( "MMCore-Init:%s" %self)
-        print "MMCore-Init:%s" %self
 
     def activate(self):
         pass
@@ -48,5 +47,3 @@ class Core(Extension):
         """Call out to Core routine"""
         MysteryMachine.Packfile.GetStoreBases(line,flags)
 
-
-print "MMCore loaded"

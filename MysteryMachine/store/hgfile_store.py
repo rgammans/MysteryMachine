@@ -18,9 +18,6 @@
 #
 # 
 
-from __future__ import with_statement
-
-
 import MysteryMachine
 import MysteryMachine.store.Base
 
@@ -84,14 +81,10 @@ class HgStoreMixin(object):
     
     def commit(self,msg):
         self.lock()
-        print "%r"%msg
         try:
             rv = self.repo.commit(message=msg,user ="foo" )
         except hglib.error.CommandError as c:
-            print "E:",c.err
-            print "R:",c.ret
-            print "O:",c.out
-            print "A:",c.args
+            self.logger.error("HG Command error E:",c.err,"R:",c.ret,"O:",c.out,"A:",c.args)
             raise
         self.unlock()
         return rv

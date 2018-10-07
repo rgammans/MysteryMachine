@@ -21,9 +21,11 @@
 # The original location of this file is /home/roger/sources/MysteryMachine/generated/ExtensionInfo.py
 #
 #
+import logging
+logger = logging.getLogger(__name__)
 
 from yapsy.PluginManager import *
-from ExtensionSecureID import ExtensionSecureID
+from .ExtensionSecureID import ExtensionSecureID
 import re
 
 EXTENSION_POINT_SECTION_NAME="ExtensionPoints"

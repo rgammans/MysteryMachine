@@ -24,6 +24,7 @@ import functools
 from widgets import  NotifyClosure
 from MysteryMachine.Ui.wx import event_handler
 import logging
+logger = logging.getLogger(__name__)
 
 _Factory = {}
 
@@ -300,7 +301,8 @@ class _ref_wx_widget(wx.Panel):
         if hasattr(myframe,"GetNewNodePanel"):
             self.exp_panel = myframe.GetNewNodePanel(self,self.attribute.get_object())
             self.sizer.Add(self.exp_panel)
-        else: print "error: %s is not what i expected"%myframe
+        else: 
+            logger.error("error: %s is not what i expected"%myframe)
 
     @event_handler()
     def onExpandTarget(self,evt):  

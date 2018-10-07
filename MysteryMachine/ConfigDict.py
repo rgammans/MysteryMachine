@@ -43,7 +43,6 @@ the behavoiur is undefined.
 
 from ConfigParser import ConfigParser
 import weakref
-import exceptions
 
 class ReadOnly(RuntimeError):
     pass
@@ -170,7 +169,7 @@ class pyConfigDict(object):
         else:
             f =filename
         if self.persistent and self.modified:
-            fp=file(f,"w")
+            fp=open(f,"w")
             self.cfg.write(fp)
             fp.flush()
 

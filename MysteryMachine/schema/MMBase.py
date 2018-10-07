@@ -134,6 +134,7 @@ class MMBase(SchemaCommon):
     return self.owner
 
   def get_nodeid(self,):
+     """Return a string representing the nodes path in the MMSystem"""
      owner = self.get_ancestor()
      if owner is not None: owner = owner.get_nodeid()
      if  owner:
@@ -276,7 +277,8 @@ class MMDeletedNode(MMBase):
     def discard(self,):
         if hasattr(self.owner,"_invalidate_item_"):
             self.owner._invalidate_item_(self.name)
-        else:print "cant incvalid"
+        else:
+            logger.warn("cant incalidate %s",self.get_nodeid())
 
     def writeback(self,):
         self.callback()

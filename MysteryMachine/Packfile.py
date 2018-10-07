@@ -18,8 +18,6 @@
 #
 # 
 
-from __future__ import with_statement
-
 from MysteryMachine.VersionNr import VersionNr
 import MysteryMachine
 import MysteryMachine.utils as utils
@@ -150,11 +148,11 @@ def OpenPackFile(filename):
     #Read format version requirements - very early versions used .formatver 
     # but that has been deprecated in favour of a more complex .format file.
     try:
-        formatfile = file(os.path.join(workdir,".format"))
+        formatfile = open(os.path.join(workdir,".format"))
     except IOError as e:
         try:
             modlogger.debug("Loader cant find .format, falling back to .formatver")
-            formatfile = file(os.path.join(workdir,".formatver"))
+            formatfile = open(os.path.join(workdir,".formatver"))
         except IOError as e2:
             raise (e2 , e)
 
@@ -199,7 +197,7 @@ def SavePackFile(system,*args,**kwargs):
         system.Commit(kwargs.get('message',default_commit_message))
 
     system.store.clean()
-    f  = file(filename,"w")
+    f  = open(filename,"w")
     pack = zipfile.ZipFile(filename,"w")
     #FIXME Handle versions better
     pack.writestr(".formatver","0")

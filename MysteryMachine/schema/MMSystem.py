@@ -22,7 +22,7 @@
 #
 #
 
-from Globals import DocsLoaded
+from .Globals import DocsLoaded
 
 from MysteryMachine.schema.Locker import Reader,Writer
 from MysteryMachine.schema.MMObject import *
@@ -37,7 +37,7 @@ import MysteryMachine.Exceptions as Error
 
 import MysteryMachine.store.locallock
 
-from Globals import * 
+from .Globals import *
 
 import re
 import time

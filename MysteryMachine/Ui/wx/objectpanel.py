@@ -205,13 +205,11 @@ class _attribute_section(wx.PyPanel):
         panel_to_refresh.TransferDataToWindow()
 
     def onDelete(self,evt):
-        print "on-delete"
         name = self.attribute.name
         owner =self.attribute.get_ancestor()
         del owner[name]
 
     def onOverride(self,evt):
-        print "on-overrride"
         name = self.attribute.name
         self.top[name] = self.attribute
 

@@ -238,7 +238,6 @@ class DlinkTests(unittest.TestCase):
         self.assertEquals(   self.object3["uobjlink1"].get_object() , None )
         self.assertRaises(KeyError,self.object1.__getitem__,"foo")
         ##Move the unstored connection to a real attribute
-        print "T"
         self.object1["ulink2"] = attr
         self.assertEquals(self.object1["ulink2"].get_object(),self.object3)
         self.assertEquals(self.object3["uobjlink1"].get_object(),self.object1)

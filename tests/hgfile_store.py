@@ -47,13 +47,14 @@ class BasicStore(Base):
         return self.path
 
     def ReadFile(self,name):
-        f = file(os.path.join(self.path,name),"r")
+        f = open(os.path.join(self.path,name),"r")
+
         rv = f.read()
         f.close()
         return rv
 
     def WriteFile(self,name,content):
-        f = file(os.path.join(self.path,name),"w")
+        f = open(os.path.join(self.path,name),"w")
         f.write(content)
         f.close()
         self.Add_file(name)

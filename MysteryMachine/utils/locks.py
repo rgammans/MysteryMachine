@@ -29,6 +29,6 @@ These function provide similiar primitives to extended_threading but
 are more readable. And some as used by MysteryMachine.
 """
 
-from rwlock import RWLock
-from rrwlock import RRwLock
+from .rwlock import RWLock
+from .rrwlock import RRwLock
 
