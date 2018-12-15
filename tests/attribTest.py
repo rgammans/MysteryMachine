@@ -107,12 +107,12 @@ class attribTest(unittest.TestCase):
     # Test AttributeValue export resolution.
     def testAttrValExport(self):
        attr=MMAttribute("document","test\n----\n\n\nA Message",None)
-       self.assertEquals("test\n----\n\n\nA Message",attr.get_raw())
+       self.assertEqual("test\n----\n\n\nA Message",attr.get_raw())
 
     def testAttrValType(self):
        p = fakeParent()
        attr=MMAttribute("document","test\n----\n\n\nA Message",p)
-       self.assertEquals(attr.get_type(),"simple")
+       self.assertEqual(attr.get_type(),"simple")
 
 
 #  XXX Commented out as I don't believe this test 
@@ -129,14 +129,14 @@ class attribTest(unittest.TestCase):
 #       attr.set_value("diff")
 #       self.assertTrue(p.Updated())
 #       v1 = attr.get_value()
-#       self.assertEquals("diff",unicode(v1))
+#       self.assertEqual("diff",unicode(v1))
 
 
     def testNotify(self):
        def testexpect(obj):
             self.exception = None
             try:
-                self.assertEquals(unicode(obj) , self.val)
+                self.assertEqual(unicode(obj) , self.val)
             except Exception as e:
                 self.exception =e
 
@@ -149,54 +149,54 @@ class attribTest(unittest.TestCase):
        attr=MMAttribute("document","test\n----\n\n\nA Message",p)
        attr.register_notify(update)
        attr.register_notify(testexpect)
-       self.assertEquals(update.count,0)
+       self.assertEqual(update.count,0)
 
        self.val = "diff"
        attr.set_value(self.val)
-       self.assertEquals(update.count,1)
+       self.assertEqual(update.count,1)
        if self.exception: raise self.exception
 
        self.val = "diff"
        attr.unregister_notify(update)
        self.val ="baz" 
        attr.set_value(self.val)
-       self.assertEquals(update.count,1)
+       self.assertEqual(update.count,1)
        if self.exception: raise self.exception
 
     def testAttribContainer(self):
         m = container()
         #Keep the attrib around so it stays in the cache.
         a = m._set_attr_item("name","str")
-        self.assertEquals(type( a ) , MMAttribute )
-        self.assertEquals(type( m._get_item("name",DummyPart,"Crap")) , MMAttribute )
-        self.assertEquals(unicode(a),"str")
-        self.assertEquals( m._get_item("name",DummyPart,"Crap") , a )
+        self.assertEqual(type( a ) , MMAttribute )
+        self.assertEqual(type( m._get_item("name",DummyPart,"Crap")) , MMAttribute )
+        self.assertEqual(unicode(a),"str")
+        self.assertEqual( m._get_item("name",DummyPart,"Crap") , a )
         b = m._set_attr_item("name","no string")
-        self.assertEquals(a,b)
+        self.assertEqual(a,b)
         c = m._set_attr_item("notname","foo")
         self.assertNotEquals(b,c)
         b = m._set_attr_item("name",c)
-        self.assertEquals(unicode(a),"foo")
+        self.assertEqual(unicode(a),"foo")
     
     def testInheritance(self):
         parentobj = container()
         childobj  = container(parent = parentobj )
 
         parentobj["foo"] = "test"
-        self.assertEquals(parentobj["foo"].get_raw(),"test")
-        self.assertEquals(childobj["foo"].get_raw(),"test")
+        self.assertEqual(parentobj["foo"].get_raw(),"test")
+        self.assertEqual(childobj["foo"].get_raw(),"test")
         
         childobj["foo"] = "different"
-        self.assertEquals(parentobj["foo"].get_raw(),"test")
-        self.assertEquals(childobj["foo"].get_raw(),"different")
+        self.assertEqual(parentobj["foo"].get_raw(),"test")
+        self.assertEqual(childobj["foo"].get_raw(),"different")
         
     def testEncoding(self):
         m = container()
         m["encoded"] = "String"
         self.assertRaises(UnicodeDecodeError,m._set_attr_item,"fake","Not ascii\xa5")
-        self.assertEquals(unicode(m["encoded"]),"String")
+        self.assertEqual(unicode(m["encoded"]),"String")
         self.assertRaises(KeyError,m.__getitem__,"fake")
-        self.assertEquals(unicode(m["encoded"]),"String")
+        self.assertEqual(unicode(m["encoded"]),"String")
 
     def testUnstorableCreate(self):
        m = container()
@@ -220,13 +220,13 @@ class attribTest(unittest.TestCase):
         # but can be evaluated.
         a = MMUnstorableAttribute("name","str",obj)
         self.assertRaises(KeyError,obj.__getitem__,"name" )
-        self.assertEquals(unicode(a),"str")
+        self.assertEqual(unicode(a),"str")
         
 
         #Check set_value changes our attribute without modify it's claimed container.
         a.set_value("a different string")
         self.assertRaises(KeyError,obj.__getitem__,"name" )
-        self.assertEquals(unicode(a),"a different string")
+        self.assertEqual(unicode(a),"a different string")
 
 
 def getTestNames():

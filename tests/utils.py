@@ -114,8 +114,8 @@ class UtilsTest(unittest.TestCase):
                   rw.join()
                   wr.join()
 
-                  test.assertEquals(rwl.rwlock,0) 
-                  test.assertEquals(rwl.writers_waiting,0) 
+                  test.assertEqual(rwl.rwlock,0) 
+                  test.assertEqual(rwl.writers_waiting,0) 
     
         workthread = rwtest()
         workthread.start()
@@ -211,9 +211,9 @@ class UtilsTest(unittest.TestCase):
                   rw.join()
                   ww.join()
                   rrw.join()
-                  test.assertEquals(rwl.wcount,0)
-                  test.assertEquals(rwl.rwlock,0) 
-                  test.assertEquals(rwl.writers_waiting,0) 
+                  test.assertEqual(rwl.wcount,0)
+                  test.assertEqual(rwl.rwlock,0) 
+                  test.assertEqual(rwl.writers_waiting,0) 
     
         workthread = rwtest()
         workthread.start()

@@ -76,7 +76,7 @@ class floggerTests(unittest.TestCase):
         self.assertEqual(self.filecontents("test2") ,"Test other data")
     
         self.flog.freeze()
-        self.assertEquals(self.flog.in_use_logs, [] )
+        self.assertEqual(self.flog.in_use_logs, [] )
         self.flog.thaw()
         
         t = self.flog.start_transaction()
@@ -208,7 +208,7 @@ class floggerTests(unittest.TestCase):
         self.flog.Add_File(t,"test3","Test other data")
         self.flog.commit_transaction(t)
         lfile = self.flog.logf.fname
-        self.assertEquals(len(self.flog.in_use_logs), 1 ) 
+        self.assertEqual(len(self.flog.in_use_logs), 1 ) 
 
         self.assertTrue(os.path.exists(lfile))
         self.flog.freeze()
@@ -227,7 +227,7 @@ class floggerTests(unittest.TestCase):
         
         #Check operation write.
         xact1.do()
-        self.assertEquals(self.filecontents(f.name),"testcontent")
+        self.assertEqual(self.filecontents(f.name),"testcontent")
 
         xact2 = fl.JournaledOperation.load(iter(xact_str))
         self.assertEqual(xact2.opid,xact.opid)

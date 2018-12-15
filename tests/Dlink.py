@@ -71,33 +71,33 @@ class DlinkTests(unittest.TestCase):
 
     def testLink(self):
         dlk.CreateBiDiLink(self.object1,"link",self.object2,"link" )
-        self.assertEquals(self.object1["link"].get_object(),self.object2)        
-        self.assertEquals(self.object2["link"].get_object(),self.object1)        
-        self.assertEquals(self.object2["link"].get_partner(),self.object1["link"])        
-        self.assertEquals(self.object1["link"].get_partner(),self.object2["link"])        
-        self.assertEquals(self.object1["link"].get_anchor(),self.object1)        
-        self.assertEquals(self.object2["link"].get_anchor(),self.object2)        
+        self.assertEqual(self.object1["link"].get_object(),self.object2)        
+        self.assertEqual(self.object2["link"].get_object(),self.object1)        
+        self.assertEqual(self.object2["link"].get_partner(),self.object1["link"])        
+        self.assertEqual(self.object1["link"].get_partner(),self.object2["link"])        
+        self.assertEqual(self.object1["link"].get_anchor(),self.object1)        
+        self.assertEqual(self.object2["link"].get_anchor(),self.object2)        
  
     def testMove(self):
         """This behaviour is needed so simpleton UI don't need to mocuh
         extra support for Dlink, they can ue Unstored, and then move/copy"""
         dlk.CreateBiDiLink(self.object1,"link",self.object2,"link" )
-        self.assertEquals(self.object1["link"].get_object(),self.object2)
-        self.assertEquals(self.object2["link"].get_object(),self.object1)
+        self.assertEqual(self.object1["link"].get_object(),self.object2)
+        self.assertEqual(self.object2["link"].get_object(),self.object1)
         
         #Do move and check all three values
         object3 = self.system.NewObject("Dummy") 
         object3["newlink"]=dlk.CreateAnchorPoint(object3) 
         object3["newlink"]=self.object2["link"] 
-        self.assertEquals(self.object1["link"].get_object(),object3)
-        self.assertEquals(object3["newlink"].get_object(),self.object1)
-        self.assertEquals(self.object2["link"].get_object(),None)
-        self.assertEquals(self.object1["link"].get_partner(),object3["newlink"])
-        self.assertEquals(object3["newlink"].get_partner(),self.object1["link"])
-        self.assertEquals(self.object2["link"].get_partner(),None)
-        self.assertEquals(self.object1["link"].get_anchor(),self.object1)
-        self.assertEquals(self.object2["link"].get_anchor(),self.object2)
-        self.assertEquals(object3["newlink"].get_anchor(),object3)
+        self.assertEqual(self.object1["link"].get_object(),object3)
+        self.assertEqual(object3["newlink"].get_object(),self.object1)
+        self.assertEqual(self.object2["link"].get_object(),None)
+        self.assertEqual(self.object1["link"].get_partner(),object3["newlink"])
+        self.assertEqual(object3["newlink"].get_partner(),self.object1["link"])
+        self.assertEqual(self.object2["link"].get_partner(),None)
+        self.assertEqual(self.object1["link"].get_anchor(),self.object1)
+        self.assertEqual(self.object2["link"].get_anchor(),self.object2)
+        self.assertEqual(object3["newlink"].get_anchor(),object3)
         
         def raiseerror(obj,attrname):
             obj[attrname]=self.object2["link"] 
@@ -108,27 +108,27 @@ class DlinkTests(unittest.TestCase):
         #self.assertRaises(KeyError,self.object1.__getitem__,"newlink")    
         
         self.object1["newlink"] = self.object2["link"]
-        self.assertEquals(self.object2["link"].get_object(),None)        
-        self.assertEquals(self.object2["link"].get_anchor(),self.object2)  
+        self.assertEqual(self.object2["link"].get_object(),None)        
+        self.assertEqual(self.object2["link"].get_anchor(),self.object2)  
         #Anchordist is preserved when copying anchors..      
-        self.assertEquals(self.object1["newlink"].get_anchor(),self.object1)        
+        self.assertEqual(self.object1["newlink"].get_anchor(),self.object1)        
            
  
         #Try valid copy of an anchor point
         self.object2["newlink"]=self.object2["link"] 
-        self.assertEquals(self.object2["newlink"].get_partner(),None)        
-        self.assertEquals(self.object2["newlink"].get_anchor(),self.object2) 
+        self.assertEqual(self.object2["newlink"].get_partner(),None)        
+        self.assertEqual(self.object2["newlink"].get_anchor(),self.object2) 
         
         #Try invalid move toan anchorpoint and check it hasn't changed  src or dest object
         #again code has chnaged here.
         #self.assertRaises(dlk.BiDiLinkTargetMismatch,raiseerror,self.object1,"link")
-        #self.assertEquals(self.object1["link"].get_partner(),object3["newlink"])        
-        #self.assertEquals(self.object1["link"].get_anchor(),self.object1)        
-        #self.assertEquals(self.object1["link"].get_object(),object3)        
+        #self.assertEqual(self.object1["link"].get_partner(),object3["newlink"])        
+        #self.assertEqual(self.object1["link"].get_anchor(),self.object1)        
+        #self.assertEqual(self.object1["link"].get_object(),object3)        
 
         self.object1["link"] = self.object2["link"]
-        self.assertEquals(self.object1["link"].get_partner(),None)        
-        self.assertEquals(self.object1["link"].get_anchor(),self.object1)        
+        self.assertEqual(self.object1["link"].get_partner(),None)        
+        self.assertEqual(self.object1["link"].get_anchor(),self.object1)        
 
 
         #self.object1["link"]=self.object2["link"] 
@@ -136,12 +136,12 @@ class DlinkTests(unittest.TestCase):
         #FIXME:(reinstate test) Just breaking a link...
         dlk.CreateBiDiLink(self.object1,"1link",self.object2,"1link" )
         self.object1["1link"] = dlk.CreateAnchorPoint(self.object1)
-        self.assertEquals(self.object1["1link"].get_anchor(),self.object1)        
-        self.assertEquals(self.object2["1link"].get_anchor(),self.object2)        
-        self.assertEquals(self.object1["1link"].get_object(),None)        
-        self.assertEquals(self.object2["1link"].get_object(),None)        
-        self.assertEquals(self.object1["1link"].get_partner(),None)        
-        self.assertEquals(self.object2["1link"].get_partner(),None)        
+        self.assertEqual(self.object1["1link"].get_anchor(),self.object1)        
+        self.assertEqual(self.object2["1link"].get_anchor(),self.object2)        
+        self.assertEqual(self.object1["1link"].get_object(),None)        
+        self.assertEqual(self.object2["1link"].get_object(),None)        
+        self.assertEqual(self.object1["1link"].get_partner(),None)        
+        self.assertEqual(self.object2["1link"].get_partner(),None)        
 
 
 
@@ -162,68 +162,68 @@ class DlinkTests(unittest.TestCase):
         self.do_actual_connect_to_test()
 
     def do_actual_connect_to_test(self,):
-        self.assertEquals(self.object1["2link"].get_anchor(),self.object1)        
-        self.assertEquals(self.object1["2link"].get_partner(),None)        
-        self.assertEquals(self.object1["2link"].get_object(),None)        
-        self.assertEquals(self.object2["2link"].get_anchor(),self.object2)    
-        self.assertEquals(self.object2["2link"].get_partner(),None)        
-        self.assertEquals(self.object2["2link"].get_object(),None)        
+        self.assertEqual(self.object1["2link"].get_anchor(),self.object1)        
+        self.assertEqual(self.object1["2link"].get_partner(),None)        
+        self.assertEqual(self.object1["2link"].get_object(),None)        
+        self.assertEqual(self.object2["2link"].get_anchor(),self.object2)    
+        self.assertEqual(self.object2["2link"].get_partner(),None)        
+        self.assertEqual(self.object2["2link"].get_object(),None)        
         self.object1["2link"] = dlk.ConnectTo(self.object2["2link"])
-        self.assertEquals(self.object1["2link"].get_anchor(),self.object1)        
-        self.assertEquals(self.object1["2link"].get_partner(),self.object2["2link"])        
-        self.assertEquals(self.object1["2link"].get_object(),self.object2)        
-        self.assertEquals(self.object2["2link"].get_anchor(),self.object2)    
-        self.assertEquals(self.object2["2link"].get_partner(),self.object1["2link"])        
-        self.assertEquals(self.object2["2link"].get_object(),self.object1) 
+        self.assertEqual(self.object1["2link"].get_anchor(),self.object1)        
+        self.assertEqual(self.object1["2link"].get_partner(),self.object2["2link"])        
+        self.assertEqual(self.object1["2link"].get_object(),self.object2)        
+        self.assertEqual(self.object2["2link"].get_anchor(),self.object2)    
+        self.assertEqual(self.object2["2link"].get_partner(),self.object1["2link"])        
+        self.assertEqual(self.object2["2link"].get_object(),self.object1) 
         #Use a new anchor point and move / ConnectTo to it.
         self.object2["3link"]=dlk.CreateAnchorPoint(self.object2)
         link=dlk.ConnectTo(self.object2["3link"])
         self.object1["2link"]=link
-        self.assertEquals(self.object1["2link"].get_anchor(),self.object1)        
-        self.assertEquals(self.object1["2link"].get_partner(),self.object2["3link"])        
-        self.assertEquals(self.object1["2link"].get_object(),self.object2)        
+        self.assertEqual(self.object1["2link"].get_anchor(),self.object1)        
+        self.assertEqual(self.object1["2link"].get_partner(),self.object2["3link"])        
+        self.assertEqual(self.object1["2link"].get_object(),self.object2)        
 
-        self.assertEquals(self.object2["3link"].get_anchor(),self.object2)    
-        self.assertEquals(self.object2["3link"].get_partner(),self.object1["2link"])        
-        self.assertEquals(self.object2["3link"].get_object(),self.object1)
+        self.assertEqual(self.object2["3link"].get_anchor(),self.object2)    
+        self.assertEqual(self.object2["3link"].get_partner(),self.object1["2link"])        
+        self.assertEqual(self.object2["3link"].get_object(),self.object1)
 
-        self.assertEquals(self.object2["2link"].get_anchor(),self.object2)    
-        self.assertEquals(self.object2["2link"].get_partner(),None)        
-        self.assertEquals(self.object2["2link"].get_object(),None)
+        self.assertEqual(self.object2["2link"].get_anchor(),self.object2)    
+        self.assertEqual(self.object2["2link"].get_partner(),None)        
+        self.assertEqual(self.object2["2link"].get_object(),None)
 
 
     def testShadowing_unconnected_connecting(self):
         self.dummyparent["objlink1"] = dlk.CreateAnchorPoint(self.dummyparent)
         self.object1["link2"] = dlk.CreateAnchorPoint(self.object1)
         self.object2["objlink1"] = dlk.ConnectTo( self.object1["link2"])
-        self.assertEquals(self.object1["link2"].get_object(),self.object2)
-        self.assertEquals(self.object2["objlink1"].get_object(),self.object1)
-        self.assertEquals(self.dummyparent["objlink1"].get_object(),None)
-        self.assertEquals(self.dummyparent["objlink1"].get_anchor(),self.dummyparent)
+        self.assertEqual(self.object1["link2"].get_object(),self.object2)
+        self.assertEqual(self.object2["objlink1"].get_object(),self.object1)
+        self.assertEqual(self.dummyparent["objlink1"].get_object(),None)
+        self.assertEqual(self.dummyparent["objlink1"].get_anchor(),self.dummyparent)
 
 
     def testShadowing_connected(self):
         self.dummyparent["objlink1"] = dlk.CreateAnchorPoint(self.dummyparent)
         self.object1["link2"] = dlk.CreateAnchorPoint(self.object1)
         self.dummyparent["objlink1"] = dlk.ConnectTo( self.object1["link2"])
-        self.assertEquals(self.object1["link2"].get_object(),self.dummyparent)
-        self.assertEquals(self.dummyparent["objlink1"].get_object(),self.object1)
-        self.assertEquals(self.dummyparent["objlink1"].get_anchor(),self.dummyparent)
+        self.assertEqual(self.object1["link2"].get_object(),self.dummyparent)
+        self.assertEqual(self.dummyparent["objlink1"].get_object(),self.object1)
+        self.assertEqual(self.dummyparent["objlink1"].get_anchor(),self.dummyparent)
  
         #This read seem to f*ck things up.
         self.object2["objlink1"].get_object()
 
-        self.assertEquals(self.object1["link2"].get_object(),self.dummyparent)
-        self.assertEquals(self.dummyparent["objlink1"].get_object(),self.object1)
-        self.assertEquals(self.dummyparent["objlink1"].get_anchor(),self.dummyparent)
+        self.assertEqual(self.object1["link2"].get_object(),self.dummyparent)
+        self.assertEqual(self.dummyparent["objlink1"].get_object(),self.object1)
+        self.assertEqual(self.dummyparent["objlink1"].get_anchor(),self.dummyparent)
         ##This tests on a connected object the anchorpoint shows as the obj from
         # which the connection is nherited from !
         #
         # IN a sense in thsi one case inheirtance works differently! this 
         # is the second point under shadowing semantics
         #
-        self.assertEquals(self.object2["objlink1"].get_anchor(),self.dummyparent)
-        self.assertEquals(self.object2["objlink1"].get_object(),self.object1)
+        self.assertEqual(self.object2["objlink1"].get_anchor(),self.dummyparent)
+        self.assertEqual(self.object2["objlink1"].get_object(),self.object1)
 
 
     def testUnstored(self):
@@ -234,25 +234,25 @@ class DlinkTests(unittest.TestCase):
         #Test that the value can be set multiple times with a problems
         attr.set_value (dlk.ConnectTo( self.object2["uobjlink1"]))
         attr.set_value (dlk.ConnectTo( self.object3["uobjlink1"]))
-        self.assertEquals(   self.object2["uobjlink1"].get_object() , None )
-        self.assertEquals(   self.object3["uobjlink1"].get_object() , None )
+        self.assertEqual(   self.object2["uobjlink1"].get_object() , None )
+        self.assertEqual(   self.object3["uobjlink1"].get_object() , None )
         self.assertRaises(KeyError,self.object1.__getitem__,"foo")
         ##Move the unstored connection to a real attribute
         self.object1["ulink2"] = attr
-        self.assertEquals(self.object1["ulink2"].get_object(),self.object3)
-        self.assertEquals(self.object3["uobjlink1"].get_object(),self.object1)
+        self.assertEqual(self.object1["ulink2"].get_object(),self.object3)
+        self.assertEqual(self.object3["uobjlink1"].get_object(),self.object1)
 
     def testUnstored2(self):
         attr = MMUnstorableAttribute("foo", dlk.CreateAnchorPoint(self.object1) , self.object1)
         self.assertRaises(KeyError,self.object1.__getitem__,"foo")
         #Test that the value can be set multiple times with a problems
         self.object3["uobjlink1"] = dlk.CreateAnchorPoint(self.object3)
-        self.assertEquals(attr.get_anchor(),self.object1)
+        self.assertEqual(attr.get_anchor(),self.object1)
         self.object1["ulink2"] = attr
-        self.assertEquals(self.object1["ulink2"].get_anchor(),self.object1)
+        self.assertEqual(self.object1["ulink2"].get_anchor(),self.object1)
         self.object3["uobjlink1"] = dlk.ConnectTo(self.object1["ulink2"] )
-        self.assertEquals(self.object1["ulink2"].get_object(),self.object3)
-        self.assertEquals(self.object3["uobjlink1"].get_object(),self.object1)
+        self.assertEqual(self.object1["ulink2"].get_object(),self.object3)
+        self.assertEqual(self.object3["uobjlink1"].get_object(),self.object1)
    
     def testConnectTwice(self):
 #        glogger.setLevel(logging.DEBUG)
@@ -264,17 +264,17 @@ class DlinkTests(unittest.TestCase):
         glogger.debug('connect 1.')
         self.object3["uobjlink1"] = dlk.ConnectTo(self.object2["uobjlink1"] )
         glogger.debug('connect 1 - complete')
-        self.assertEquals(self.object2["uobjlink1"].get_object(),self.object3)
-        self.assertEquals(self.object3["uobjlink1"].get_object(),self.object2)
-        self.assertEquals(self.object3["uobjlink1"].get_partner(),self.object2["uobjlink1"])
-        self.assertEquals(self.object2["uobjlink1"].get_partner(),self.object3["uobjlink1"])
+        self.assertEqual(self.object2["uobjlink1"].get_object(),self.object3)
+        self.assertEqual(self.object3["uobjlink1"].get_object(),self.object2)
+        self.assertEqual(self.object3["uobjlink1"].get_partner(),self.object2["uobjlink1"])
+        self.assertEqual(self.object2["uobjlink1"].get_partner(),self.object3["uobjlink1"])
 
 
         glogger.debug('connect 2.')
         self.object3["uobjlink1"] = dlk.ConnectTo( self.object2["uobjlink1"] )
         glogger.debug('connect 2 - complete')
-        self.assertEquals(self.object2["uobjlink1"].get_object(),self.object3)
-        self.assertEquals(self.object3["uobjlink1"].get_object(),self.object2)
+        self.assertEqual(self.object2["uobjlink1"].get_object(),self.object3)
+        self.assertEqual(self.object3["uobjlink1"].get_object(),self.object2)
 #        glogger.debug('done')
 #        glogger.setLevel(logging.WARN)
 
@@ -285,33 +285,33 @@ class DlinkTests(unittest.TestCase):
         self.assertRaises(KeyError,self.object1.__getitem__,"foo")
         attr.set_value (dlk.ConnectTo( self.object3["usobjlink1"]))
         attr.set_value (dlk.ConnectTo( self.object2["usobjlink1"]))
-        self.assertEquals(   self.object2["usobjlink1"].get_object() , None )
-        self.assertEquals(   self.object3["usobjlink1"].get_object() , None )
+        self.assertEqual(   self.object2["usobjlink1"].get_object() , None )
+        self.assertEqual(   self.object3["usobjlink1"].get_object() , None )
         self.assertRaises(KeyError,self.object1.__getitem__,"foo")
         self.object1["uslink2"] = attr
         #self.object2["usobjlink1"] = dlk.ConnectTo( self.object1["uslink2"])
-        self.assertEquals(self.object1["uslink2"].get_object(),self.object2)
-        self.assertEquals(self.object2["usobjlink1"].get_object(),self.object1)
-        self.assertEquals(self.dummyparent["usobjlink1"].get_object(),None)
-        self.assertEquals(self.dummyparent["usobjlink1"].get_anchor(),self.dummyparent)
+        self.assertEqual(self.object1["uslink2"].get_object(),self.object2)
+        self.assertEqual(self.object2["usobjlink1"].get_object(),self.object1)
+        self.assertEqual(self.dummyparent["usobjlink1"].get_object(),None)
+        self.assertEqual(self.dummyparent["usobjlink1"].get_anchor(),self.dummyparent)
     
     def testSetValueMovingAnchor(self):
         self.dummyparent["anchor"] = dlk.CreateAnchorPoint(self.dummyparent)
-        self.assertEquals(self.dummyparent["anchor"].get_anchor(),self.dummyparent)
+        self.assertEqual(self.dummyparent["anchor"].get_anchor(),self.dummyparent)
         self.dummyparent["anchor"].set_value(dlk.CreateAnchorPoint(self.system["Template"]))
-        self.assertEquals(self.dummyparent["anchor"].get_anchor(),self.system["Template"])
+        self.assertEqual(self.dummyparent["anchor"].get_anchor(),self.system["Template"])
         self.dummyparent["anchor"].set_value(dlk.CreateAnchorPoint(self.dummyparent["anchor"]))
-        self.assertEquals(self.dummyparent["anchor"].get_anchor(),self.dummyparent["anchor"])
+        self.assertEqual(self.dummyparent["anchor"].get_anchor(),self.dummyparent["anchor"])
         self.dummyparent["anchor"].set_value(dlk.CreateAnchorPoint(self.dummyparent))
-        self.assertEquals(self.dummyparent["anchor"].get_anchor(),self.dummyparent)
+        self.assertEqual(self.dummyparent["anchor"].get_anchor(),self.dummyparent)
 
     def testSetValueMovingAnchorInUnstorable(self):
         attr = MMUnstorableAttribute("foo", dlk.CreateAnchorPoint(self.object1) , self.object1)
-        self.assertEquals(attr.get_anchor(),self.object1)
+        self.assertEqual(attr.get_anchor(),self.object1)
         attr.set_value(dlk.CreateAnchorPoint(self.system["Dummy"]))
-        self.assertEquals(attr.get_anchor(),self.system["Dummy"])
+        self.assertEqual(attr.get_anchor(),self.system["Dummy"])
         attr.set_value(dlk.CreateAnchorPoint(self.object1))
-        self.assertEquals(attr.get_anchor(),self.object1)
+        self.assertEqual(attr.get_anchor(),self.object1)
         
         
 

@@ -65,8 +65,8 @@ class scmTests(object):
         self.store.commit("commit msg")
         #Check size of changelog + files contained.
         clog  ,files = getfiles_and_changelog(self.store)
-        self.assertEquals(len(clog),1)
-        self.assertEquals(len(files),1)
+        self.assertEqual(len(clog),1)
+        self.assertEqual(len(files),1)
 
         #Check uptodate 
         self.assertTrue(self.store.uptodate())
@@ -75,8 +75,8 @@ class scmTests(object):
         WriteFile(self.store,"test1","different data")
         self.store.commit("changed the data")
         clog  ,files = getfiles_and_changelog(self.store)
-        self.assertEquals(len(clog),2)
-        self.assertEquals(len(files),1)
+        self.assertEqual(len(clog),2)
+        self.assertEqual(len(files),1)
  
         #add another file
         WriteFile(self.store,"test2","More test data")
@@ -88,8 +88,8 @@ class scmTests(object):
         self.store.commit("another commit")
         #Check size of changelog + files contained.
         clog  ,files = getfiles_and_changelog(self.store)
-        self.assertEquals(len(clog),3)
-        self.assertEquals(len(files),2)
+        self.assertEqual(len(clog),3)
+        self.assertEqual(len(files),2)
 
         #Check uptodate 
         self.assertTrue(self.store.uptodate())
@@ -98,15 +98,15 @@ class scmTests(object):
         #rollback - redo checks.
         self.store.rollback()
         clog  ,files = getfiles_and_changelog(self.store)
-        self.assertEquals(len(clog),2)
-        self.assertEquals(len(files),1)
+        self.assertEqual(len(clog),2)
+        self.assertEqual(len(files),1)
         
    
         # revert - check file contents.
         changelog = list( self.store.getChangeLog() )
         rev = changelog[-1]
         self.store.revert(rev)
-        self.assertEquals(ReadFile(self.store,"test1"),"Test data") 
+        self.assertEqual(ReadFile(self.store,"test1"),"Test data") 
         try:
             #Remove 'test2' before cleaning it is ok for it
             #to be removeed or to belfet by cleaning.
@@ -122,8 +122,8 @@ class scmTests(object):
         self.store.commit("commit msg")
         #Check size of changelog + files contained.
         clog  ,files = getfiles_and_changelog(self.store)
-        self.assertEquals(len(clog),1)
-        self.assertEquals(len(files),1)
+        self.assertEqual(len(clog),1)
+        self.assertEqual(len(files),1)
 
         DeleteFile(self.store,"test1",)
         #Use different data as some scm fail if to commit if not changes are in the
@@ -131,8 +131,8 @@ class scmTests(object):
         WriteFile(self.store,"test1","Test data1")
         self.store.commit("commit msg")
         clog  ,files = getfiles_and_changelog(self.store)
-        self.assertEquals(len(clog),2)
-        self.assertEquals(len(files),1)
+        self.assertEqual(len(clog),2)
+        self.assertEqual(len(files),1)
 
 
 
@@ -141,6 +141,6 @@ class scmTests(object):
         self.store.clean()
         for dirpath,dirs,files in os.walk(self.store.get_path()):
              self.processDirs(dirs)
-             self.assertEquals(len(files),0)
+             self.assertEqual(len(files),0)
         self.store.unlock() 
 

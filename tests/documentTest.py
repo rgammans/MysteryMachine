@@ -50,18 +50,18 @@ class docTest(unittest.TestCase):
         csheet = self.s.NewObject("docs")
         csheet["title"] = document.pieces.title(parts ={"1":":mm:`:name`"})
         csheet[".order"] = [ csheet["title"].getRef()  , ]
-        #self.assertEquals(str(document.generate_doctree(csheet,c1)),
+        #self.assertEqual(str(document.generate_doctree(csheet,c1)),
         #                 "<document source=\"character:1\">Fred Bloggs</document>")
         doc = document.generate_doctree(csheet,c1)
         #print doc
         #FIXME - Find out why this doesn't work (its a test problem not a CUT problem).
-        #self.assertEquals(doc.source,repr(c1))
-        self.assertEquals(len(doc),1)                           #Has one 
-        self.assertEquals(type(doc[0]),docutils.nodes.section)   #section
-        self.assertEquals(len(doc[0]),1)                        #which contains one
-        self.assertEquals(type(doc[0][0]),docutils.nodes.title) #title
-        self.assertEquals(type(doc[0][0][0]),docutils.nodes.Text) #title
-        self.assertEquals(doc[0][0][0],"Freddie Bloggs") #title
+        #self.assertEqual(doc.source,repr(c1))
+        self.assertEqual(len(doc),1)                           #Has one 
+        self.assertEqual(type(doc[0]),docutils.nodes.section)   #section
+        self.assertEqual(len(doc[0]),1)                        #which contains one
+        self.assertEqual(type(doc[0][0]),docutils.nodes.title) #title
+        self.assertEqual(type(doc[0][0][0]),docutils.nodes.Text) #title
+        self.assertEqual(doc[0][0][0],"Freddie Bloggs") #title
 
         c1["background"]="""
 
@@ -72,19 +72,19 @@ have fun.
         csheet["background"] = document.pieces.section(parts = { "title":"Background", "body":":mm:`:background`" })
         csheet[".order"] = [ csheet["title"].getRef()  , csheet["background"].getRef() ]
         doc = document.generate_doctree(csheet,c1)
-        self.assertEquals(len(doc),1)                           #Has one 
-        self.assertEquals(type(doc[0]),docutils.nodes.section)   #section
-        self.assertEquals(len(doc[0]),2)                        #which contains two elements 
-        self.assertEquals(type(doc[0][0]),docutils.nodes.title) #a title
-        self.assertEquals(type(doc[0][0][0]),docutils.nodes.Text) #of text
-        self.assertEquals(doc[0][0][0],"Freddie Bloggs") #title
-        self.assertEquals(type(doc[0][1]),docutils.nodes.section) #and a section
-        self.assertEquals(len(doc[0][1]),2)              # contain again 2 elements
-        self.assertEquals(type(doc[0][1][0]),docutils.nodes.title) #a title
-        self.assertEquals(type(doc[0][1][1]),docutils.nodes.paragraph) #and a paragraph
-        self.assertEquals(len(doc[0][1][1]),1) #and a paragraph contain a single piece of
-        self.assertEquals(type(doc[0][1][1][0]),docutils.nodes.Text) # Text
-        self.assertEquals(str(doc[0][1][1][0]),"You find life boring . You don't have a backgound. Piss about and\nhave fun.")
+        self.assertEqual(len(doc),1)                           #Has one 
+        self.assertEqual(type(doc[0]),docutils.nodes.section)   #section
+        self.assertEqual(len(doc[0]),2)                        #which contains two elements 
+        self.assertEqual(type(doc[0][0]),docutils.nodes.title) #a title
+        self.assertEqual(type(doc[0][0][0]),docutils.nodes.Text) #of text
+        self.assertEqual(doc[0][0][0],"Freddie Bloggs") #title
+        self.assertEqual(type(doc[0][1]),docutils.nodes.section) #and a section
+        self.assertEqual(len(doc[0][1]),2)              # contain again 2 elements
+        self.assertEqual(type(doc[0][1][0]),docutils.nodes.title) #a title
+        self.assertEqual(type(doc[0][1][1]),docutils.nodes.paragraph) #and a paragraph
+        self.assertEqual(len(doc[0][1][1]),1) #and a paragraph contain a single piece of
+        self.assertEqual(type(doc[0][1][1][0]),docutils.nodes.Text) # Text
+        self.assertEqual(str(doc[0][1][1][0]),"You find life boring . You don't have a backgound. Piss about and\nhave fun.")
 
 
 

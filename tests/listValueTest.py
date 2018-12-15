@@ -84,53 +84,53 @@ class ListValTest(unittest.TestCase):
 
     def testList(self):
         val  = MMListAttribute(value =  [ "first" , "second" , "third" ] )
-        self.assertEquals(unicode(val[0] )  , "first")      
-        self.assertEquals(unicode(val[1] )  , "second")      
-        self.assertEquals(unicode(val[2] )  , "third")      
+        self.assertEqual(unicode(val[0] )  , "first")      
+        self.assertEqual(unicode(val[1] )  , "second")      
+        self.assertEqual(unicode(val[2] )  , "third")      
         val.append("fourth")
         val._compose(None)
-        self.assertEquals(val.count(),4)
-        self.assertEquals(unicode(val[3])  , "fourth")
+        self.assertEqual(val.count(),4)
+        self.assertEqual(unicode(val[3])  , "fourth")
         val.insert(2,"2 and half'th")
         val._compose(None)
-        self.assertEquals(unicode(val[0] )  , "first")      
-        self.assertEquals(unicode(val[1] )  , "second")      
-        self.assertEquals(unicode(val[2])  ,  "2 and half'th")
-        self.assertEquals(unicode(val[3])   , "third")      
-        self.assertEquals(unicode(val[4])   , "fourth")      
-        self.assertEquals(val.count(),5)
+        self.assertEqual(unicode(val[0] )  , "first")      
+        self.assertEqual(unicode(val[1] )  , "second")      
+        self.assertEqual(unicode(val[2])  ,  "2 and half'th")
+        self.assertEqual(unicode(val[3])   , "third")      
+        self.assertEqual(unicode(val[4])   , "fourth")      
+        self.assertEqual(val.count(),5)
         self.assertTrue("third" in val)
-        self.assertEquals(len(list(iter(val))),5)
-        self.assertEquals(len(val),5)
+        self.assertEqual(len(list(iter(val))),5)
+        self.assertEqual(len(val),5)
         val.insert(0,"zeroth")
         val._compose(None)
-        self.assertEquals(unicode(val[0] )  , "zeroth")      
-        self.assertEquals(unicode(val[1] )  , "first")      
-        self.assertEquals(unicode(val[2] )  , "second")      
-        self.assertEquals(unicode(val[3] ) ,  "2 and half'th")
-        self.assertEquals(unicode(val[4] )  , "third")      
-        self.assertEquals(unicode(val[5] )  , "fourth")  
+        self.assertEqual(unicode(val[0] )  , "zeroth")      
+        self.assertEqual(unicode(val[1] )  , "first")      
+        self.assertEqual(unicode(val[2] )  , "second")      
+        self.assertEqual(unicode(val[3] ) ,  "2 and half'th")
+        self.assertEqual(unicode(val[4] )  , "third")      
+        self.assertEqual(unicode(val[5] )  , "fourth")  
         self.assertTrue("third" in val)
         self.assertTrue("zeroth" in val)
-        self.assertEquals(val.count(),6)
-        self.assertEquals(len(list(iter(val))),6)
+        self.assertEqual(val.count(),6)
+        self.assertEqual(len(list(iter(val))),6)
         del val[4]
-        self.assertEquals(unicode(val[0] )  , "zeroth")      
-        self.assertEquals(unicode(val[1] )  , "first")      
-        self.assertEquals(unicode(val[2] )  , "second")      
-        self.assertEquals(unicode(val[3])  ,  "2 and half'th")
-        self.assertEquals(unicode(val[4])   , "fourth")  
+        self.assertEqual(unicode(val[0] )  , "zeroth")      
+        self.assertEqual(unicode(val[1] )  , "first")      
+        self.assertEqual(unicode(val[2] )  , "second")      
+        self.assertEqual(unicode(val[3])  ,  "2 and half'th")
+        self.assertEqual(unicode(val[4])   , "fourth")  
         self.assertFalse("third" in val)
-        self.assertEquals(val.count(),5)
+        self.assertEqual(val.count(),5)
         val[3]="third" 
         val._compose(None)
-        self.assertEquals(unicode(val[0] )  , "zeroth")      
-        self.assertEquals(unicode(val[1] )  , "first")      
-        self.assertEquals(unicode(val[2] )  , "second")      
-        self.assertEquals(unicode(val[3] )  ,  "third")
-        self.assertEquals(unicode(val[4])   , "fourth")  
-        self.assertEquals(val.count(),5)
-        self.assertEquals(len(list(iter(val))),5)
+        self.assertEqual(unicode(val[0] )  , "zeroth")      
+        self.assertEqual(unicode(val[1] )  , "first")      
+        self.assertEqual(unicode(val[2] )  , "second")      
+        self.assertEqual(unicode(val[3] )  ,  "third")
+        self.assertEqual(unicode(val[4])   , "fourth")  
+        self.assertEqual(val.count(),5)
+        self.assertEqual(len(list(iter(val))),5)
 
     def testAttributeForward(self):
         val  = MMListAttribute(value =  [ "first" , "second" , "third" ] )
@@ -139,48 +139,48 @@ class ListValTest(unittest.TestCase):
         obj["test"] = val
         attr = obj["test"]
         #Check values from initialisation
-        self.assertEquals(attr.count() ,3 )        
-        self.assertEquals(unicode(attr.__getitem__(1)) , "second" )        
-        self.assertEquals(unicode(attr[1]) ,"second" )        
-        self.assertEquals(unicode(attr["1"]) ,"second" )        
+        self.assertEqual(attr.count() ,3 )        
+        self.assertEqual(unicode(attr.__getitem__(1)) , "second" )        
+        self.assertEqual(unicode(attr[1]) ,"second" )        
+        self.assertEqual(unicode(attr["1"]) ,"second" )        
         self.assertTrue("second" in attr )
-        self.assertEquals(unicode(attr["-1"]) ,"third" )
+        self.assertEqual(unicode(attr["-1"]) ,"third" )
         #Delete and item.
         del attr["1"]
         #Check whats moved.
         # - array should be  ["first", "third"].
-        self.assertEquals(attr.count() ,2 )        
-        self.assertEquals(len(list(iter(attr))),2)
-        self.assertEquals(len(attr),2)
+        self.assertEqual(attr.count() ,2 )        
+        self.assertEqual(len(list(iter(attr))),2)
+        self.assertEqual(len(attr),2)
         self.assertFalse("second" in attr )
-        self.assertEquals(unicode(attr["1"]) ,"third" )
+        self.assertEqual(unicode(attr["1"]) ,"third" )
         #Check writeback occurred.
         #XXX
         #obj["test"]=attr
         val = attr.get_value()
         attr_id = attr.get_nodeid()
         #attr = None
-        self.assertEquals(system.store.attrs[attr_id],(val.get_type(),val.get_parts()))
+        self.assertEqual(system.store.attrs[attr_id],(val.get_type(),val.get_parts()))
         #Test read from store!.
         #attr = obj["test"]
         valo = CreateAttributeValue("primary")
         attr["0"] = valo
         
         # - array should be  ["primary", "third"].
-        self.assertEquals(attr.count() ,2 )        
-        self.assertEquals(attr[0].get_value(),valo) 
+        self.assertEqual(attr.count() ,2 )        
+        self.assertEqual(attr[0].get_value(),valo) 
  
         
         #Test Stable key behaviour.
         skey = repr(attr[0]).split(":")[-1]
         self.assertNotEquals(skey,"0")
         self.assertNotEquals(skey,0)
-        self.assertEquals(attr[0],attr["0"])
-        self.assertEquals(attr[skey],attr[0],msg=("attr[\"%s\"] != attr[0]" % skey))
+        self.assertEqual(attr[0],attr["0"])
+        self.assertEqual(attr[skey],attr[0],msg=("attr[\"%s\"] != attr[0]" % skey))
         skey = repr(attr["1"]).split(":")[-1]
         self.assertNotEquals(skey,"1")
         self.assertNotEquals(skey,1)
-        self.assertEquals(attr[skey],attr[1])
+        self.assertEqual(attr[skey],attr[1])
 
 
         
@@ -191,27 +191,27 @@ class ListValTest(unittest.TestCase):
         # - array should be  ["primary", "second"].
         attr[1]="second"
         val[1]="second"
-        self.assertEquals(unicode(attr["1"]) ,"second" )        
-        self.assertEquals(system.store.attrs[attr_id],(val.get_type(),val.get_parts()))
+        self.assertEqual(unicode(attr["1"]) ,"second" )        
+        self.assertEqual(system.store.attrs[attr_id],(val.get_type(),val.get_parts()))
         #Check walk back thru and find a parser
-        self.assertEquals(attr[1].GetFullExpansion(),"second")
+        self.assertEqual(attr[1].GetFullExpansion(),"second")
 
         val = copy.copy( obj["test"].get_value())
         # - array should be  ["primary", "second" , "some fate"].
         attr.append("some fate")
         val.append("some fate")
         val._compose(None)
-        self.assertEquals(system.store.attrs[attr_id],(val.get_type(),val.get_parts()))
-        self.assertEquals(unicode(attr["2"]) ,"some fate" )        
+        self.assertEqual(system.store.attrs[attr_id],(val.get_type(),val.get_parts()))
+        self.assertEqual(unicode(attr["2"]) ,"some fate" )        
 
         val = copy.copy( obj["test"].get_value())
         attr.insert(2,"some date")
         val.insert(2,"some date")
         val._compose(None)
         # - array should be  ["primary", "second" ,"some date" ,"some fate"].
-        self.assertEquals(system.store.attrs[attr_id],(val.get_type(),val.get_parts()))
-        self.assertEquals(unicode(attr["2"]) ,"some date" )        
-        self.assertEquals(unicode(attr["3"]) ,"some fate" )        
+        self.assertEqual(system.store.attrs[attr_id],(val.get_type(),val.get_parts()))
+        self.assertEqual(unicode(attr["2"]) ,"some date" )        
+        self.assertEqual(unicode(attr["3"]) ,"some fate" )        
 
 
         #Check trying insert an invalid class.
@@ -231,12 +231,12 @@ class ListValTest(unittest.TestCase):
         names = [ 0,1,2,3 ]
         fndNames= []
         for i,(k,v) in izip_longest(names,attr.iteritems()):
-            self.assertEquals(attr[i] , attr[k])
-            self.assertEquals(attr[i] ,  v)
+            self.assertEqual(attr[i] , attr[k])
+            self.assertEqual(attr[i] ,  v)
             self.assertFalse(k in fndNames)
             fndNames += [ k ]
             self.assertTrue(isinstance( v, MMAttribute))
-            self.assertEquals(v,attr[k])
+            self.assertEqual(v,attr[k])
 
         attrv = list(attr.__iter__())
         self.assertEqual(len(attrv),4)
@@ -244,7 +244,7 @@ class ListValTest(unittest.TestCase):
         self.assertEqual(len(attrk),4)
 
         for k,v in itertools.izip(attrk,attrv):
-            self.assertEquals(attr[k],v)
+            self.assertEqual(attr[k],v)
 
 
 
@@ -252,7 +252,7 @@ class ListValTest(unittest.TestCase):
        def testexpect(obj):
             self.exception = None
             try:
-                self.assertEquals(unicode(obj[-1]) , self.val)
+                self.assertEqual(unicode(obj[-1]) , self.val)
             except Exception as e:
                 self.exception =e
 
@@ -268,7 +268,7 @@ class ListValTest(unittest.TestCase):
        attrobj = obj["list"]
        obj["list"].register_notify(update)
        obj["list"].register_notify(testexpect)
-       self.assertEquals(update.count,0)
+       self.assertEqual(update.count,0)
        count = update.count
 
        self.val = "diff"
@@ -281,13 +281,13 @@ class ListValTest(unittest.TestCase):
        del attrobj[-1]
        self.assertTrue(update.count > count )
        count = update.count
-#       self.assertEquals(update.count,3)
+#       self.assertEqual(update.count,3)
        if self.exception: raise self.exception
 
        attrobj.unregister_notify(update)
        self.val ="baz" 
        attrobj.append(self.val)
-       self.assertEquals(update.count,count)
+       self.assertEqual(update.count,count)
        if self.exception: raise self.exception
        attrobj.unregister_notify(testexpect)
 
@@ -299,19 +299,19 @@ class ListValTest(unittest.TestCase):
         obj["list"] = val
         obj["text"] = "some text"
         #Check values from initialisation
-        self.assertEquals(obj["list"].count() ,3 )   
+        self.assertEqual(obj["list"].count() ,3 )   
         obj["list"][2] = obj["text"]
         obj["list"].append( obj["text"])
-        self.assertEquals(unicode(obj["list"][0]) ,"first" )   
-        self.assertEquals(unicode(obj["list"][1]) , "second" )   
-        self.assertEquals(unicode(obj["list"][2]) , "some text" )   
-        self.assertEquals(unicode(obj["list"][3]) , "some text" )   
+        self.assertEqual(unicode(obj["list"][0]) ,"first" )   
+        self.assertEqual(unicode(obj["list"][1]) , "second" )   
+        self.assertEqual(unicode(obj["list"][2]) , "some text" )   
+        self.assertEqual(unicode(obj["list"][3]) , "some text" )   
 
         #Test appending to an empty list
         val2  = MMListAttribute(value =  [ ] )
         obj["l2"] = val2
         obj["l2"].append(obj["text"])
-        self.assertEquals(unicode(obj["l2"][0]) ,"some text" )   
+        self.assertEqual(unicode(obj["l2"][0]) ,"some text" )   
         
 
     def testKey(self):

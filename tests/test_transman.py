@@ -232,7 +232,7 @@ class TransactionManagerTest(unittest.TestCase):
                 self.node.fail_update()
 
         self.assertRaises(ValueError, _dotest)
-        self.assertEquals(self.tm.state , "xaction_aborted")
+        self.assertEqual(self.tm.state , "xaction_aborted")
         
 
     def test_noautoabort_manual_xaction(self):
@@ -244,7 +244,7 @@ class TransactionManagerTest(unittest.TestCase):
         self.assertRaises(ValueError, _dotest)
         self.assertNotEquals(self.tm.state , "xaction_aborted")
         self.tm.commit_xaction(x)
-        self.assertEquals(self.tm.state , "xaction_commited")
+        self.assertEqual(self.tm.state , "xaction_commited")
         self.assertTrue(self.tm.commited)
 
     def test_manual_abort(self):
@@ -257,8 +257,8 @@ class TransactionManagerTest(unittest.TestCase):
         self.assertFalse(self.tm.commited)
         self.tm.abort_xaction(x)
         self.assertFalse(self.tm.commited)
-        self.assertEquals(self.tm.state , "xaction_aborted")
-        self.assertEquals(self.tm.xaction.count,0)
+        self.assertEqual(self.tm.state , "xaction_aborted")
+        self.assertEqual(self.tm.xaction.count,0)
 
     def test_exception_during_commit(self):
         self.node.fail_write = True
@@ -266,7 +266,7 @@ class TransactionManagerTest(unittest.TestCase):
         x = self.tm.start_write(self.node)
         self.assertFalse(self.tm.commited)
         self.assertRaises(TestError,self.tm.end_write,self.node,x)
-        self.assertEquals(self.tm.state , "xaction_aborted")
+        self.assertEqual(self.tm.state , "xaction_aborted")
 
 class TransactionManagerDecoratorTest(unittest.TestCase):
     def setUp(self):

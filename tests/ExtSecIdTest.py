@@ -36,7 +36,7 @@ class ExtSecIdTest(unittest.TestCase):
 	def testBasic(self):
 		hash1=ExtensionSecureID.fromPathName(self.testpath)
 		hash2=ExtensionSecureID.fromPathName(self.testpath)
-		self.assertEquals( hash1 , hash2 )
+		self.assertEqual( hash1 , hash2 )
 
 	def testStr(self):
 		a=ExtensionSecureID.fromPathName(self.testpath)

@@ -111,20 +111,20 @@ class attribValTest(unittest.TestCase):
         register_value_type("nsilly",partial(sillym,notsillycalled) , { NotSilly:200, str:50  })
         register_value_type("silly",partial(sillym,dummy) , { NotSilly:100  })
         register_value_type("silly2",partial(sillym,dummy2) , { NotSilly:150  })
-        self.assertEquals(CreateAttributeValue(NotSilly("xyzzy")),NotSilly("xyzzy"))
-        self.assertNotEquals(dummy[0],1)
-        self.assertNotEquals(dummy2[0],1)
-        self.assertEquals(notsillycalled[0],1)
+        self.assertEqual(CreateAttributeValue(NotSilly("xyzzy")),NotSilly("xyzzy"))
+        self.assertNotEqual(dummy[0],1)
+        self.assertNotEqual(dummy2[0],1)
+        self.assertEqual(notsillycalled[0],1)
  
         #Value copy operation
         val=MMAttributeValue_BasicText(value = "test")
         val2 = CreateAttributeValue(val)
-        self.assertEquals(val, val2)
+        self.assertEqual(val, val2)
         self.assertFalse(val is val2)
         
         #ValueCreate with copy=false
         val3 = CreateAttributeValue(val,copy = False)
-        self.assertEquals(val, val3)
+        self.assertEqual(val, val3)
         self.assertTrue(val is val3)
 
 
@@ -139,15 +139,15 @@ class attribValTest(unittest.TestCase):
             sillycalled[0]=1
             return kwargs['parts']
         register_value_type("silly",partial(sillym,sillycalled) , { })
-        self.assertEquals(MakeAttributeValue("silly","xyzzy"),"xyzzy")
-        self.assertEquals(sillycalled[0],1)
+        self.assertEqual(MakeAttributeValue("silly","xyzzy"),"xyzzy")
+        self.assertEqual(sillycalled[0],1)
 
 
     def testUnicode(self):
         text = u"Some unicode text this is a pound sign \xa3, this is a special char \u2019"
         attr = CreateAttributeValue(text)
-        self.assertEquals(attr.get_type(),"simple_utf8")
-        self.assertEquals(unicode(attr),text)
+        self.assertEqual(attr.get_type(),"simple_utf8")
+        self.assertEqual(unicode(attr),text)
 
 
     def testGetAttributeTypes(self):
@@ -159,11 +159,11 @@ class attribValTest(unittest.TestCase):
 
     def testNullAttributeType(self):
        attr =  MakeAttributeValue("null",{})
-       self.assertEquals(attr.get_object(),None)
+       self.assertEqual(attr.get_object(),None)
        attr =  MakeAttributeValue("null",{'value':""})
-       self.assertEquals(attr.get_object(),None)
+       self.assertEqual(attr.get_object(),None)
        attr =  MakeAttributeValue("null",{'value':"sdkasjdlk", 'ref':"more stuff"})
-       self.assertEquals(attr.get_object(),None)
+       self.assertEqual(attr.get_object(),None)
 
 
 

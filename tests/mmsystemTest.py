@@ -72,7 +72,7 @@ class sysTests(unittest.TestCase):
         self.assertEqual(unicode(cat[".dummy"]),"data")
         o12=self.sys.NewObject("One",None)
         o12id = repr(o12).split(":")[-1]
-        self.assertEquals(cat[o12id],o12)
+        self.assertEqual(cat[o12id],o12)
         del cat[".dummy"]
         self.assertRaises(KeyError,cat.__getitem__,".dummy")
         self.assertRaises(KeyError,self.sys["One"].__getitem__,".dummy")
@@ -82,7 +82,7 @@ class sysTests(unittest.TestCase):
         objkeys=list(cat.iterkeys())
         self.assertEqual(len(objkeys),1)
         for k,v in itertools.izip(objkeys,objs):
-            self.assertEquals(cat[k],v)
+            self.assertEqual(cat[k],v)
 
 
 
@@ -91,14 +91,14 @@ class sysTests(unittest.TestCase):
         self.assertRaises(KeyError,cat.__getitem__,o12id)
         self.assertRaises(KeyError,self.sys["One"].__getitem__,o12id)
         self.assertRaises(KeyError,self.sys.get_object,"One",o12id)
-        self.assertEquals(cat.get_root(),self.sys)
+        self.assertEqual(cat.get_root(),self.sys)
         
         #Cat object name.
-        self.assertEquals(unicode(cat),"one")
-        self.assertEquals(repr(cat),"one")
+        self.assertEqual(unicode(cat),"one")
+        self.assertEqual(repr(cat),"one")
         cat[".defname"] = "Test"
-        self.assertEquals(repr(cat),"one")
-        self.assertEquals(unicode(cat),"Test")
+        self.assertEqual(repr(cat),"one")
+        self.assertEqual(unicode(cat),"Test")
 
     def testObjects(self):
         #Check empty categories are..
@@ -128,7 +128,7 @@ class sysTests(unittest.TestCase):
 
         allobjs = list(self.sys.EnumContents())
         self.assertEqual(len(allobjs),3)
-        self.assertEquals(len(list(iter(self.sys))),3)
+        self.assertEqual(len(list(iter(self.sys))),3)
         for o in allobjs:
             self.assertNotEquals(type(self.sys[o]),type(None))
         
@@ -150,14 +150,14 @@ class sysTests(unittest.TestCase):
             self.assertFalse(k in fndNames)
             fndNames += [ k ]
             self.assertTrue(isinstance( v, MMObject))
-            self.assertEquals(v,self.sys[k])  
+            self.assertEqual(v,self.sys[k])  
 
         objs=list(self.sys.__iter__())
         self.assertEqual(len(objs),2)
         objkeys=list(self.sys.iterkeys())
         self.assertEqual(len(objkeys),2)
         for k,v in itertools.izip(objkeys,objs):
-            self.assertEquals(self.sys[k],v)
+            self.assertEqual(self.sys[k],v)
 
         cat = self.sys["one"]
         objs=list(cat.__iter__())
@@ -169,16 +169,16 @@ class sysTests(unittest.TestCase):
 
 
         #Test parent.
-        self.assertEquals(o11.get_parent(),None)
+        self.assertEqual(o11.get_parent(),None)
         cat.set_parent(o21)
-        self.assertEquals(cat.get_parent(),o21)
+        self.assertEqual(cat.get_parent(),o21)
 
         o12=self.sys.NewObject("One")
-        self.assertEquals(o12.get_parent(),o21)
+        self.assertEqual(o12.get_parent(),o21)
         cat.set_parent(o12)
-        self.assertEquals(cat.get_parent(),o12)
+        self.assertEqual(cat.get_parent(),o12)
         #Check we can't create objects which are their own parents.
-        self.assertEquals(o12.get_parent(),o21)
+        self.assertEqual(o12.get_parent(),o21)
  
         o12["attr"] = "text"
         self.assertRaises(Error.InvalidParent,cat.set_parent,o12["attr"])
@@ -189,20 +189,20 @@ class sysTests(unittest.TestCase):
 
         # __init__ del calls them ok.
         # Test open / create semanitcs.
-        self.assertEquals(UnEscapeSystemUri(EscapeSystemUri("dict:test")),"dict:test")
-        self.assertEquals(EscapeSystemUri("attrfile:"+self.mpath),unicode(self.sys))
+        self.assertEqual(UnEscapeSystemUri(EscapeSystemUri("dict:test")),"dict:test")
+        self.assertEqual(EscapeSystemUri("attrfile:"+self.mpath),unicode(self.sys))
         self.assertTrue(GetLoadedSystemByName(unicode(self.sys)) is self.sys)
       
      
 
     def testEncoding(self):
         #Check default encoding
-        self.assertEquals(self.sys.get_encoding(),"ascii" )
+        self.assertEqual(self.sys.get_encoding(),"ascii" )
         #Set and readback encoding
         self.sys.set_encoding("utf-8")
-        self.assertEquals(self.sys.get_encoding(),"utf-8" )
+        self.assertEqual(self.sys.get_encoding(),"utf-8" )
         #Black box test - to enusre we get fetch in from the store
-        self.assertEquals(self.sys._get_encoding(),"utf-8" )
+        self.assertEqual(self.sys._get_encoding(),"utf-8" )
         self.assertRaises(LookupError,self.sys.set_encoding,"xyyzzy")
 
     def testEnumeration(self):
@@ -211,8 +211,8 @@ class sysTests(unittest.TestCase):
         self.sys.set_encoding("utf-8")
         self.sys.set_name("dsddssd")
         #Black box test - to enusre we get fetch in from the store
-        self.assertEquals(set(self.sys.EnumContents())  ,set()  ) #Is empty
-        self.assertEquals(set(self.sys.EnumAttributes(inc_hidden = False)) , set()) #Is empty
+        self.assertEqual(set(self.sys.EnumContents())  ,set()  ) #Is empty
+        self.assertEqual(set(self.sys.EnumAttributes(inc_hidden = False)) , set()) #Is empty
         self.assertTrue(set(self.sys.EnumAttributes(inc_hidden = True))  > set(['.defname', ] ) )
 
     def testConsistentEnumerationDuringTransaction(self):
@@ -243,14 +243,14 @@ class sysTests(unittest.TestCase):
 
 
     def testNaming(self):
-        self.assertEquals(repr(self.sys),unicode(self.sys))
+        self.assertEqual(repr(self.sys),unicode(self.sys))
         rname=repr(self.sys)
         testname= u"A test name"
         self.sys.set_name(testname)
-        self.assertEquals(self.sys.get_name(),testname)
-        self.assertEquals(unicode(self.sys),testname)
-        self.assertEquals(repr(self.sys),rname)
-        self.assertEquals(unicode(self.sys[".defname"]),testname)
+        self.assertEqual(self.sys.get_name(),testname)
+        self.assertEqual(unicode(self.sys),testname)
+        self.assertEqual(repr(self.sys),rname)
+        self.assertEqual(unicode(self.sys[".defname"]),testname)
 
 
     def testNotify(self):

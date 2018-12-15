@@ -58,8 +58,8 @@ class BaseTest(unittest.TestCase):
     def testCanicalise(self):
         with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml"]) as g:
             m  = MMBase()
-            self.assertEquals("hi",m.canonicalise("Hi"))
-            self.assertEquals("hi_world",m.canonicalise("Hi_world"))
+            self.assertEqual("hi",m.canonicalise("Hi"))
+            self.assertEqual("hi_world",m.canonicalise("Hi_world"))
             self.assertRaises(ValueError,m.canonicalise,";")
             self.assertRaises(ValueError,m.canonicalise,"s ad ")
             self.assertRaises(ValueError,m.canonicalise,"sdas/das;")
@@ -84,7 +84,7 @@ class BaseTest(unittest.TestCase):
             self.assertTrue(m.cache[1] is v)
             self.assertTrue(m._get_item(1,bar,"one") is v)
             vf2 = m._get_item(2,bar,"two")
-            self.assertEquals(vf2,bar("two"))
+            self.assertEqual(vf2,bar("two"))
             self.assertTrue(m._get_item(2,bar,"two") is vf2)
             m._invalidate_item(1)
             self.assertRaises(KeyError ,m.cache.__getitem__,1)
@@ -124,7 +124,7 @@ class BaseTest(unittest.TestCase):
             m.unregister_notify(update)
             m._set_item(1,v)
             m._invalidate_item(1)
-            self.assertEquals(update.count,last)
+            self.assertEqual(update.count,last)
   
 
 def getTestNames():

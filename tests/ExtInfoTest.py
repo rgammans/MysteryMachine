@@ -70,10 +70,8 @@ class ExtInfoTest(unittest.TestCase):
 			# test that the name of the plugin has been correctly defined
 			self.assertTrue("FirstPlugin" in [x.name for x in  self.plugin_info])
 			self.assertEqual(sole_category,self.plugin_info[0].category)
-		else:
-			self.assert_(True)
 
-		
+
 	def testBasic(self):
 		self.loading_check()
 
@@ -83,8 +81,8 @@ class ExtInfoTest(unittest.TestCase):
                 """
 		self.loading_check()
 		hash1=ExtensionSecureID.fromPathName(self.plugin_info[0].path+".py")
-		self.assertEquals(hash1,self.plugin_info[0].getSecureID())
-		self.assertNotEquals(self.plugin_info[0].getSecureID(),self.plugin_info[1].getSecureID())
+		self.assertEqual(hash1,self.plugin_info[0].getSecureID())
+		self.assertNotEqual(self.plugin_info[0].getSecureID(),self.plugin_info[1].getSecureID())
 
 def getTestNames():
 	return [ 'ExtInfoTest.ExtInfoTest' ] 

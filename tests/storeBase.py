@@ -58,11 +58,11 @@ class sysTests(unittest.TestCase):
 
     def testUriHandlers(self):
         # Test GetPath
-        self.assertEquals(GetPath("kks:asdas"),"asdas")
-        self.assertEquals(GetPath("kksia:hsasdas:a\sad:"),"hsasdas:a\sad:")
+        self.assertEqual(GetPath("kks:asdas"),"asdas")
+        self.assertEqual(GetPath("kksia:hsasdas:a\sad:"),"hsasdas:a\sad:")
         # Test GetScheme
-        self.assertEquals(GetScheme("kks:asdas"),"kks")
-        self.assertEquals(GetScheme("kksia:hsasdas:a\sad:"),"kksia")
+        self.assertEqual(GetScheme("kks:asdas"),"kks")
+        self.assertEqual(GetScheme("kksia:hsasdas:a\sad:"),"kksia")
         # Test GetCanonical
         class cantest1(Base): 
             uriScheme = "identity"
@@ -73,8 +73,8 @@ class sysTests(unittest.TestCase):
             def GetCanonicalUri(uri):
                 return "dummy%:"
         
-        self.assertEquals(GetCanonicalUri("identity:asdasda"),"identity:asdasda")
-        self.assertEquals(GetCanonicalUri("dummy:asdasd")    ,"dummy:dummy%:")
+        self.assertEqual(GetCanonicalUri("identity:asdasda"),"identity:asdasda")
+        self.assertEqual(GetCanonicalUri("dummy:asdasd")    ,"dummy:dummy%:")
 
     def testLoaded(self):
         class teststore(Base):
@@ -83,7 +83,7 @@ class sysTests(unittest.TestCase):
         testobj = CreateStore("test2:qwertyuiop:e")
         self.assertTrue(isinstance(testobj,teststore))
         # Test geturi
-        self.assertEquals(testobj.getUri(),"test2:qwertyuiop:e")
+        self.assertEqual(testobj.getUri(),"test2:qwertyuiop:e")
         # test get/set owner. 
         owncontainter = dict()
         owncontainter["Owner"] = fakeSys()

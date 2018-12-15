@@ -31,30 +31,30 @@ import unittest
 
 class VernoTest(unittest.TestCase):
 	def testLessThan(self):
-		self.assert_( VersionNr(3,1) < VersionNr(4,1) )
-		self.assert_( VersionNr(3)   < VersionNr(3,1))
-		self.assert_( VersionNr(3,1) < VersionNr(4,1))
-		self.assert_( VersionNr(3)   < VersionNr(3,1))
-		self.assert_( VersionNr(1) < VersionNr(3) )
-		self.assert_( VersionNr(0) < VersionNr(3) )
-		self.assert_( VersionNr(None) < VersionNr(3) )
+		self.assertTrue( VersionNr(3,1) < VersionNr(4,1) )
+		self.assertTrue( VersionNr(3)   < VersionNr(3,1))
+		self.assertTrue( VersionNr(3,1) < VersionNr(4,1))
+		self.assertTrue( VersionNr(3)   < VersionNr(3,1))
+		self.assertTrue( VersionNr(1) < VersionNr(3) )
+		self.assertTrue( VersionNr(0) < VersionNr(3) )
+		self.assertTrue( VersionNr(None) < VersionNr(3) )
 	
 	def testGreaterThanOrEquals(self):
-		self.assert_( VersionNr(4,1) >= VersionNr(3,1) )
-		self.assert_( VersionNr(3,1) >= VersionNr(3) )
-		self.assert_( VersionNr(3) >= VersionNr(3) )
-		self.assert_( VersionNr(3,1) >= VersionNr("3.1") )
-		self.assert_( VersionNr(0) >=  VersionNr(None) )
+		self.assertTrue( VersionNr(4,1) >= VersionNr(3,1) )
+		self.assertTrue( VersionNr(3,1) >= VersionNr(3) )
+		self.assertTrue( VersionNr(3) >= VersionNr(3) )
+		self.assertTrue( VersionNr(3,1) >= VersionNr("3.1") )
+		self.assertTrue( VersionNr(0) >=  VersionNr(None) )
 
 
 	def testGreaterThan(self):
-		self.assert_( VersionNr(4,1) > VersionNr(3,1) )
-		self.assert_( VersionNr(3,1) > VersionNr(3) )
-		self.assert_( VersionNr(0) > VersionNr(None) )
+		self.assertTrue( VersionNr(4,1) > VersionNr(3,1) )
+		self.assertTrue( VersionNr(3,1) > VersionNr(3) )
+		self.assertTrue( VersionNr(0) > VersionNr(None) )
 
 	def testEquals(self):
-		self.assert_( VersionNr(3) == VersionNr(3) )
-		self.assert_( VersionNr(3,1) == VersionNr("3.1") )
+		self.assertTrue( VersionNr(3) == VersionNr(3) )
+		self.assertTrue( VersionNr(3,1) == VersionNr("3.1") )
 		self.assertFalse( VersionNr(3) == VersionNr("3.1") )
 		self.assertFalse( VersionNr(None) == VersionNr(None) )
 

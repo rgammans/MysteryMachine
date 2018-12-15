@@ -105,8 +105,8 @@ class ConfigYamlTest(unittest.TestCase):
         cfg = None
         cfg1 = ConfigYaml()
         cfg1.read(tstfile)
-        self.assertEquals(cfg1['test1'],"foo")
-        self.assertEquals(cfg1['test2'],{'a':'2' })
+        self.assertEqual(cfg1['test1'],"foo")
+        self.assertEqual(cfg1['test2'],{'a':'2' })
         #cleanup
         try:
             os.remove(tstfile) 

@@ -56,7 +56,7 @@ class storeTests(object):
         try:
             #This must create an empty store or raise an exception
             differentStore = CreateStore(self.store.getUri())
-            self.assertEquals(list(differentStore.EnumCategories()),[])
+            self.assertEqual(list(differentStore.EnumCategories()),[])
         except Exception:
             pass
 
@@ -209,9 +209,9 @@ class storeTests(object):
         self.assertFalse(self.store.HasAttribute("One:"+o12+":notname"))
 
         #Retrieve attribute.
-        self.assertEquals(self.store.GetAttribute("One:"+o12+":name"),attrtuple)
-        self.assertEquals(self.store.GetAttribute("One:"+o12+":.dotfile"),attrtupled)
-        self.assertEquals(self.store.GetAttribute("One:.dummyattr"),attrtuple)
+        self.assertEqual(self.store.GetAttribute("One:"+o12+":name"),attrtuple)
+        self.assertEqual(self.store.GetAttribute("One:"+o12+":.dotfile"),attrtupled)
+        self.assertEqual(self.store.GetAttribute("One:.dummyattr"),attrtuple)
         
         #Delete it.
         self.store.start_store_transaction()
@@ -239,15 +239,15 @@ class storeTests(object):
         self.store.SetAttribute("One"+":"+o12+":overwrite", "test1", { 'second':"this should be all thats left"})
         self.store.commit_store_transaction()
 
-        self.assertEquals(len(self.store.GetAttribute("One:"+o12+":overwrite")[1]),1)
+        self.assertEqual(len(self.store.GetAttribute("One:"+o12+":overwrite")[1]),1)
 
         #Test again in a seperate txn
         self.store.start_store_transaction()
         self.store.SetAttribute("One"+":"+o12+":overwrite", "test2", { 'third':"this should be all thats left"})
         self.store.commit_store_transaction()
 
-        self.assertEquals(self.store.GetAttribute("One:"+o12+":overwrite")[0],"test2")
-        self.assertEquals(len(self.store.GetAttribute("One:"+o12+":overwrite")[1]),1)
+        self.assertEqual(self.store.GetAttribute("One:"+o12+":overwrite")[0],"test2")
+        self.assertEqual(len(self.store.GetAttribute("One:"+o12+":overwrite")[1]),1)
     
         ##Check that type not realted to a string raise an Api Violation.
         self.assertRaises(StoreApiViolation,self.store.SetAttribute,"One:"+o12+":broked", "test3", {'integer':1})
@@ -289,7 +289,7 @@ class storeTests(object):
         self.assertFalse(o12store.HasAttribute("notname"))
 
         #Retrieve attribute.
-        self.assertEquals(o12store.GetAttribute("name"),attrtuple)
+        self.assertEqual(o12store.GetAttribute("name"),attrtuple)
         
         #Delete it.
         self.store.start_store_transaction()
@@ -310,7 +310,7 @@ class storeTests(object):
             self.doCleanTst()
             self.store.revert(self.store.getChangeLog().next())
             for k,v in self.attrnames.iteritems():
-                self.assertEquals(self.store.GetAttribute(k),v)
+                self.assertEqual(self.store.GetAttribute(k),v)
 
 
     def test_should_be_able_tell_the_difference_between_objects_categories_and_attribs(self):
