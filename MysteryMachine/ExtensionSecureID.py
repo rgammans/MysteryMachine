@@ -38,16 +38,16 @@ class ExtensionSecureID(object):
 
   @classmethod
   def fromPathName(cls,path):
-    input= open(path,"rb")
-    hash = hashlib.sha256()
-    for chunk in input:
-      hash.update(chunk)
-    return cls(path,hash,"sha256")
+    with open(path,"rb") as input:
+        hash = hashlib.sha256()
+        for chunk in input:
+          hash.update(chunk)
+        return cls(path,hash,"sha256")
 
   @classmethod
   def fromHash(cls,path,hashstring):
      return cls(path,hashstring) 
-    
+
   def __init__(self, path, hashstr, hashtype ="sha256"):
     """
      Computes the signature of an extension from it's path.
