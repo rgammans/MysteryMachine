@@ -21,11 +21,12 @@
 """
 """
 
-
+import six
 from MysteryMachine.store import * 
 
 
-class Base(object):
+#__metaclass__ = storeMeta
+class Base(six.with_metaclass(storeMeta, object)):
     """
     New base class for Mystery Machine store to inherit from.
 
@@ -44,7 +45,6 @@ class Base(object):
 
 
     """
-    __metaclass__ = storeMeta
 
     supports_txn = False
 

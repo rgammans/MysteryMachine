@@ -30,7 +30,7 @@ This base modules encapuslates the globals for the mystery machine
 system.
 """
 
-
+import six
 import sys
 import types
 import re
@@ -200,10 +200,8 @@ class _SingletonWithExternalLocking(type):
         finally:
             self.mutex.release()
 
-class _LibraryContext(object):
- 
-    __metaclass__ = _SingletonWithExternalLocking
- 
+class _LibraryContext(six.with_metaclass(_SingletonWithExternalLocking,object)):
+
     def __init__(self,args):
         ###DO all initialisation.
     
@@ -322,7 +320,7 @@ class _LibraryContext(object):
         self.logger.debug( "MM:cfg:fetching %s -> %s" % (name,val))
         #print "MM:cfg:fetching %s -> %s" % (name,val)
 
-        if type(val) in types.StringTypes:
+        if isinstance(val,six.string_types):
             #Go down the names list importing it all. 
             elements =  val.split(".")
             modname  =  val

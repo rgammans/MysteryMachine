@@ -29,7 +29,6 @@ import MysteryMachine.store.FileLogger
 
 import os
 import sys
-import thread
 import threading
 import glob
 import errno
@@ -174,7 +173,7 @@ class filestore(Base):
             if e.errno != errno.EEXIST: raise
         except WindowsError as e:
             #Ignore Directory already exists errors .
-	    if e.errno != 183: raise
+            if e.errno != 183: raise
         else:
             sentinel = os.path.join(catpath ,CATEGORY_SENTINEL_NAME )
             self.tlog.Add_File(self.tx,sentinel,"")

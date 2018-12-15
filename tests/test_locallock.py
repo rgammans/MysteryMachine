@@ -23,7 +23,7 @@ Tests for the MysteryMachine Minimal lock manager.
 
 from MysteryMachine.store.locallock import LocalLocks
 import unittest
-import thread, threading
+import threading
 import time
 
 def start_new_thread( func, args ,kwargs = None):

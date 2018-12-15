@@ -66,7 +66,7 @@ SystemErrors = tuple(SystemErrors)
 TxF_Enabled = True
 
 
-
+import six
 import threading
 import time
 import os
@@ -75,7 +75,7 @@ import errno
 import sys
 import contextlib
 import glob
-from itertools import izip, chain
+from itertools import chain
 from MysteryMachine.utils.locks import RWLock
 from MysteryMachine.utils.path import make_rel
 
@@ -129,14 +129,14 @@ class _OperationMeta(type):
         if name != 'Tranasction': 
             _operation_type_map[self.operation_type] = self
 
-class JournaledOperation(object):
+#__metaclass__ = _OperationMeta
+class JournaledOperation(six.with_metaclass(_OperationMeta,object)):
     """An base class for Transaction objects.
 
        Each record in our Transction log should be a record discribing
        an object of this type.
     """
 
-    __metaclass__ = _OperationMeta
     operation_type = "base"
 
     def __init__(self,*args,**kwargs):
@@ -674,29 +674,31 @@ class Transaction(object):
         self.state[name] = f
 
 
-class LogStream(file):
-    def __init__(self,*args,**kwargs):
-        super(LogStream,self).__init__(*args,**kwargs)
+class LogIterator(object):
+    def __init__(self,f):
+        self.f = f
         self.dataptr = 0
         self.pos   = 0 
         self.stack = []
 
     def __iter__(self,):
         """Yield individual characters in the file"""
-        self.seek(self.pos)
-        data = self.read(BUFFER_SZ)
+        self.f.seek(self.pos)
+        data = self.f.read(BUFFER_SZ)
         while data:
             while self.dataptr < len(data):
                 self.dataptr += 1
                 yield data[self.dataptr - 1]
 
-            self.pos = self.tell()    
+            self.pos = self.f.tell()
             self.dataptr = 0
-            data = self.read(BUFFER_SZ)
+            data = self.f.read(BUFFER_SZ)
 
 
     def peek(self,):
         """Read the next character without moving the file pointer"""
+        ##FIXME; snaphsot should really be a context manager!;
+        #       to ensure restore is run even if a exception is raised
         self.snapshot()
         x = iter(self).next()
         self.restore()
@@ -704,7 +706,7 @@ class LogStream(file):
 
     def snapshot(self,):
         """Store the current file pointer on a stack"""
-        self.stack.append((self.pos,self.dataptr))        
+        self.stack.append((self.pos,self.dataptr))
 
     def restore(self,):
         """Restore the file pointer to the location on the top of the stack"""
@@ -727,7 +729,7 @@ class stream_context(object):
         else:
             self.f.restore()
         return False
-            
+
 
 class LogFile(object):
     """A LogFile is an append only file which 
@@ -749,7 +751,7 @@ class LogFile(object):
         self.ro = kwargs.get("readonly",False)
 
         mode = "wb+" if not self.ro else "rb"
-        self.fd = LogStream(filename,mode)
+        self.fd = open(filename,mode)
         #FIXME: In the case that this is a new file
         #we should sync the directory fd (which means opening one).
  
@@ -788,7 +790,7 @@ class LogFile(object):
                 req_size = blks  *  stat.st_blksize
 
             self.fd.seek(cur_size)
-            self.fd.write('\0' * (req_size - cur_size))
+            self.fd.write(b'\0' * (req_size - cur_size))
             self.fd.flush()
             self.fd.seek(0)
 
@@ -806,7 +808,7 @@ class LogFile(object):
                   raise RuntimeError("Cannot append to a closing logfile.")
 
             self.not_complete.append(op.opid)
-        self.fd.write(str(op))
+        self.fd.write(six.binary_type(op))
         self._write_terminator()
  
         op.set_callback(self._mark_xcompleted)
@@ -837,10 +839,11 @@ class LogFile(object):
     def __iter__(self,):
         """From the current file pointer read and iterate through operations"""
         done = False
+        li = LogIterator(self.fd)
         while True:
-            if self.fd.peek() == '\0': break
-            with stream_context(self.fd) as data:
-                yield JournaledOperation.load(iter(self.fd))
+            if li.peek() == '\0': break
+            with stream_context(li) as data:
+                yield JournaledOperation.load(iter(li))
     
     def unlink(self,):
         """An alternative way of closing the LogFile
@@ -962,7 +965,7 @@ class FileLoggerSimpleFS(object):
             ops   = [ _getop(x) for x in logiter ]
             opids = [ _getid(x) for x in ops ]
             #order the log files by operation Id.
-            data = sorted(izip(logs,logiter,ops,opids),key =lambda x:x[3])
+            data = sorted(zip(logs,logiter,ops,opids),key =lambda x:x[3])
             modlogger.debug( "SR:%s"%data)
             #And now got through all log files in Id order
             state = 'init'
@@ -1060,10 +1063,10 @@ class FileLoggerSimpleFS(object):
 
     def _waitlog(self,logf,fname):
         self.loglocker.acquire_read()
-        self.logsync.release()
         logf.close()
         self.in_use_logs.remove(fname)
         self.loglocker.release()
+        self.logsync.release()
 
     def Add_File(self,txn,filename,newcontents):
         """Log new file content transaction."""
@@ -1175,7 +1178,16 @@ class FileLoggerSimpleFS(object):
         
 
     def freeze(self,):
-        """Bring main store upto date and prevent any more
+        """Bring main store upto date and prevent any more_waitlog,(self.logf,self.logname))
+            self.logsync.acquire()
+
+        if newname: self.in_use_logs += [ newname ] 
+        try:
+            self.logf, self.logname = newlgf , newname
+        except Exception:
+            if newname:
+                self.in_use_logs.remove(newname)
+
         transactions while frozen"""
         if self.frozen: return
 
@@ -1183,7 +1195,7 @@ class FileLoggerSimpleFS(object):
         #Set logfile to None. Put current logfile into wait for chkpt state.
         self._rotatelog(None,"")
         self.loglocker.acquire_write()
-        self.frozen = True     
+        self.frozen = True
  
     def unfreeze(self,):
         """Release any transactions from being blocked by the frozen state."""

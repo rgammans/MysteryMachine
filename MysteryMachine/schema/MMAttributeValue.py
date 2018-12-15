@@ -167,8 +167,9 @@ class Error():
     pass
 
 
+#__metaclass__ = _AttrMeta
 @six.python_2_unicode_compatible
-class MMAttributeValue (SchemaCommon ):
+class MMAttributeValue (six.with_metaclass(_AttrMeta,SchemaCommon) ):
   """
    This is the base class of MMAtributes actual value. Each 'type' of Attribure
    should have it's own speciallisation of this class. It is through this object
@@ -186,7 +187,6 @@ class MMAttributeValue (SchemaCommon ):
   attr  (private)
   """
     
-  __metaclass__ = _AttrMeta
 
   def __init__(self,*args, **kwargs):
     self.parts = {} 

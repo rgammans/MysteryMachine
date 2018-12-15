@@ -1,1 +1,1 @@
-from SequentialId import NewId
+from .SequentialId import NewId

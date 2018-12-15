@@ -23,7 +23,6 @@ Tests for dynamic loading of system plugins.
 
 
 from MysteryMachine import * 
-from itertools import izip
 import copy
 
 import unittest
