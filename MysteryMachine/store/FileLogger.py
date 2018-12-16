@@ -137,7 +137,7 @@ class JournaledOperation(six.with_metaclass(_OperationMeta,object)):
        an object of this type.
     """
 
-    operation_type = "base"
+    operation_type = b"base"
 
     def __init__(self,*args,**kwargs):
         modlogger.debug( "JO:init")
@@ -206,10 +206,10 @@ class JournaledOperation(six.with_metaclass(_OperationMeta,object)):
         if callback: callback(self.opid)
 
 
-    def __str__(self,):
-        v = ""
-        v += (str(self.opid) + '\0')
-        v += (self.operation_type + '\0')
+    def __bytes__(self,):
+        v = b""
+        v += (str(self.opid).encode('ascii') + b'\0')
+        v += (self.operation_type + b'\0')
         return v
 
     def __len__(self,):
@@ -220,13 +220,27 @@ class JournaledOperation(six.with_metaclass(_OperationMeta,object)):
  
     @classmethod
     def load(cls,data, recovery_mode = False):
+        """Loads/recovers and operation form the log file.
+
+                @param data And iter of length 1 sequences of bytes.
+                @param recover_mode: True to apply/recover the operation
+
+
+        Under Python2 the data should return single character strings, and under python3
+        single integers, (as per the normal bytes and str iterators)
+        """
         opid = _read_delimited_field(data)
         operation_type = _read_delimited_field(data)
         modlogger.debug( "loading: %s,%s"%(opid,operation_type))
         return _operation_type_map[operation_type].load(opid,data, recovery_mode = recovery_mode)
 
+    def __str__(self,):
+        if six.PY2:
+            return self.__bytes__()
+        else:
+            return str(bytes(self))
 
- 
+
 class CheckpointOperation(JournaledOperation):
     """A special non-tranasction transaction.
 
@@ -234,7 +248,7 @@ class CheckpointOperation(JournaledOperation):
      It is used during the recovery phase, to determine the start point
      for playback."""
 
-    operation_type = "checkpoint"
+    operation_type = b"checkpoint"
 
     def __init__(self,*args,**kwargs):
         self.chkpoint_id =  args[0]
@@ -243,8 +257,8 @@ class CheckpointOperation(JournaledOperation):
     def _do(self,):
         return
 
-    def __str__(self,):
-        v = super(CheckpointOperation,self).__str__()
+    def __bytes__(self,):
+        v = super(CheckpointOperation,self).__bytes__()
         v += str(self.chkpoint_id) +'\0'
         return v
 
@@ -264,12 +278,12 @@ class CheckpointOperation(JournaledOperation):
  
 
 class ReplaceAll_Operation(JournaledOperation):
-    operation_type = "replace_all"
+    operation_type = b"replace_all"
     def __init__(self,*args,**kwargs):
         #Placeholder for future expansion.
         self.content = args[1]
         self.target = args[0]
-        if type(self.content) is not str:
+        if type(self.content) is not six.binary_type:
             raise TypeError("File contents must be a byte stream")
 
         super(ReplaceAll_Operation,self).__init__(*(args[2:]),**kwargs)
@@ -284,7 +298,7 @@ class ReplaceAll_Operation(JournaledOperation):
             if e.errno == errno.ENOENT:
                 self.fobjs += [directory(os.path.dirname(self.target))]
 
-        self.fobj = open(self.target,"w+")
+        self.fobj = open(self.target,"wb+")
         self.fobjs += [ self.fobj ]
         self.fobj.truncate(0)
         self.fobj.write(self.content)
@@ -299,21 +313,21 @@ class ReplaceAll_Operation(JournaledOperation):
         state.add_file(self.target)
         
 
-    def __str__(self,):
-        v = super( ReplaceAll_Operation ,self).__str__()
+    def __bytes__(self,):
+        v = super( ReplaceAll_Operation ,self).__bytes__()
         length = len(self.content) + len(self.target) + 1
-        v += (str(length) + '\0')
-        v += (self.target.encode('ascii') + '\0')
+        v += (str(length).encode('ascii') + b'\0')
+        v += (self.target.encode('ascii') + b'\0')
         v += self.content
         
         return v
 
     def __len__(self,):
         v = 0 
-        v += len(str(self.opid) )
+        v += len(str(self.opid).encode('ascii'))
         v += len(self.operation_type )
         length = len(self.content) + len(self.target) + 4
-        v += len(str(length) )
+        v += len(str(length).encode('ascii') )
         v += length
         return v
  
@@ -330,9 +344,10 @@ class SingleDentry_Operation(JournaledOperation):
         self.target = os.path.normpath(args[0])
         super(SingleDentry_Operation,self).__init__(*(args[1:]),**kwargs)
         self.fobj    = None
-    def __str__(self,):
-        v = super( SingleDentry_Operation ,self).__str__()
-        v += (self.target.encode('ascii') + '\0')
+
+    def __bytes__(self,):
+        v = super( SingleDentry_Operation ,self).__bytes__()
+        v += (self.target.encode('ascii') + b'\0')
         return v
 
     def __len__(self,):
@@ -355,7 +370,7 @@ class SingleDentry_Operation(JournaledOperation):
 
 
 class DeleteFile_Operation(SingleDentry_Operation):
-    operation_type = "delete_file"
+    operation_type = b"delete_file"
     def _do(self,):
         self.add_fds()
         try:
@@ -375,7 +390,7 @@ class DeleteFile_Operation(SingleDentry_Operation):
         else: raise OSError(errno.ENOENT)
 
 class DeleteDir_Operation(SingleDentry_Operation):
-    operation_type = "delete_dir"
+    operation_type = b"delete_dir"
     def _do(self,):
         self.add_fds()
         os.rmdir(self.target)
@@ -393,7 +408,7 @@ class DeleteDir_Operation(SingleDentry_Operation):
             state.unlink_dir(self.target) 
 
 class CreateDir_Operation(SingleDentry_Operation):
-    operation_type = "create_dir"
+    operation_type = b"create_dir"
     def _do(self,):
         self.add_fds()
         try:
@@ -424,9 +439,9 @@ class GenericTxOperation(object):
     def _do(self,):
         return
 
-    def __str__(self,):
-        v = super(GenericTxOperation ,self).__str__()
-        v += str(self.txn_id) +'\0'
+    def __bytes__(self,):
+        v = super(GenericTxOperation ,self).__bytes__()
+        v += str(self.txn_id).encode('ascii') +b'\0'
         return v
 
     def __len__(self,):
@@ -442,36 +457,58 @@ class GenericTxOperation(object):
     def load(cls,opid,data, recovery_mode = False):
         txn_id = _read_delimited_field(data)
         return cls(opid,txn_id, recovery_mode = recovery_mode)
- 
+
+
 class StartTxOperation(GenericTxOperation,JournaledOperation):
     """Operation which marks the beginning of a Txn"""
-    operation_type = "start_txn"
+    operation_type = b"start_txn"
 
 class EndTxOperation(GenericTxOperation,JournaledOperation):
     """Operation which marks the commit of a Txn"""
-    operation_type = "end_txn"
+    operation_type = b"end_txn"
       
 class AbortTxOperation(GenericTxOperation,JournaledOperation):
     """Operation which marks the abort of a Txn"""
-    operation_type = "abort_txn"
+    operation_type = b"abort_txn"
 
- 
+
+#
+# Python2/3 have significant differences in their handling
+# of sequences of bytes. In python2 they are a sequence of
+# characters; but under python3 they are a sequences of
+# integers; with a special literal representation. (eg. b'')
+#
+# Instead of trying to work around it we embrace the difference
+# which leave a small function, and sentinel constant to 
+# vary between the to branches of python.
+#
+
+if six.PY2:
+    FIELD_DELIMITER = b'\0'
+    field_ctor = lambda x:b''.join(x)
+else:
+    FIELD_DELIMITER = 0
+    field_ctor = bytes
+
 #Helper functions for parsign the logfile.
 def _read_delimited_field(d):
     """d is an iterable of octects from the logfile
 
        @returns integer length of the content.
     """
-    val = d.next()
-    while val[-1] != '\0':
-        val += d.next()
+    val = []
+    val.append(next(d))
+    while val[-1] != FIELD_DELIMITER:
+        try:
+            val.append(next(d))
+        except StopIteration: break
 
     modlogger.debug( "read:%s"%val[:-1])
-    return val[:-1]
+    return field_ctor(val[:-1])
 
 def _read_fixedlength(d,n):
-    def _get(*args): return d.next()
-    return ''.join(map(_get,range(n)))
+    def _get(*args): return next(d)
+    return field_ctor(map(_get,range(n)))
 
 
 class Dentry(object):
@@ -617,8 +654,8 @@ class Transaction(object):
 
     This class just groups the operations together, it is assumed operations
     aren't added to the transaction unless they have already hit the journal
-    
-    This makes failure to commit logically recoverable - once whatever is 
+
+    This makes failure to commit logically recoverable - once whatever is
     stopping the store committing the value is fixed.
     """
     def __init__(self,xid,home,**kwargs):
@@ -700,7 +737,7 @@ class LogIterator(object):
         ##FIXME; snaphsot should really be a context manager!;
         #       to ensure restore is run even if a exception is raised
         self.snapshot()
-        x = iter(self).next()
+        x = next(iter(self))
         self.restore()
         return x
 
@@ -841,7 +878,7 @@ class LogFile(object):
         done = False
         li = LogIterator(self.fd)
         while True:
-            if li.peek() == '\0': break
+            if li.peek() == FIELD_DELIMITER: break
             with stream_context(li) as data:
                 yield JournaledOperation.load(iter(li))
     
@@ -861,7 +898,7 @@ class LogFile(object):
         #It is critical that this function blocks and write the outstanding
         #records to the disc, as without that the whole protocol comes unstuck
 
-        self.fd.write("\0")
+        self.fd.write(b"\0")
         self.fd.flush()
         self.fd.seek(-1,1)
         fdatasync(self.fd.fileno())
@@ -877,7 +914,7 @@ def _remove_commited(itrble,op):
 def _getop(x):
     r = None
     try: 
-        r =x.next()
+        r =next(x)
     except StopIteration: pass
 
     return r
@@ -960,7 +997,7 @@ class FileLoggerSimpleFS(object):
         until completion."""
         modlogger.debug( "starting recovery")
         with self.id_lock: #Prevent new ops being created.
-            logs = [ LogFile(x,readonly=True) for x in self._findlogs() ]      
+            logs = [ LogFile(x,readonly=True) for x in self._findlogs() ]
             logiter = [ iter(x) for x in logs ]
             ops   = [ _getop(x) for x in logiter ]
             opids = [ _getid(x) for x in ops ]
@@ -982,13 +1019,13 @@ class FileLoggerSimpleFS(object):
                     if state=='init':
                         #Record all operations we see before we see the first
                         #start tx marker.
-                        if cur_op.optype == 'start_txn':
+                        if cur_op.optype == b'start_txn':
                              state='txcomplete'
-                        elif cur_op.optype == 'abort_txn':
+                        elif cur_op.optype == b'abort_txn':
                             #If the partial transaction we found was aborted
                             # we don't need to worry about its operations. 
                             unrcoverable = [ ]
-                        elif cur_op.optype == 'Checkpoint':
+                        elif cur_op.optype == b'Checkpoint':
                             unrecoverable = _remove_commited(unrecoverable,cur_op.opid)
                         else:
                             unrecoverable += [ op.opid]
@@ -999,12 +1036,12 @@ class FileLoggerSimpleFS(object):
                     #journal in the state is a checkpoint making which ops have been
                     #detected as committed to the main store by the FS.
                     if state=='txcomplete':
-                        if cur_op.optype == 'start_txn':
+                        if cur_op.optype == b'start_txn':
                             tx = cur_op.txn_id
                             txops = [ ]
                             state = 'txstarted'
                             continue
-                        elif cur_op.optype == 'Checkpoint':
+                        elif cur_op.optype == b'Checkpoint':
                             unrecoverable = _remove_commited(unrecoverable,cur_op.opid)
                         else: raise RecoveryError("Operation outside tx")
 
@@ -1013,7 +1050,7 @@ class FileLoggerSimpleFS(object):
                     # a EndTxn op. At the end TxnOp we synchronously complete
                     # all operations.
                     if state =='txstarted':
-                        if cur_op.optype == 'end_txn': 
+                        if cur_op.optype == b'end_txn': 
                             #The test below finds 'overlapped' tx, (or ones missing a commit record
                             #for  some reason. This forces us not to accept this log file.
                             if cur_op.txn_id != tx: raise RecoveryError("Non matching Tx commit found")
@@ -1021,9 +1058,9 @@ class FileLoggerSimpleFS(object):
                                 for top in txops:
                                     top.do(sync = True)
                             state = 'txcomplete'
-                        elif cur_op.optype == 'abort_txn':
+                        elif cur_op.optype == b'abort_txn':
                             state = 'txcomplete'
-                        elif cur_op.optype == 'Checkpoint':
+                        elif cur_op.optype == b'Checkpoint':
                             unrecoverable = _remove_commited(unrecoverable,cur_op.opid)
                         else:
                             txops += [ cur_op ] 
