@@ -81,21 +81,18 @@ class ConfigYaml(object):
     def read(self,filename):
         self.filename=filename
         try:
-            f = open(self.filename,"r")
-            self.cfg = yaml.safe_load(f)
+            with open(self.filename,"r") as f:
+                self.cfg = yaml.safe_load(f)
         except IOError as e:
             self.logger.debug(str(e))
             self.logger.warn("Using empty config")
             self.cfg = { }
-            #If not FILE NOT FOUND , diable writeback.
+            #If not FILE NOT FOUND , disable writeback.
             # to avoid clobbering an otherwise good config.
             if e.errno != 2: self.filename=None
-        finally:
-            f.close()
 
     def write(self):
         if not self.persistent: return
-        #Should probably use SafeFile from the store here.
         if self.filename:
-            f = open(self.filename,"w")
-            yaml.dump(self.cfg,f)
+            with open(self.filename,"w") as f:
+                yaml.dump(self.cfg,f)
