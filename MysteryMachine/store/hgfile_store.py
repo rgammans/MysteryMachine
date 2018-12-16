@@ -95,13 +95,13 @@ class HgStoreMixin(object):
     def revert(self,revid):
         #Forcing to string ensures the revid is in a self.repo.log()form mercurial is happy with
         # and allows changectx objects to be passed
-        return self.repo.update(str(revid),clean=True)
+        return self.repo.update(revid.key(),clean=True)
 
     def getChangeLog(self):
 
         class HgRevision(hglib.client.revision):
             repo = self.repo
-            def __str__(self,):
+            def key(self,):
                 return self[1]
 
             def manifest(self,):

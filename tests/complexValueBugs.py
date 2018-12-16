@@ -37,7 +37,6 @@ import unittest
 import tempfile
 import shutil
 from MysteryMachine import * 
-from itertools import izip
 import copy
 from MysteryMachine.store.dict_store import *
 

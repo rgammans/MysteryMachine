@@ -65,7 +65,7 @@ class MMListAttribute(MMAttributeValue):
 
     def _elementkeys(self):
         ##Returns the elements of the array - remove any special parts
-        for k,v in self.parts.iteritems():
+        for k,v in self.parts.items():
             if k not in self.special:
                     yield k
 
@@ -75,7 +75,7 @@ class MMListAttribute(MMAttributeValue):
 
     def _elementvalues(self):
         ##Returns the elements of the array - remove any special parts
-        for k,v in self.parts.iteritems():
+        for k,v in self.parts.items():
             if k not in self.special:
                     yield v
 
@@ -206,8 +206,8 @@ class MMListAttribute(MMAttributeValue):
             raise TypeError("MMListAttribute only supports single part values %s",v.get_parts().keys())
         elif l == 0:
             return v.get_type()
-        else:
-            value = v.get_parts().iteritems().next()
+        else: #l == 1
+            value = next(iter(v.get_parts().items()))
             #We can safely use ':' as a seperator as it isn't
             # allowed in  type or part names.
             return v.get_type()+":"+value[0]+":"+value[1]

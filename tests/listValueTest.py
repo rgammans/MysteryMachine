@@ -29,7 +29,6 @@ from MysteryMachine.schema.MMAttribute import *
 from MysteryMachine.schema.MMBase import * 
 import unittest
 from MysteryMachine import * 
-from itertools import izip
 import copy
 
 #Get izip longest from itertools, or make it up with map
@@ -243,7 +242,7 @@ class ListValTest(unittest.TestCase):
         attrk = list(attr.iterkeys())
         self.assertEqual(len(attrk),4)
 
-        for k,v in itertools.izip(attrk,attrv):
+        for k,v in zip(attrk,attrv):
             self.assertEqual(attr[k],v)
 
 
@@ -327,7 +326,7 @@ class ListValTest(unittest.TestCase):
         vallist = [ ListKey() , a ]
         
         # Check  string as length increases too..
-        for i in xrange(3):
+        for i in range(3):
             a = b
             while len(str(a)) >= len(str(b)):
                 c = b
@@ -336,7 +335,7 @@ class ListValTest(unittest.TestCase):
                 self.assertTrue(str(b) > str(c))
         
         ## Check between creates useful values.
-        for ele1,ele2 in izip(vallist,vallist[1:]):
+        for ele1,ele2 in zip(vallist,vallist[1:]):
             b = ele2
             a = ele1
             for i in xrange(4):

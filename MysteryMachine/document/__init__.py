@@ -24,7 +24,7 @@ from docutils.parsers.rst import Parser
 
 from MysteryMachine.parsetools.MMParser import MMParser
 
-import pieces 
+from . import pieces 
 
 def generate_doctree(pattern,home):
     """

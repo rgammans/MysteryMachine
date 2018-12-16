@@ -28,7 +28,6 @@ from MysteryMachine.schema.Locker import *
 import MysteryMachine.store.file_store
 
 import unittest
-import itertools
 
 import logging
 #logging.getLogger("MysteryMachine.schema").setLevel(logging.DEBUG)
@@ -81,7 +80,7 @@ class sysTests(unittest.TestCase):
         self.assertEqual(len(objs),1)
         objkeys=list(cat.iterkeys())
         self.assertEqual(len(objkeys),1)
-        for k,v in itertools.izip(objkeys,objs):
+        for k,v in zip(objkeys,objs):
             self.assertEqual(cat[k],v)
 
 
@@ -156,7 +155,7 @@ class sysTests(unittest.TestCase):
         self.assertEqual(len(objs),2)
         objkeys=list(self.sys.iterkeys())
         self.assertEqual(len(objkeys),2)
-        for k,v in itertools.izip(objkeys,objs):
+        for k,v in zip(objkeys,objs):
             self.assertEqual(self.sys[k],v)
 
         cat = self.sys["one"]
@@ -164,7 +163,7 @@ class sysTests(unittest.TestCase):
         self.assertEqual(len(objs),1)
         objkeys=list(cat.iterkeys())
         self.assertEqual(len(objkeys),1)
-        for k,v in itertools.izip(objkeys,objs):
+        for k,v in zip(objkeys,objs):
             self.assertEqual(cat[k],v)
 
 

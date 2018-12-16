@@ -41,7 +41,12 @@ the behavoiur is undefined.
 
 """
 
-from ConfigParser import ConfigParser
+##Python3 renames this; try py3 first
+try:
+    from configparser import ConfigParser
+except ImportError:
+    from ConfigParser import ConfigParser
+
 import weakref
 
 class ReadOnly(RuntimeError):

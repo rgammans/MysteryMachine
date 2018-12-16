@@ -1,4 +1,4 @@
-
+import six
 import re
 import operator
 from MysteryMachine.policies.SequentialId import NewId
@@ -108,8 +108,8 @@ class dict_store(Base):
         d = self._walkPath(dbpath[:-1])
         #Verify the StoreApi is being adhered too
         #  this will pick up issues in tests where we use dict_store.
-        for p,v in parts.iteritems():
-            if not isinstance(v,basestring): 
+        for p,v in parts.items():
+            if not isinstance(v,six.binary_type):
                 raise StoreApiViolation("%s has part %s of type %s"%(attr,p,type(v)))
 
         d[dbpath[-1]]=(attrtype,parts)

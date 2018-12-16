@@ -18,6 +18,7 @@
 #
 # 
 
+import six
 import re
 import MysteryMachine.policies
 from MysteryMachine.store import *
@@ -280,7 +281,7 @@ class filestore(Base):
         attrkey = tuple(pathparts)
         self.newattr[attrkey] = []
         for partname,value in parts.items():
-            if not isinstance(value,basestring): 
+            if not isinstance(value,six.binary_type): 
                 raise StoreApiViolation("%s has part %s of type %s"%(attr,partname,type(value)))
             filename = "%s.%s.%s" % (filename_base,attrtype,partname)
             self.tlog.Add_File(self.tx,filename,value)

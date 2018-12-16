@@ -194,14 +194,14 @@ class MMAttributeValue (six.with_metaclass(_AttrMeta,SchemaCommon) ):
     if 'parts' in kwargs:
         self.parts=kwargs['parts']
         partsmap = { }
-        for k in self.parts.iterkeys():
+        for k in self.parts.keys():
             #Check k is valid - will throw if not.
             newk = self.canonicalise(k)
             if k != newk:
                 partsmap[k] = self.canonicalise(k)
                 if newk in self.parts: raise ValueError("%s and %s conflict" % (k ,newk))
             
-        for oldkey , newkey in partsmap.iteritems():
+        for oldkey , newkey in partsmap.items():
             self.parts[newkey] = self.parts[oldkey]
             del self.parts[oldkey]
   
@@ -254,7 +254,7 @@ class MMAttributeValue (six.with_metaclass(_AttrMeta,SchemaCommon) ):
     ok = True
     #Test we can parse succesfully, and valid part naems but no more.
     try:
-        for k in self.parts.iterkeys():
+        for k in self.parts.keys():
             if k != self.canonicalise(k):
                 ok = False
                 #exit early

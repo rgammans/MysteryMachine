@@ -26,7 +26,7 @@ from MysteryMachine.schema.MMAttribute import *
 from MysteryMachine import StartApp 
 import unittest
 
-from types import NoneType
+NoneType = type(None)
 
 from mock.schema_top import *
 
