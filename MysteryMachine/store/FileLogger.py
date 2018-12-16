@@ -1173,7 +1173,12 @@ class FileLoggerSimpleFS(object):
 
 
     def close(self,):
-        """Finish use of the File logged directory"""
+        """Finish use of the File logged directory
+
+        Commits any outstanding tranaction. ( Not to be relied on )
+        """
+        if self.tx:
+            self.commit_transaction(self.tx.xid)
         self.freeze()
         
 

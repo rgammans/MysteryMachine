@@ -248,6 +248,42 @@ class floggerTests(unittest.TestCase):
         self.last = xid
         self.called = True
 
+
+    def test_nothing(self,):
+        """Actutally this tests startUp and tearDown run fine"""
+        pass
+
+    def test_empty_xastion(self,):
+        """This is a minimal teset for the transaction framweork"""
+        t = self.flog.start_transaction()
+        self.flog.commit_transaction(t)
+
+    def test_empty_close_with_active_xaction_complete_in_at_least_30_seconds(self,):
+        """Actutally this also tests startUp and tearDown run fine
+
+        After exceptions have been thrown in a transaction.
+        """
+        t = self.flog.start_transaction()
+        with self.assertRaises(TypeError):
+            self.flog.Add_File(t,"test1",[11,22,33])
+
+        def cleanfn():
+            self._tearDown(self.flog,self.dirname)
+        ## Use a thread to do all the cleanup,
+        #  just in case there is adeadlock in cleanup; in which
+        #  case you never see the exception thrown
+        cleanup = threading.Thread(target = cleanfn )
+        cleanup.start()
+        for _ in range(30):
+            #Step through a second at a time to allow early
+            #completion in the passing case.
+            time.sleep(1)
+            if  not cleanup.isAlive(): return
+        #prevent teardown going back in to the deadlocked cleaner.
+        self.flog = None
+        self.assertFalse(cleanup.isAlive(),"flog.close() still running after 30 seconds")
+
+#
 #def getTestNames():
 #    	return [ 'file_store.filestoreTests' , 'file_store.tests2' ] 
 
