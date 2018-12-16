@@ -242,7 +242,7 @@ class TransactionManagerTest(unittest.TestCase):
         
         x=self.tm.begin_xaction()
         self.assertRaises(ValueError, _dotest)
-        self.assertNotEquals(self.tm.state , "xaction_aborted")
+        self.assertNotEqual(self.tm.state , "xaction_aborted")
         self.tm.commit_xaction(x)
         self.assertEqual(self.tm.state , "xaction_commited")
         self.assertTrue(self.tm.commited)

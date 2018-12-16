@@ -25,9 +25,12 @@ class Transaction(object):
     def __init__(self):
        self.reset()
 
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(self.count)
- 
+
+    #Py2 backward compatible name
+    __nonzero__ = __bool__
+
     def reset(self):
         self.count = 0
         self.manual = False
@@ -62,6 +65,11 @@ class Transaction(object):
 
 
 class TransactionProperty(threading.local):
+    """A thread local store for a transaction
+
+    Keeps track of the 'global' transaction in the 
+    current thread.
+    """
     def __init__(self):
         self.xaction = Transaction() 
     def __get__(self,instance,owner):
