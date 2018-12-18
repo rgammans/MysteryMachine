@@ -176,11 +176,11 @@ class storeTests(object):
         o11,o12, o21 ="1", "2", "1"
 
         #Set an attribute.
-        attrtuple = ( "simple",{ "a":"fred" }  )
+        attrtuple = ( "simple",{ b"a":b"fred" }  )
         self.store.SetAttribute("One"+":"+o12+":name",*attrtuple)
     
         #Set an another attribute - with a leading dot!
-        attrtupled = ( "simple",{ "a":"tom cobbley" }  )
+        attrtupled = ( "simple",{ b"a":b"tom cobbley" }  )
         self.store.SetAttribute("One"+":"+o12+":.dotfile",*attrtupled)
 
         #Set Attribute in a category
@@ -235,22 +235,22 @@ class storeTests(object):
         self.attrnames =  { "One:"+o12+":name": attrtuple }
            
         #Check that removed parts get removed from the store
-        self.store.SetAttribute("One"+":"+o12+":overwrite", "test1", { 'first':"this should dissappear" })
-        self.store.SetAttribute("One"+":"+o12+":overwrite", "test1", { 'second':"this should be all thats left"})
+        self.store.SetAttribute("One"+":"+o12+":overwrite", "test1", { b'first':b"this should dissappear" })
+        self.store.SetAttribute("One"+":"+o12+":overwrite", "test1", { b'second':b"this should be all thats left"})
         self.store.commit_store_transaction()
 
         self.assertEqual(len(self.store.GetAttribute("One:"+o12+":overwrite")[1]),1)
 
         #Test again in a seperate txn
         self.store.start_store_transaction()
-        self.store.SetAttribute("One"+":"+o12+":overwrite", "test2", { 'third':"this should be all thats left"})
+        self.store.SetAttribute("One"+":"+o12+":overwrite", "test2", { b'third':b"this should be all thats left"})
         self.store.commit_store_transaction()
 
         self.assertEqual(self.store.GetAttribute("One:"+o12+":overwrite")[0],"test2")
         self.assertEqual(len(self.store.GetAttribute("One:"+o12+":overwrite")[1]),1)
     
         ##Check that type not realted to a string raise an Api Violation.
-        self.assertRaises(StoreApiViolation,self.store.SetAttribute,"One:"+o12+":broked", "test3", {'integer':1})
+        self.assertRaises(StoreApiViolation,self.store.SetAttribute,"One:"+o12+":broked", "test3", {b'integer':1})
  
     def testProxyObjAttr(self):
         """
@@ -273,7 +273,7 @@ class storeTests(object):
         o21store = self.store.GetObjStore("Two:"+o21)
 
         #Set an attribute.
-        attrtuple = ( "simple",{ "a":"fred" })
+        attrtuple = ( "simple",{ b"a":b"fred" })
         o12store.SetAttribute("name",*attrtuple)
         self.store.commit_store_transaction()
 
@@ -319,7 +319,7 @@ class storeTests(object):
         self.store.NewCategory("One")
         self.store.NewCategory("Two")
         self.store.NewCategory("Two:Three")
-        attrtuple = ( "simple",{ "a":"fred" }  )
+        attrtuple = ( "simple",{ b"a":b"fred" }  )
         self.store.SetAttribute("Five",*attrtuple)
         self.store.commit_store_transaction()
 
@@ -366,7 +366,7 @@ class storeTests(object):
         #   require this to work.
         ##Test deletion if an attriibute is applied.
         ##Set an attribute.
-        attrtuple = ( "simple",{ "a":"fred" }  )
+        attrtuple = ( "simple",{b"a":b"fred" }  )
         #self.store.SetAttribute("Two"+":"+o21+":name",*attrtuple)
 
     
