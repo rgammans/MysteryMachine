@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 #   			grammarTest.py - Copyright Roger Gammans
 # 
 #
@@ -22,9 +23,14 @@ Tests for the MysteryMachine.Schema.Locker module
 """
 from __future__ import with_statement
 
+import logging
+
 from MysteryMachine.schema.Locker import * 
 import unittest
 from mock.schema_top import *
+
+## Ensure there is alogging handler
+logging.getLogger("").addHandler(logging.StreamHandler())
 
 class MockNode(object):
     def __init__(self,):
@@ -99,7 +105,7 @@ class DummyException(Exception): pass
 class lockerTest(unittest.TestCase):
 
     def setUp(self,):
-         self.n = MockNode()
+        self.n = MockNode()
 
     def testGenericLock(self,):
         ##Test normally entry exit
@@ -178,8 +184,12 @@ class lockerTest(unittest.TestCase):
 
 
     def test_Writer_decorator(self,):
-        imethod = type(self.n.end_write)
-        self.n.write = imethod(Writer(do_something),self.n,type(self.n))
+        class Node(MockNode):
+            @Writer
+            def write(self,):
+                do_something(self,)
+
+        self.n= Node()
         self.n.write()
         self.assertTrue(self.n.done)
         self.assertTrue(self.n.done_write)
@@ -187,8 +197,13 @@ class lockerTest(unittest.TestCase):
         self.assertFalse(self.n.in_write)
 
     def test_Reader_decorator(self,):
-        imethod = type(self.n.end_write)
-        self.n.read = imethod(Reader(do_something),self.n,type(self.n))
+
+        class Node(MockNode):
+            @Reader
+            def read(self,):
+                do_something(self,)
+
+        self.n = Node()
         self.n.read()
         self.assertTrue(self.n.done)
         self.assertTrue(self.n.done_read)
@@ -196,9 +211,17 @@ class lockerTest(unittest.TestCase):
         self.assertFalse(self.n.in_read)
 
     def test_test_Write_recusre_decorator(self,):
-        imethod = type(self.n.end_write)
-        self.n.do_something = imethod(Writer(do_something),self.n,type(self.n))
-        self.n.write = imethod(Writer(recurse),self.n,type(self.n))
+        class Node(MockNode):
+            @Writer
+            def write(self,):
+                recurse(self,)
+
+            @Writer
+            def do_something(self,):
+                do_something(self,)
+
+
+        self.n = Node()
         self.n.write()
         self.assertTrue(self.n.done)
         self.assertTrue(self.n.done_write)
