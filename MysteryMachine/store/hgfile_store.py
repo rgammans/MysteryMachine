@@ -63,7 +63,12 @@ class HgStoreMixin(object):
             self._Add_file(filename)
 
     def _Add_file(self,filename):
-        self.repo.add( files = [ os.path.join(self.path,filename)  ]) 
+        # Mystery machine namespaces are designed to
+        # ensure every file can be encoded to ascii,
+        # for portability and other issues
+        self.repo.add( files = [ 
+            os.path.join(self.path,filename).encode('ascii')
+        ]) 
 
     def Remove_file(self,filename):
         if self.supports_txn:
@@ -72,13 +77,17 @@ class HgStoreMixin(object):
             self._Remove_file(filename)
 
     def _Remove_file(self,filename):
-        addedlist =  [ f[1] for f in  self.repo.status() if f[0] == 'A' ]
+        addedlist =  [ f[1] for f in  self.repo.status() if f[0] == b'A' ]
         #Is the file got the added status?
         if filename in addedlist:
-          self.repo.forget( files = [os.path.join(self.path,filename)] )
+            self.repo.forget( files = [
+                os.path.join(self.path,filename).encode('ascii')
+            ])
         else:
-          self.repo.remove( files = [os.path.join(self.path,filename)] )
-    
+            self.repo.remove( files = [
+                os.path.join(self.path,filename).encode('ascii')
+            ])
+
     def commit(self,msg):
         self.lock()
         try:
@@ -90,7 +99,7 @@ class HgStoreMixin(object):
         return rv
 
     def rollback(self):
-        return self.repo.rawcommand(["rollback",])
+        return self.repo.rawcommand([b"rollback",])
 
     def revert(self,revid):
         #Forcing to string ensures the revid is in a self.repo.log()form mercurial is happy with
@@ -117,10 +126,10 @@ class HgStoreMixin(object):
 
         Up to date - is the equivalent of an empty result from 'hg status'
         """
-        significant_status = "MA"
+        significant_status = b"MA"
         if not kwargs.get("deleted"):
-            significant_status += "R"
-    
+            significant_status += b"R"
+
         return all( (x[0] not in significant_status for x in self.repo.status() ) )
 
     def clean(self,*args,**kwargs):
@@ -138,7 +147,7 @@ class HgStoreMixin(object):
             self.logger.warn("%slean requested in non-up-todate repo." % (
                          "Forced c" if kwargs.get('force') else "C" )) 
             if not kwargs.get('force'): return
-            
+
         if kwargs.get('full'):
             #Do a 'full' clean. Remove all the files except for 
             # the repo itself. This /could/ lose data if you
@@ -151,6 +160,6 @@ class HgStoreMixin(object):
 
         else:
             #Basic clean - just remove files in the manifest and marked as added.
-            for f in (x[1] for x in self.repo.status(all=True) if x[0] in 'MARC`' ):
+            for f in (x[1] for x in self.repo.status(all=True) if x[0] in b'MARC`' ):
                 os.unlink(os.path.join(self.get_path(),f))
 
