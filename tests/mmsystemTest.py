@@ -25,7 +25,7 @@ from MysteryMachine import *
 from MysteryMachine.schema.MMSystem import *
 from MysteryMachine.schema.Locker import *
 
-import MysteryMachine.store.file_store
+import MysteryMachine.store.dict_store
 
 import unittest
 
@@ -37,7 +37,8 @@ class sysTests(unittest.TestCase):
     def setUp(self):
         self.appctx = StartApp(["--cfgengine=ConfigYaml",  "--cfgfile=tests/test.yaml", "--testmode"]) 
         self.mpath = tempfile.mkdtemp(prefix="mysmac")
-        self.sys=MMSystem.OpenUri("attrfile:"+self.mpath)
+        self.scheme = "dict:"
+        self.sys=MMSystem.Create(self.scheme+self.mpath, )
 
     def tearDown(self,):
         self.appctx.close()
@@ -189,7 +190,7 @@ class sysTests(unittest.TestCase):
         # __init__ del calls them ok.
         # Test open / create semanitcs.
         self.assertEqual(UnEscapeSystemUri(EscapeSystemUri("dict:test")),"dict:test")
-        self.assertEqual(EscapeSystemUri("attrfile:"+self.mpath),unicode(self.sys))
+        self.assertEqual(EscapeSystemUri(self.scheme+self.mpath),unicode(self.sys))
         self.assertTrue(GetLoadedSystemByName(unicode(self.sys)) is self.sys)
       
      
