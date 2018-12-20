@@ -230,7 +230,7 @@ class storeTests(object):
         
         #Set an attribute - leave attribut set for SCM Interagtion tests
         self.store.start_store_transaction()
-        attrtuple = ( "simple",{ "a":"fred" }  )
+        attrtuple = ( "simple",{ b"a":b"fred" }  )
         self.store.SetAttribute("One"+":"+o12+":name",*attrtuple)
         self.attrnames =  { "One:"+o12+":name": attrtuple }
            
