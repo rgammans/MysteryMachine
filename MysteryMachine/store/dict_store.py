@@ -6,6 +6,8 @@ from MysteryMachine.store import *
 from MysteryMachine.store.Base import Base 
 from MysteryMachine.Exceptions import *
 
+
+import collections
 import logging
 import types
 
@@ -48,7 +50,7 @@ class dict_store(Base):
 
     def EnumCategories(self):
         #Forward the iterator object
-        return self._GenericEnum("", lambda d,k:  operator.isMappingType(d[k])  and k[:2] !='..' )
+        return self._GenericEnum("", lambda d,k:  isinstance(d[k],collections.Mapping)  and k[:2] !='..' )
 
     def _testObject(self,container,name):
         return (re.match(self.invalidobj,name) is None ) and ("..object" in container[name]) 
@@ -96,12 +98,12 @@ class dict_store(Base):
          return self._GenericHas("..object",name)
 
     def EnumAttributes(self,obj):
-       return self._GenericEnum(obj, lambda d,a: (not operator.isMappingType(d[a]))  and a[:2] != '..' )
+       return self._GenericEnum(obj, lambda d,a: (not isinstance(d[a],collections.Mapping))  and a[:2] != '..' )
 
     def HasAttribute(self,name):
         dbpath = self.canonicalise(name)
         d = self._walkPath(dbpath[:-1])
-        return dbpath[-1] in d and type(d[dbpath[-1]]) is types.TupleType
+        return dbpath[-1] in d and type(d[dbpath[-1]]) is type((),)
 
     def SetAttribute(self,attr,attrtype,parts):
         dbpath = self.canonicalise(attr)
