@@ -30,6 +30,7 @@ from .grammar import Grammar
 
 from MysteryMachine.schema.MMBase import  MMBase
 
+import six
 import re
 import copy
 
@@ -97,7 +98,7 @@ class MMParser (object):
     #Disabled to make source paths more readable now we
     # don't need to find the global system..
     #src = repr(self.myobject.owner)+":"+src
-   
+ 
     self.logger.debug( "processed src-> %s" % src)
     self.logger.debug( "raw+IN->%s<-" % rst_string)
 
@@ -109,7 +110,7 @@ class MMParser (object):
 
     result =   publish_doctree(rst_string,source_path=src,
                                settings_overrides=settings
-               
+
                 )
 
     docutils_stack.pop() 
@@ -145,7 +146,7 @@ class MMParser (object):
     nodes = self.ProcessRawRst(rst_string,src,src_stack)
     result = ""
     for n in nodes:
-      result += unicode(n)
+      result += six.text_type(n)
     self.logger.debug( "String->'%s',len %s"  % (result ,len(nodes)))
     if len(nodes) == 1:
       #Supress outer xml container.
@@ -182,7 +183,7 @@ def role_handler(role, rawtext, text, lineno, inliner,
                     current_parser = _findParser(rst)
 
                 #Return to docutils to get docutils node representation.
-                nodes += current_parser.ProcessRawRst(unicode(rst),src = repr(rst) ,
+                nodes += current_parser.ProcessRawRst(six.text_type(rst),src = repr(rst) ,
                                                       src_stack=content + [ text ] )
              except Exception:
                 import traceback

@@ -35,6 +35,7 @@ from dialogs.objectpicker import ObjectPicker, EVT_OBJECTPICKED_EVENT
 from dialogs.newattribute import NewAttributeDialog
 
 from MysteryMachine.Ui.wx import event_handler
+import six
 import logging
 
 import widgets
@@ -58,7 +59,7 @@ def _node_name(node):
     #contain attirbutes..
     if isinstance(node,MMAttribute):
         return node.name
-    else:return unicode(node) 
+    else:return six.text_type(node) 
 
 
 

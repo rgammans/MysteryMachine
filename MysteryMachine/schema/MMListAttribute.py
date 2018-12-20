@@ -34,6 +34,13 @@ try:
 except Exception:
     izip_longest = functools.partial(map,None)
 
+try:
+    dummy = xrange
+except NameError:
+    #Xrange not defined; define it to match range
+    # which is a py3 equivalent
+    xrange = range
+
 
 class MMListAttribute(MMAttributeValue):
     """

@@ -27,6 +27,7 @@ import logging
 
 import wx
 import wx.lib.newevent
+import six
 
 import MysteryMachine
 from MysteryMachine.schema.MMAttribute import MMAttribute , MMUnstorableAttribute
@@ -74,7 +75,7 @@ class NewAttributeDialog(wx.Dialog):
     
         self.namefield =wx.TextCtrl(self,wx.ID_ANY)       
         self.sizer.Add(self.namefield,0,wx.EXPAND)
-        self.namefield.SetValue(unicode(self.name))
+        self.namefield.SetValue(six.text_type(self.name))
         self.namefield.Show(self.writemethod == "set_value")
         
         self.typechoice = wx.Choice(self,self.__class__.ID_CHOICE,choices =sorted(GetAttributeTypeList()) )

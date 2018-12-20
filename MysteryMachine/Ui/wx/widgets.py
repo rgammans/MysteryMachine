@@ -31,6 +31,7 @@ from MysteryMachine.schema.MMSystem import MMSystem
 from MysteryMachine.schema.MMAttribute import MMAttribute
 from MysteryMachine.schema.MMObject import MMObject
 from MysteryMachine.Ui.wx import event_handler
+import six
 import logging
 
 import functools
@@ -55,7 +56,7 @@ def _node_name(node):
     #contain attirbutes..
     if isinstance(node,MMAttribute):
         return node.name
-    else:return unicode(node) 
+    else:return six.text_type(node) 
 
 
 def _pop(seq):
@@ -125,7 +126,7 @@ class MMTreeView(wx.TreeCtrl):
 
         self.notifyclosure = NotifyClosure(self,self.node_notifier)
 
-        self.rootItem = self.AddRoot(unicode(self.system),-1,-1,wx.TreeItemData(obj=self.system))
+        self.rootItem = self.AddRoot(six.text_type(self.system),-1,-1,wx.TreeItemData(obj=self.system))
         self.notifyclosure.register(self.system)
         #Use the empty string as the db path for the root node.
         self.nodes = { '' : self.rootItem }

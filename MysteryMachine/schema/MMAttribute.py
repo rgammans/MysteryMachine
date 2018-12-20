@@ -26,6 +26,7 @@ from .MMBase import *
 from .MMAttributeValue import MMAttributeValue , CreateAttributeValue , MMAttributeValue_MMRef , ShadowAttributeValue
 from MysteryMachine.schema.Locker import Reader,Writer
 
+import six
 import operator
 import functools
 import sys
@@ -81,7 +82,7 @@ class MMAttributeContainer(MMContainer):
                              **kwargs)
 
 
-
+@six.python_2_unicode_compatible
 class MMAttribute (MMAttributeContainer):
 
   """
@@ -125,7 +126,7 @@ class MMAttribute (MMAttributeContainer):
      return self.owner
 
   @Reader
-  def __unicode__(self):
+  def __str__(self):
      """
 
      @return string :

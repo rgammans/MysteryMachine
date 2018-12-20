@@ -36,6 +36,7 @@ import MysteryMachine.schema.MMAttributeValue
 import unittest
 import logging
 import itertools
+import six
 #logging.getLogger("MysteryMachine.schema").setLevel(logging.DEBUG)
 #logging.getLogger("MysteryMachine.store.file_store").setLevel(logging.DEBUG)
 
@@ -85,16 +86,16 @@ class ObjectTests(unittest.TestCase):
 
     def testdefname(self):
         self.logger.debug( "----starting defname test------")
-        self.assertEqual(unicode(self.dummyparent),"name")
+        self.assertEqual(six.text_type(self.dummyparent),"name")
         self.object["name"]="test"
         self.logger.debug( "--- next assert----")
-        self.assertEqual(unicode(self.object),"test")
-        self.assertEqual(unicode(self.object2),repr(self.object2))
+        self.assertEqual(six.text_type(self.object),"test")
+        self.assertEqual(six.text_type(self.object2),repr(self.object2))
         self.logger.debug( "----completed defname test------")
 
     def testAttrRef(self):
         self.object["data"] ="some data"
-        self.assertEqual(unicode(self.object["data"]),"some data")
+        self.assertEqual(six.text_type(self.object["data"]),"some data")
         def noAttrTst(obj):
             return obj["nodata"]
         self.assertRaises(KeyError,noAttrTst,self.object)
@@ -109,8 +110,8 @@ class ObjectTests(unittest.TestCase):
         self.sys2.NewCategory( "Dummy" )
         obj  = self.sys2.NewObject("Dummy")
         obj["data"] = "soemdata"
-        self.assertEqual(unicode(obj["data"]),"soemdata")
-        self.assertEqual(unicode(obj["DATa"]),"soemdata")
+        self.assertEqual(six.text_type(obj["data"]),"soemdata")
+        self.assertEqual(six.text_type(obj["DATa"]),"soemdata")
         self.assertRaises(KeyError,noAttrTst,obj) 
 
         obj["atref"]=obj["data"].getRef()
@@ -122,26 +123,26 @@ class ObjectTests(unittest.TestCase):
     def testParentRef(self):
         p=self.object.get_parent()
         p["test"] = "test"
-        self.assertEqual(unicode(self.object["test"]),unicode(p["test"]))
+        self.assertEqual(six.text_type(self.object["test"]),six.text_type(p["test"]))
         self.object["test"] = "other"
-        self.assertNotEquals(unicode(self.object["test"]),unicode(p["test"]))
+        self.assertNotEquals(six.text_type(self.object["test"]),six.text_type(p["test"]))
         #Test parent update
         p[".defname"] = "parent"
         #Test parent de-ref
         self.object[".defname"]= "object" 
-        self.assertEqual(unicode(self.object), "object")
-        self.assertEqual(unicode(p), "parent")
+        self.assertEqual(six.text_type(self.object), "object")
+        self.assertEqual(six.text_type(p), "parent")
         #Test deltete and parent ref.
         del self.object[".defname"]
-        self.assertEqual(unicode(self.object), "parent")
+        self.assertEqual(six.text_type(self.object), "parent")
 
     def testDefaultParent(self):
         obj2 = self.system.NewObject("Dummy")
-        self.assertEqual(unicode(obj2[".defname"]),"name") 
+        self.assertEqual(six.text_type(obj2[".defname"]),"name") 
         #Test parent de-ref
         obj2[".defname"]= "object" 
-        self.assertEqual(unicode(obj2), "object")
-        self.assertEqual(unicode(self.dummyparent), "name")
+        self.assertEqual(six.text_type(obj2), "object")
+        self.assertEqual(six.text_type(self.dummyparent), "name")
  
     def testInheritedEval(self):
         p=self.object.get_parent()
@@ -157,7 +158,7 @@ class ObjectTests(unittest.TestCase):
         self.parent[".secret"] = "test"
         #Hold ref , to ensure attr stays in cache,
         s = self.object[".secret"]
-        self.assertEqual("test",unicode(self.object[".secret"]))
+        self.assertEqual("test",six.text_type(self.object[".secret"]))
  
 
     def testParentAbuse(self):
@@ -172,18 +173,18 @@ class ObjectTests(unittest.TestCase):
     def testBreakParentRef(self):
         self.parent["testattr"] = "somedata"
         self.dummyparent["testattr"] = "otherdata"
-        self.assertEqual(unicode(self.object["testattr"]),"somedata")
+        self.assertEqual(six.text_type(self.object["testattr"]),"somedata")
         self.object.set_parent(MMNullReferenceValue())
         self.assertRaises(KeyError,self.object.__getitem__,"testattr")
 
         myobj = self.system.NewObject("dummy")
-        self.assertEqual(unicode(myobj["testattr"]),"otherdata")
+        self.assertEqual(six.text_type(myobj["testattr"]),"otherdata")
         myobj = self.system.NewObject("dummy",MMNullReferenceValue())
         self.assertRaises(KeyError,myobj.__getitem__,"testattr")
 
         #Check when a reference the shadow value is still held
         self.object.set_parent(self.parent)
-        self.assertEqual(unicode(self.object["testattr"]),"somedata")
+        self.assertEqual(six.text_type(self.object["testattr"]),"somedata")
         v = self.object["testattr"]
         self.object.set_parent(MMNullReferenceValue())
         #Test fetch of disappeared attribute raises KeyErrpr
@@ -250,7 +251,7 @@ class ObjectTests(unittest.TestCase):
                 attr = [ x.name for x in obj]
                 for k,v in self.val.iteritems():
                     self.assertTrue(k in attr,"%s not in attributes"%k)
-                    self.assertEqual(unicode(obj[k]),v)
+                    self.assertEqual(six.text_type(obj[k]),v)
             except Exception as e:
                 self.exception =e
 

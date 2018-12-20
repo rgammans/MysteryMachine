@@ -26,7 +26,7 @@ from MysteryMachine.schema.MMObject import *
 import unittest
 from MysteryMachine import * 
 from functools import partial
-
+import six
 
 from mock.schema_top import *
 
@@ -147,7 +147,7 @@ class attribValTest(unittest.TestCase):
         text = u"Some unicode text this is a pound sign \xa3, this is a special char \u2019"
         attr = CreateAttributeValue(text)
         self.assertEqual(attr.get_type(),"simple_utf8")
-        self.assertEqual(unicode(attr),text)
+        self.assertEqual(six.text_type(attr),text)
 
 
     def testGetAttributeTypes(self):

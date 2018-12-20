@@ -26,7 +26,7 @@ from MysteryMachine.schema.MMSystem import *
 from MysteryMachine.schema.Locker import *
 
 import MysteryMachine.store.dict_store
-
+import six
 import unittest
 
 import logging
@@ -69,7 +69,7 @@ class sysTests(unittest.TestCase):
         self.assertRaises(LookupError,setObj,cat) 
         cat[".dummy"] = "data"
         self.assertEqual(type(cat[".dummy"]) , MMAttribute)
-        self.assertEqual(unicode(cat[".dummy"]),"data")
+        self.assertEqual(six.text_type(cat[".dummy"]),"data")
         o12=self.sys.NewObject("One",None)
         o12id = repr(o12).split(":")[-1]
         self.assertEqual(cat[o12id],o12)
@@ -94,11 +94,11 @@ class sysTests(unittest.TestCase):
         self.assertEqual(cat.get_root(),self.sys)
         
         #Cat object name.
-        self.assertEqual(unicode(cat),"one")
+        self.assertEqual(six.text_type(cat),"one")
         self.assertEqual(repr(cat),"one")
         cat[".defname"] = "Test"
         self.assertEqual(repr(cat),"one")
-        self.assertEqual(unicode(cat),"Test")
+        self.assertEqual(six.text_type(cat),"Test")
 
     def testObjects(self):
         #Check empty categories are..
@@ -190,8 +190,8 @@ class sysTests(unittest.TestCase):
         # __init__ del calls them ok.
         # Test open / create semanitcs.
         self.assertEqual(UnEscapeSystemUri(EscapeSystemUri("dict:test")),"dict:test")
-        self.assertEqual(EscapeSystemUri(self.scheme+self.mpath),unicode(self.sys))
-        self.assertTrue(GetLoadedSystemByName(unicode(self.sys)) is self.sys)
+        self.assertEqual(EscapeSystemUri(self.scheme+self.mpath),six.text_type(self.sys))
+        self.assertTrue(GetLoadedSystemByName(six.text_type(self.sys)) is self.sys)
       
      
 
@@ -243,14 +243,14 @@ class sysTests(unittest.TestCase):
 
 
     def testNaming(self):
-        self.assertEqual(repr(self.sys),unicode(self.sys))
+        self.assertEqual(repr(self.sys),six.text_type(self.sys))
         rname=repr(self.sys)
         testname= u"A test name"
         self.sys.set_name(testname)
         self.assertEqual(self.sys.get_name(),testname)
-        self.assertEqual(unicode(self.sys),testname)
+        self.assertEqual(six.text_type(self.sys),testname)
         self.assertEqual(repr(self.sys),rname)
-        self.assertEqual(unicode(self.sys[".defname"]),testname)
+        self.assertEqual(six.text_type(self.sys[".defname"]),testname)
 
 
     def testNotify(self):

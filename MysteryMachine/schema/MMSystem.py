@@ -38,7 +38,7 @@ import MysteryMachine.Exceptions as Error
 import MysteryMachine.store.locallock
 
 from .Globals import *
-
+import six
 import re
 import time
 import weakref
@@ -55,7 +55,7 @@ def find_n_ancestor(obj,dist):
     for i in range(dist): obj = obj.get_ancestor()
     return obj 
 
-
+@six.python_2_unicode_compatible
 class MMSystem (MMAttributeContainer):
 
   """
@@ -109,7 +109,7 @@ class MMSystem (MMAttributeContainer):
     return self.name
 
 
-  def __unicode__(self):
+  def __str__(self):
     try:
        name = self[".defname"].get_raw()
     except Exception as e:
@@ -388,7 +388,7 @@ class MMSystem (MMAttributeContainer):
         attribute = MakeAttributeValue(*(self.store.GetAttribute(".defname")))
         if hasattr(attribute,"_compose"):
             attribute._compose(self)
-        return unicode(attribute)
+        return six.text_type(attribute)
     return None
 
   def _make_encoding(encoding):
@@ -525,7 +525,7 @@ class MMSystem (MMAttributeContainer):
         self.store = None
         self.tm = None
 
-
+@six.python_2_unicode_compatible
 class MMCategory(MMAttributeContainer):
 
     def __init__(self,owner,name,**kwargs):
@@ -540,7 +540,7 @@ class MMCategory(MMAttributeContainer):
     def __repr__(self):
         return self.name
 
-    def __unicode__(self):
+    def __str__(self):
         try:
             name = self[".defname"].get_raw()
         except Exception as e:

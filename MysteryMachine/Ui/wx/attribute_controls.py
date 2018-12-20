@@ -23,6 +23,8 @@ import functools
 
 from widgets import  NotifyClosure
 from MysteryMachine.Ui.wx import event_handler
+import six
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -85,7 +87,7 @@ class BasicMMAttributeValidator(MysterySchemaValidatorBase):
 
     @event_handler(level = logging.ERROR, debug_tb  =True)
     def TransferToWindow(self):
-        self.GetWindow().SetValue(unicode(self.attribute.get_raw()))
+        self.GetWindow().SetValue(six.text_type(self.attribute.get_raw()))
         return True 
 
     @event_handler(level = logging.ERROR, debug_tb  =True)    
@@ -248,7 +250,7 @@ class MMRefAttributeValidator(MysterySchemaValidatorBase):
 
     @event_handler(level = logging.ERROR, debug_tb  =True)
     def TransferToWindow(self):
-        self.GetWindow().SetLabel(u"Reference to " + unicode(self.attribute.getSelf()))
+        self.GetWindow().SetLabel(u"Reference to " + six.text_type(self.attribute.getSelf()))
         self.GetWindow().GetParent().Layout()
         return True 
 

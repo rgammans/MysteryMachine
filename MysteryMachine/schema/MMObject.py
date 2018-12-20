@@ -29,10 +29,11 @@ from MysteryMachine.schema.MMAttribute import *
 from MysteryMachine.schema.MMAttributeValue import  * 
 
 import MysteryMachine.Exceptions as Error
-
+import six
 import weakref
 import logging
 
+@six.python_2_unicode_compatible
 class MMObject (MMAttributeContainer):
 
   """
@@ -271,13 +272,13 @@ class MMObject (MMAttributeContainer):
 
 
   @Reader
-  def __unicode__(self):
+  def __str__(self):
     # def name attribute contains the instructions for a human
     # readable interpreation of this object. Normally "mm:`:name`"
     #
     # Fall back to Schema ID if defname attribute doesnot exist
     try:
-        name = unicode(self[".defname"])
+        name = six.text_type(self[".defname"])
     except KeyError: name=self.get_nodeid()
     return self.parser.GetString(name,repr(self))
 

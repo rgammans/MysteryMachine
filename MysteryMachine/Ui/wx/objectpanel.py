@@ -29,6 +29,7 @@ from MysteryMachine.schema.MMSystem import MMSystem
 
 from attribute_controls import *
 from widgets import NotifyClosure
+import six
 
 Ui_Id = wx.ID_HIGHEST
 def NewUI_ID():
@@ -57,7 +58,7 @@ class ObjectPanel(wx.PyPanel):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
         self.title = wx.StaticText(self,ID_LABEL)
-        self.title.SetLabel(repr(self.obj) +" - \"" +unicode(self.obj)+"\"") 
+        self.title.SetLabel(repr(self.obj) +" - \"" +six.text_type(self.obj)+"\"") 
         self.sizer.Add(self.title,0)
         self.notify = NotifyClosure(self,self.node_changed)
 
@@ -136,7 +137,7 @@ class _object_section(wx.Panel):
         self.obj = obj
         super(_object_section,self).__init__(parent,-1)
         self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
-        box = wx.StaticBox(self, -1, label = unicode(obj))
+        box = wx.StaticBox(self, -1, label = six.text_type(obj))
         self.sizer = wx.StaticBoxSizer(box,wx.VERTICAL)
         self.SetSizer(self.sizer)
         for attr in obj:
