@@ -161,5 +161,11 @@ class HgStoreMixin(object):
         else:
             #Basic clean - just remove files in the manifest and marked as added.
             for f in (x[1] for x in self.repo.status(all=True) if x[0] in b'MARC`' ):
-                os.unlink(os.path.join(self.get_path(),f))
+                # Weirdly python uses unicode string for pathnames; which
+                # I suppose makes sense under Windows; but on posix they are
+                # really bytes strings; and that's how hglib treats them
+                # but since os.path.join won't let you mix components we 
+                # need to change one end; we decide to stick with what the
+                # standard libary does.
+                os.unlink(os.path.join(self.get_path(),f.decode('ascii')))
 
