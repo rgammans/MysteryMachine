@@ -112,7 +112,7 @@ class attribTest(unittest.TestCase):
 
     def testAttrValType(self):
        p = fakeParent()
-       attr=MMAttribute("document","test\n----\n\n\nA Message",p)
+       attr=MMAttribute("document",b"test\n----\n\n\nA Message",p)
        self.assertEqual(attr.get_type(),"simple")
 
 
@@ -194,7 +194,7 @@ class attribTest(unittest.TestCase):
     def testEncoding(self):
         m = container()
         m["encoded"] = "String"
-        self.assertRaises(UnicodeDecodeError,m._set_attr_item,"fake","Not ascii\xa5")
+        self.assertRaises(UnicodeDecodeError,m._set_attr_item,"fake",b"Not ascii\xa5")
         self.assertEqual(six.text_type(m["encoded"]),"String")
         self.assertRaises(KeyError,m.__getitem__,"fake")
         self.assertEqual(six.text_type(m["encoded"]),"String")
