@@ -319,6 +319,10 @@ class MMAttributeValue_Raw(MMAttributeValue):
     typename = "_raw"
     contain_prefs = {}
 
+    def _compose(self,obj):
+        """Called by some containers for any final inplace optimisations neeeded"""
+        pass
+
 class MMAttributeValue_BasicText(MMAttributeValue):
     """
     A single Macro part value type.
