@@ -232,7 +232,7 @@ class MMAttributeValue (six.with_metaclass(_AttrMeta,SchemaCommon) ):
     """
     self.logger.debug( str(self.__class__))
     self.logger.debug( self.parts)
-    result = "\n".join([x[1] for x in  sorted(self.parts.items())])
+    result = b"\n".join([x[1] for x in  sorted(self.parts.items())])
     self.logger.debug( "raw-->%s<--" % result)
     return result
 
@@ -389,12 +389,12 @@ class MMAttributeValue_MMRef(MMAttributeValue):
          ##Set a default value to be overwritten 
         parts = kwargs.get("parts")
         if not parts:
-            kwargs["parts"] = {'obj':''}
+            kwargs["parts"] = {'obj':b''}
         super(MMAttributeValue_MMRef, self).__init__(*args,**kwargs)
         if isinstance(self.value,MMBase):
             #Get string represenation of the object.
             #TODO Store object here so it cached.
-            self.parts['obj'] = repr(self.value)
+            self.parts['obj'] = repr(self.value).encode('ascii')
             
             self.logger.debug( "MMA-O:init->%s<--" % self.parts['obj'])
         #All ok.
@@ -447,7 +447,7 @@ class MMNullReferenceValue(MMAttributeValue):
 
     def __init__(self,*args,**kwargs):
         super(MMNullReferenceValue, self).__init__(*args,**kwargs)
-        self.parts = { 'value' : '' } 
+        self.parts = { 'value' : b'' } 
             
         self.exports += [ "get_object" ]
 

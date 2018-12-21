@@ -76,8 +76,8 @@ class attribValTest(unittest.TestCase):
         self.ctx.close()   
  
     def testUnderInit(self):
-       val=MMAttributeValue(parts = {"1":"test","2":"this"})
-       self.assertEqual(val.get_raw_rst(),"test\nthis")
+       val=MMAttributeValue(parts = {"1":b"test","2":b"this"})
+       self.assertEqual(val.get_raw_rst(),b"test\nthis")
        self.assertEqual(len(val.get_parts()),2)
 
 
@@ -117,7 +117,7 @@ class attribValTest(unittest.TestCase):
         self.assertEqual(notsillycalled[0],1)
  
         #Value copy operation
-        val=MMAttributeValue_BasicText(value = "test")
+        val=MMAttributeValue_BasicText(value = b"test")
         val2 = CreateAttributeValue(val)
         self.assertEqual(val, val2)
         self.assertFalse(val is val2)
