@@ -177,7 +177,7 @@ class filestore(Base):
             if e.errno != 183: raise
         else:
             sentinel = os.path.join(catpath ,CATEGORY_SENTINEL_NAME )
-            self.tlog.Add_File(self.tx,sentinel,"")
+            self.tlog.Add_File(self.tx,sentinel,b"")
             self.Add_file(sentinel)
             self.newcat.append(can_catpath)
 
@@ -190,7 +190,7 @@ class filestore(Base):
         sentinel = os.path.join(catpath ,OBJECT_SENTINEL_NAME )
 
         self.tlog.Create_Dir(self.tx,catpath)
-        self.tlog.Add_File(self.tx,sentinel,"")
+        self.tlog.Add_File(self.tx,sentinel,b"")
         self.Add_file(sentinel)
         self.newobjs.append(can_catpath)
         #return Id
