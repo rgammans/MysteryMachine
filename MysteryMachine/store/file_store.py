@@ -51,7 +51,7 @@ def FileStoreAttributePart(filename,partname):
     """
     Create a MMAttributePart from a filename
     """
-    with closing(open(filename,"r")) as infile:
+    with closing(open(filename,"rb")) as infile:
         data = infile.read()
         infile.close()
         logging.getLogger("MysteryMachine.Store.file_store").debug("APi:data:%s",data)
