@@ -34,6 +34,7 @@ import itertools
 DEFAULT_TRUSTEDPLUGIN_PATH = os.path.realpath(os.path.join(__file__,".." + os.path.sep + "TrustedPlugIns"))
 
 class InvalidPlugin(RuntimeError):pass
+class TrustError(RuntimeError):pass
 
 class ExtensionLib(object):
     """
