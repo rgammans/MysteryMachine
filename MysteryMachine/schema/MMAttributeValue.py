@@ -423,10 +423,19 @@ class MMAttributeValue_MMRef(MMAttributeValue):
         own_obj is not valid or the value will not validate.
         """
         ##TODO Consider caching the return result.
+
         self.logger.debug( "refobj->%r<--" %obj )
-        pstr = self.get_raw(obj)
+
+        # Get the reference as a unicode string
+        # as we use the standard parser to decode
+        # we need it to no longer be a bytes object ( in py3)
+        # Utf8 is in py3 our standard encoding althogu
+        # thi should ahve now non-ascii codes.
+        pstr = six.text_type(self.get_raw(obj),'utf8')
+
         #Special case answer.
         if pstr == "": return obj.get_root() 
+
         objref = None
         self.logger.debug( "MMA-O:go:pstr  ->%r<--" % pstr)
         g = Grammar(obj)
