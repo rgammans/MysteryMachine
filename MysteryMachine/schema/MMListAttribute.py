@@ -52,14 +52,14 @@ class MMListAttribute(MMAttributeValue):
         ##Set a default value to be overwritten 
         parts = kwargs.get("parts")
         if not parts:
-            kwargs["parts"] = {'0element':''}
+            kwargs["parts"] = {'0element': b''}
 
         super(MMListAttribute,self).__init__(self,*args,**kwargs)
         self.special = ["0element"]
         self.uncomposed = {}
         if self.value is not None:
             #Value overrides parts, but create a dummy part for emptylists
-            self.parts = { "0element" : "" }
+            self.parts = { "0element" : b'' }
             for item in self.value:
 
                 self.logger.debug( "ila  %r",item)
@@ -216,12 +216,15 @@ class MMListAttribute(MMAttributeValue):
             value = next(iter(v.get_parts().items()))
             #We can safely use ':' as a seperator as it isn't
             # allowed in  type or part names.
-            return v.get_type()+":"+value[0]+":"+value[1]
+            return ( v.get_type().encode('ascii')+
+                     b":"+value[0].encode('ascii')+
+                     b":"+value[1] # Should already be bytes
+                    )
 
     def _convert_to_val(self, key ,v, obj = None):
         #Limit split so that we don't lose data after ':' in the 
         #value.
-        data = v.split(":",2)
+        data = v.split(b":",2)
         if len(data) == 3:
             parts =  { data[1]: data[2]}
         else:
