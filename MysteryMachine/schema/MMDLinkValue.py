@@ -122,7 +122,14 @@ import threading
 
 import logging
 import weakref
-import itertools
+
+try:
+    #Assume python 3
+    from itertools import zip_longest
+except ImportError:
+    #Fallback to py2.
+    from itertools import izip_longest as zip_longest
+
 
 logger    = logging.getLogger("MysteryMachine.schema.MMDLinkValue")
 _value_typename = "bidilink"
@@ -192,7 +199,7 @@ def _measure_path_diff(frm,to):
     to_path =  to.get_nodeid().split(':')
 
     count = 0
-    for f,t in itertools.izip_longest(frm_path,to_path):
+    for f,t in zip_longest(frm_path,to_path):
         if count >0 and t is not None: RuntimeError("invalid path %r"%to_path)
         if f is not None and t is not None:
             if f != t: raise RuntimeError('%r is not a parent of %r'%(frm,to))

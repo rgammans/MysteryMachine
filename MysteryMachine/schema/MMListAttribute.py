@@ -27,12 +27,11 @@ import itertools
 import functools
 
 # izip_longest only exists from2.6 onwards 
-# but  map(None,.) does the same but is deprecated
-# in 3.x
+# but  map(None,.) 
 try:
-    izip_longest = itertools.izip_longest
+    zip_longest = itertools.izip_longest
 except Exception:
-    izip_longest = functools.partial(map,None)
+    zip_longest = itertools.zip_longest
 
 try:
     dummy = xrange
@@ -299,7 +298,7 @@ class _Key(object):
         intermediate keys exist in the tree.
         """
         ans = []
-        for lo,hi in izip_longest(self.value,other):
+        for lo,hi in zip_longest(self.value,other):
 
             if lo is None: lo = self.abet[0]
             if hi is None: hi = self.abet[-1]
