@@ -108,7 +108,7 @@ class attribTest(unittest.TestCase):
     # Test AttributeValue export resolution.
     def testAttrValExport(self):
        attr=MMAttribute("document","test\n----\n\n\nA Message",None)
-       self.assertEqual("test\n----\n\n\nA Message",attr.get_raw())
+       self.assertEqual(b"test\n----\n\n\nA Message",attr.get_raw())
 
     def testAttrValType(self):
        p = fakeParent()
@@ -184,12 +184,12 @@ class attribTest(unittest.TestCase):
         childobj  = container(parent = parentobj )
 
         parentobj["foo"] = "test"
-        self.assertEqual(parentobj["foo"].get_raw(),"test")
-        self.assertEqual(childobj["foo"].get_raw(),"test")
+        self.assertEqual(parentobj["foo"].get_raw(),b"test")
+        self.assertEqual(childobj["foo"].get_raw(),b"test")
         
         childobj["foo"] = "different"
-        self.assertEqual(parentobj["foo"].get_raw(),"test")
-        self.assertEqual(childobj["foo"].get_raw(),"different")
+        self.assertEqual(parentobj["foo"].get_raw(),b"test")
+        self.assertEqual(childobj["foo"].get_raw(),b"different")
         
     def testEncoding(self):
         m = container()

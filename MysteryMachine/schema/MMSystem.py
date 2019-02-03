@@ -111,7 +111,7 @@ class MMSystem (MMAttributeContainer):
 
   def __str__(self):
     try:
-       name = self[".defname"].get_raw()
+       name = self[".defname"].get_raw_rst()
     except Exception as e:
        self.logger.debug(str(e))
        name = repr(self)
@@ -398,18 +398,24 @@ class MMSystem (MMAttributeContainer):
   def set_encoding(self,encoding):
     """Define default character set encoding for non-unicode data in thi system
 
+
+    Encoding names must be ascii.
+
     Raises LookupError if the codec is unknown
     """
+
     import codecs
     codecs.lookup(encoding) #Check encoding is known
 
     self.old_encoding = self.encoding
-    self.encoding = str(encoding)
+    self.encoding = encoding
+
     #We don't use the full attribute type schema here as the encoding
     #must be treated as simply as possibly because all string interpolation
     #depends on it. So we can't run the parser for this value - as the parser
+
     #may need this value for it's input
-    enc_value =  MMAttributeValue_Raw(parts = {'txt':self.encoding})
+    enc_value =  MMAttributeValue_Raw(parts = {'txt':self.encoding.encode('utf-8')})
     self._set_attr_item('.encoding',enc_value)
 
   def _get_encoding(self):
@@ -417,7 +423,7 @@ class MMSystem (MMAttributeContainer):
         attrtype, parts = self.store.GetAttribute(".encoding")
         if attrtype != "_raw":
             raise Error
-        return parts["txt"]
+        return parts["txt"].decode('utf-8')
     else: return "ascii"
 
 
@@ -542,7 +548,7 @@ class MMCategory(MMAttributeContainer):
 
     def __str__(self):
         try:
-            name = self[".defname"].get_raw()
+            name = self[".defname"].get_raw_rst()
         except Exception as e:
             self.logger.debug(str(e))
             name = repr(self)

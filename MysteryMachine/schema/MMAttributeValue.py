@@ -217,17 +217,42 @@ class MMAttributeValue (six.with_metaclass(_AttrMeta,SchemaCommon) ):
     @return string :
     @author
     """
-    return str(self.__class__)+"(\""+self.get_raw()+"\")"
-
+    return str(self.__class__)+"(\""+self._decode_content()+"\")"
 
   def __str__(self):
-    return self.get_raw()
+    return self._decode_content()
+
+
+  def _decode_content(self, obj = None):
+    """ Internal function 
+    returns an intermediate str/unicode representation.
+    
+    This is so __str__ and get_raw_rst can share an implementaion
+    at the base class; but is not intended to be overrridden or used
+    elsewhere.
+    """
+    if obj is not None:
+        encoding = obj.get_root().get_encoding()
+        raw = self.get_raw(obj = obj)
+    else:
+        # Round trip through the unicode escape codec to map any 
+        #non-ascii characters
+        raw = six.text_type(self.get_raw(), "unicode_escape")
+        rawlist = raw.split("\n")
+        raw = b""
+        for ele in rawlist:
+            raw += ele.encode("unicode_escape")
+            raw += b'\n';
+        raw = raw[:-1]
+        encoding = 'ascii'
+
+    return six.text_type(raw,encoding)
 
   def get_raw(self, obj = None):
     """
     Gets unprocessed rst contents of attribute.       
 
-    @return string :
+    @return bytes :
     @author
     """
     self.logger.debug( str(self.__class__))
@@ -237,7 +262,11 @@ class MMAttributeValue (six.with_metaclass(_AttrMeta,SchemaCommon) ):
     return result
 
   def get_raw_rst(self, obj = None):
-    return self.get_raw(obj)
+    """Get raw contents suitable for parsing by the markup parser.
+
+    :returns str/unicode:
+    """
+    return self._decode_content(obj)
 
   def get_parts(self):
     return self.parts
@@ -351,6 +380,7 @@ class MMAttributeValue_BasicText(MMAttributeValue):
             # will rasise an exception we will propagate if not decodeable.
             decode(self.parts["txt"])
 
+@six.python_2_unicode_compatible
 class MMAttributeValue_UnicodeText(MMAttributeValue):
     """
     A single Macro part value type.
@@ -372,14 +402,23 @@ class MMAttributeValue_UnicodeText(MMAttributeValue):
         """
         Gets unprocessed rst contents of attribute.       
 
-        @return unicode :
+        @return bytes :
         @author
         """
-        return six.text_type(self.parts["txt"],"utf8")
+        return self.parts["txt"]
+
+    def __str__(self):
+        return self.get_raw_rst()
 
     def get_raw_rst(self, obj = None):
-        return self.get_raw(obj)
+        """Get raw contents suitable for parsing by the markup parser.
 
+        :returns str/unicode:
+        """
+        return six.text_type(self.get_raw(obj),"utf8")
+
+    def _compose(self,obj):
+        pass
 
 class MMAttributeValue_MMRef(MMAttributeValue):
     """
@@ -444,7 +483,8 @@ class MMAttributeValue_MMRef(MMAttributeValue):
         return objref
 
     def get_raw_rst(self,obj = None):
-        return ":mm:`"+ self.get_raw(obj) + "`"
+        pstr = six.text_type(self.get_raw(obj),'utf8')
+        return ":mm:`"+  pstr + "`"
 
 
 class MMNullReferenceValue(MMAttributeValue):

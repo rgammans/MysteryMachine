@@ -77,7 +77,7 @@ class attribValTest(unittest.TestCase):
  
     def testUnderInit(self):
        val=MMAttributeValue(parts = {"1":b"test","2":b"this"})
-       self.assertEqual(val.get_raw_rst(),b"test\nthis")
+       self.assertEqual(val.get_raw_rst(),u"test\nthis")
        self.assertEqual(len(val.get_parts()),2)
 
 

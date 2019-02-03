@@ -302,15 +302,15 @@ class MMDLinkValue(MMAttributeValue):
             if self.anchorp is None:
                 if self.mode == 'connect_to_seed':
                     #Create member variables we can use..
-                    self.partner_path =  repr(self.obj).split(":") + partner_name.split(":")
-                    self.parts["target"] =  repr(self.obj)+":" + partner_name +", 0"
+                    self.partner_path =  repr(self.obj).split(b":") + partner_name.split(b":")
+                    self.parts["target"] =  repr(self.obj)+b":" + partner_name + b", 0"
                 elif self.mode == 'anchor_point_seed':
-                    self.parts["anchordist"]="0"
+                    self.parts["anchordist"]=b"0"
                     self.partner_path = None
                 else:
         #            ###Fallback to stuff
                     #if self.anchordist:
-                    self.parts["anchordist"]='1'#str(self.anchordist)
+                    self.parts["anchordist"]=b'1'#str(self.anchordist)
                     self._process_parts()
         else:
              self.mode = 'init_from_parts'
@@ -380,8 +380,8 @@ class MMDLinkValue(MMAttributeValue):
     def _process_parts(self):
        self.logger.debug( "_pp>%s"%self.parts)
        if "target" in self.parts:
-            attributename,sniplen = self.parts["target"].rsplit(",",1)
-            attributename = attributename.split(":")
+            attributename,sniplen = self.parts["target"].rsplit(b",",1)
+            attributename = attributename.split(b":")
             #if int(sniplen) > 0: we used to ensure anchordist was never 0
             self.anchordist = int(sniplen)
             self.partner_path=attributename
@@ -430,7 +430,7 @@ class MMDLinkValue(MMAttributeValue):
             ##The int() wrapping is desgin to cause a fastfailure if anchordist is 
             # invalid
 
-            self.parts['target'] = ":".join(self.partner_path) +","+str(int(self.anchordist))
+            self.parts['target'] = b":".join(self.partner_path) +b","+str(int(self.anchordist)).encode('ascii')
 
 
     def _compose(self,obj = None ):
