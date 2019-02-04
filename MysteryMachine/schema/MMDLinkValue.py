@@ -122,6 +122,7 @@ import threading
 
 import logging
 import weakref
+import six
 
 try:
     #Assume python 3
@@ -182,7 +183,7 @@ def _container_walk(root,path):
     if path is None: return None
     node = root
     for element in path:
-        if element != "":
+        if element != b"":
             node = node[element]
         if node is None: break
     return node
@@ -309,8 +310,8 @@ class MMDLinkValue(MMAttributeValue):
             if self.anchorp is None:
                 if self.mode == 'connect_to_seed':
                     #Create member variables we can use..
-                    self.partner_path =  repr(self.obj).split(b":") + partner_name.split(b":")
-                    self.parts["target"] =  repr(self.obj)+b":" + partner_name + b", 0"
+                    self.partner_path =  repr(self.obj).split(":") + partner_name.split(":")
+                    self.parts["target"] =  repr(self.obj).encode('ascii')+b":" + partner_name.encode('ascii') + b", 0"
                 elif self.mode == 'anchor_point_seed':
                     self.parts["anchordist"]=b"0"
                     self.partner_path = None
@@ -426,7 +427,7 @@ class MMDLinkValue(MMAttributeValue):
 
             ##The int() wrapping is desgin to cause a fastfailure if anchordist is 
             # invalid
-            self.parts['target'] = repr(target) +","+str(int(self.anchordist))
+            self.parts['target'] = (repr(target) +","+str(int(self.anchordist))).encode('ascii')
             try:
                 del self.parts['anchordist']
             except KeyError:pass
@@ -437,7 +438,7 @@ class MMDLinkValue(MMAttributeValue):
             ##The int() wrapping is desgin to cause a fastfailure if anchordist is 
             # invalid
 
-            self.parts['target'] = b":".join(self.partner_path) +b","+str(int(self.anchordist)).encode('ascii')
+            self.parts['target'] = b":".join(map(lambda x:x.encode('ascii'),self.partner_path)) +b","+str(int(self.anchordist)).encode('ascii')
 
 
     def _compose(self,obj = None ):
@@ -455,7 +456,7 @@ class MMDLinkValue(MMAttributeValue):
         if self.anchorp is not None:
             self.anchordist = _measure_path_diff(obj,self.anchorp)
             if 'anchordist' in self.parts:
-                self.parts = {'anchordist' : str( self.anchordist) }
+                self.parts = {'anchordist' : str( self.anchordist).encode('ascii') }
 
 
         if self.mode == 'connect_to_gestate':
@@ -483,7 +484,7 @@ class MMDLinkValue(MMAttributeValue):
                     oldp.disconnect()
 
             self.anchordist = _measure_path_diff(obj,self.anchorp)
-            self.parts = {'anchordist' : str( self.anchordist) }
+            self.parts = {'anchordist' : str( self.anchordist).encode('ascii') }
             self._process_parts()
 
         else:
@@ -566,7 +567,7 @@ class MMDLinkValue(MMAttributeValue):
             #      For instance assigned ConnectTo(..)'s result to  a non Dlink object is 
             #      one way to cause this, although I intend to raise a custom error for this
             #      ealier in the control path!
-            else: return _container_walk(obj.get_root(),self.parts["anchor"].split(":"))
+            else: return _container_walk(obj.get_root(),self.parts["anchor"].encode('ascii').split(":"))
 
         ##If we are connected (partner_path is not None) and  a shadow, deref the shadow.
         if obj.is_shadow() and self.partner_path is not None:
