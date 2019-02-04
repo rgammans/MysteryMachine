@@ -37,6 +37,7 @@ import re
 import threading
 from contextlib import contextmanager
 import logging
+from importlib import import_module
 
 import tempfile
 import os
@@ -327,7 +328,7 @@ class _LibraryContext(six.with_metaclass(_SingletonWithExternalLocking,object)):
             #Import the actual named thing.
             try: 
                 self.logger.debug("opt %s , tries importing %s",name,modname)
-                __import__(modname,globals())
+                import_module("."+modname, package = "MysteryMachine")
             except ImportError as e:
                 self.logger.debug("Import failed (%s)",str(e))
             #No import each parent...,
@@ -335,7 +336,7 @@ class _LibraryContext(six.with_metaclass(_SingletonWithExternalLocking,object)):
                 try:
                     modname = ".".join(elements[0:-sz]) 
                     self.logger.debug("opt %s , tries importing %s",name,modname)
-                    __import__(modname,globals())
+                    import_module("."+modname, package = "MysteryMachine")
                 except ImportError as e:
                     self.logger.debug("Import failed (%s)",str(e))
 
