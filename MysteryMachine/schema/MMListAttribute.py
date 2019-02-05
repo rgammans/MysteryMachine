@@ -25,6 +25,7 @@ from MysteryMachine.schema.MMAttributeValue import MMAttributeValue ,MakeAttribu
 #with from 'itertools import izip_longest'
 import itertools
 import functools
+import six
 
 # izip_longest only exists from2.6 onwards 
 # but  map(None,.) 
@@ -226,10 +227,10 @@ class MMListAttribute(MMAttributeValue):
         #value.
         data = v.split(b":",2)
         if len(data) == 3:
-            parts =  { data[1]: data[2]}
+            parts =  { six.text_type(data[1],'ascii'): data[2]}
         else:
             parts = {}
-        return MakeAttributeValue(data[0],parts = parts )
+        return MakeAttributeValue(six.text_type(data[0],'ascii'),parts = parts )
 
 
 
