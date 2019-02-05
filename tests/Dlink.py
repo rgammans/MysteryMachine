@@ -324,13 +324,13 @@ class DlinkTests(unittest.TestCase):
         self.assertRaises(TypeError,try_connect,self.object2['notlink'],self.object3,"link1")
         self.assertEqual(self.object3["link1"].get_anchor(),self.object3)
         self.assertEqual(self.object3["link1"].get_object(),None)
-        self.assertEqual(self.object2["notlink"].get_raw(),'')
+        self.assertEqual(self.object2["notlink"].get_raw(),b'')
 
         self.assertRaises(TypeError,try_connect,self.object3['link1'],self.object2,"notlink")
         #try_connect(self.object3['link1'],self.object2["link1"])
         self.assertEqual(self.object3["link1"].get_anchor(),self.object3)
         self.assertEqual(self.object3["link1"].get_object(),None)
-        self.assertEqual(self.object2["notlink"].get_raw(),'')
+        self.assertEqual(self.object2["notlink"].get_raw(),b'')
 
 
 def getTestNames():

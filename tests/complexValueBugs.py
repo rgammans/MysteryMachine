@@ -74,8 +74,8 @@ class complexValTest(unittest.TestCase):
         self.parent["a_list"]  = [ "" ]
         self.assertEqual(self.parent["a_list"].get_value().get_type(), "list")
         self.assertEqual(self.object["a_list"].get_value().get_type(), "list")
-        self.assertEqual(self.parent["a_list"][0].get_raw(), "")
-        self.assertEqual(self.object["a_list"][0].get_raw(), "")
+        self.assertEqual(self.parent["a_list"][0].get_raw(), b"")
+        self.assertEqual(self.object["a_list"][0].get_raw(), b"")
 
        ##This is counter-intuiutive *but* anything else would be too confusing...
         #  the reason we have changed data in both elements is because we have called
@@ -85,16 +85,16 @@ class complexValTest(unittest.TestCase):
         # the attribute in COW like manner.
         self.object["a_list"][0]  =  "data"
         #self.assertEqual(self.parent["a_list"][0].get_raw(), "data")
-        self.assertEqual(self.parent["a_list"][0].get_raw(), "")
-        self.assertEqual(self.object["a_list"][0].get_raw(), "data")
+        self.assertEqual(self.parent["a_list"][0].get_raw(), b"")
+        self.assertEqual(self.object["a_list"][0].get_raw(), b"data")
 
         self.object["a_list"]  =  [ "differentdata" ]
-        self.assertEqual(self.parent["a_list"][0].get_raw(), "")
-        self.assertEqual(self.object["a_list"][0].get_raw(), "differentdata")
+        self.assertEqual(self.parent["a_list"][0].get_raw(), b"")
+        self.assertEqual(self.object["a_list"][0].get_raw(), b"differentdata")
 
         self.object["c_list"]  =  [ "differentdata" ,"moredata"]
-        self.assertEqual(self.object["c_list"][0].get_raw(), "differentdata")
-        self.assertEqual(self.object["c_list"][1].get_raw(), "moredata")
+        self.assertEqual(self.object["c_list"][0].get_raw(), b"differentdata")
+        self.assertEqual(self.object["c_list"][1].get_raw(), b"moredata")
 
         oldlevel= self.logger.getEffectiveLevel()
         #New list for testing the append behavior
@@ -109,7 +109,7 @@ class complexValTest(unittest.TestCase):
         #o.append("S")
         self.object["b_list"].append("S")
         self.assertEqual(len(self.object["b_list"]), 1)
-        self.assertEqual(self.object["b_list"][0].get_raw(), "S")
+        self.assertEqual(self.object["b_list"][0].get_raw(), b"S")
         self.assertEqual(len(self.parent["b_list"]), 0)
 
         self.logger.setLevel(oldlevel)
