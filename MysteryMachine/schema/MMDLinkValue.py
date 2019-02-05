@@ -154,6 +154,9 @@ class _member_guard:
         return False
 
 
+class  BiDiLinkInvalidData(RuntimeError):
+    pass
+
 class  BiDiLinkTargetMismatch(RuntimeError):
     pass
 
@@ -297,12 +300,13 @@ class MMDLinkValue(MMAttributeValue):
         super(MMDLinkValue,self).__init__(*args,**kwargs)
 
         self.logger    = logging.getLogger("MysteryMachine.schema.MMDLinkValue")
-        self.obj            = kwargs.get("target",None)
-        partner_name        = kwargs.get("foreign",None)
-        self.anchorp        = kwargs.get("anchor",None)
-        self.mode           = kwargs.get("mode",'')
-        self.anchordist     = None
-
+        self.obj            = kwargs.get("target",None)  # The schema obj at which we point.
+        partner_name        = kwargs.get("foreign",None) # Remote attribure which whose anchor we point at
+        self.anchorp        = kwargs.get("anchor",None)  # Schema Object to anchor ro
+        self.mode           = kwargs.get("mode",'')      # Creation mode; drive state machine
+        self.anchordist     = None                       # Nubmer of parents generations dist to out anchor (int)
+        self.partner_path   = None                       # List of String(unicode) (or) None from root to our partner.
+ 
 
         if len(self.parts) == 0:
             #Validate we have enough data..
@@ -357,8 +361,8 @@ class MMDLinkValue(MMAttributeValue):
             if other.mode == 'anchor_point_seed':
                 #Two sub cases here, we are anchorpoint, or we are connected
                 self.old_partner_path = self.partner_path
-                self.partner_path = None 
-                self.anchordist = None
+                self.partner_path = None    # List of Strings (or) None from root to our partner.
+                self.anchordist = None      # Nubmer of parents generations dist to out anchor (int)
                 self.anchorp = other.anchorp
                 self.mode = 'anchor_point_gestate'
                 self.logger.debug( "APG: %s | %s | %s",self.parts,other.parts,self.partner_path)
@@ -389,10 +393,11 @@ class MMDLinkValue(MMAttributeValue):
        self.logger.debug( "_pp>%s"%self.parts)
        if "target" in self.parts:
             attributename,sniplen = self.parts["target"].rsplit(b",",1)
-            attributename = attributename.split(b":")
+            attributename = six.text_type(attributename,'ascii')
+            attributename = attributename.split(":")
             #if int(sniplen) > 0: we used to ensure anchordist was never 0
             self.anchordist = int(sniplen)
-            self.partner_path=attributename
+            self.partner_path= attributename
        else:
             self.obj= None
             self.partner_path = None
@@ -562,12 +567,16 @@ class MMDLinkValue(MMAttributeValue):
         if obj is None: raise ValueError("Anchor is now relative - must pass home object")
         if self.anchordist is None:
             if self.anchorp is not None: return self.anchorp
+            else:
+                raise BiDiLinkInvalidData()
+            ### This should now be Unreachable; and only exists tyo suppport legacy
+            #   system with early version sof this obejct
             ##NOTE If the line below is raising KeyError('anchor') the problem occured
             #      before we got here!
             #      For instance assigned ConnectTo(..)'s result to  a non Dlink object is 
             #      one way to cause this, although I intend to raise a custom error for this
             #      ealier in the control path!
-            else: return _container_walk(obj.get_root(),self.parts["anchor"].encode('ascii').split(":"))
+                return _container_walk(obj.get_root(),self.parts["anchor"].encode('ascii').split(":"))
 
         ##If we are connected (partner_path is not None) and  a shadow, deref the shadow.
         if obj.is_shadow() and self.partner_path is not None:
