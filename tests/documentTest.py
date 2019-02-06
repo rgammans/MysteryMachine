@@ -48,7 +48,7 @@ class docTest(unittest.TestCase):
         c1[".defname"]= ":mm:`:name`"
 
         csheet = self.s.NewObject("docs")
-        csheet["title"] = document.pieces.title(parts ={"1":":mm:`:name`"})
+        csheet["title"] = document.pieces.title(parts ={"1":b":mm:`:name`"})
         csheet[".order"] = [ csheet["title"].getRef()  , ]
         #self.assertEqual(str(document.generate_doctree(csheet,c1)),
         #                 "<document source=\"character:1\">Fred Bloggs</document>")
