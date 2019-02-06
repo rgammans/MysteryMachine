@@ -69,7 +69,7 @@ You find life boring . You don't have a backgound. Piss about and
 have fun.
 
         """
-        csheet["background"] = document.pieces.section(parts = { "title":"Background", "body":":mm:`:background`" })
+        csheet["background"] = document.pieces.section(parts = { "title":b"Background", "body":b":mm:`:background`" })
         csheet[".order"] = [ csheet["title"].getRef()  , csheet["background"].getRef() ]
         doc = document.generate_doctree(csheet,c1)
         self.assertEqual(len(doc),1)                           #Has one 

@@ -27,6 +27,7 @@ This module contains AtttributeValue class for document pattern pieces.
 
 from MysteryMachine.schema.MMAttributeValue import MMAttributeValue
 import re
+import six
 
 class piece(MMAttributeValue):
     typename = "piecebase"
@@ -44,8 +45,15 @@ class piece(MMAttributeValue):
         """
         return None 
 
+    def _encode_raw(self, txt, obj = None):
+        encoding = 'utf-8'
+        if obj is not None:
+            encoding = obj.get_root().get_encoding()
+
+        return six.text_type(txt,encoding)
+
     def get_raw_rst(self,obj = None):
-        return self.get_raw(obj)
+        return self._encode_raw(self.get_raw(obj))
 
 
 _rst_lvl_adorns = [ '=', '-' ,'#' , '\'' , '"' ]
@@ -63,12 +71,17 @@ class title(piece):
     typename = "doctitle"
     contain_prefs = { str: 0}
     def get_raw(self,obj = None):
+        content  = b" ".join(self.parts.values())
+        return content
 
-        content  = " ".join(self.parts.values())
-
+    def get_raw_rst(self, obj = None):
+        content = super(title,self).get_raw_rst()
+        # Replace newlines with spaces (title in rst
+        # can't span lines).
         newln=re.compile("\n")
         content=re.sub(newln," ",content)
         content=content.rstrip()
+
         content= _maketitle(content) 
         return content
 
@@ -87,7 +100,8 @@ class section(piece):
     contain_prefs = { str: 0 , None: 0}
     typename = "docsection"
     
-    def get_raw(self ,obj = None):
-        txt = _maketitle(self.parts["title"])
-        txt += self.parts["body"]
+    def get_raw_rst(self ,obj = None):
+        txt = _maketitle(self._encode_raw(self.parts["title"], obj))
+        txt += self._encode_raw(self.parts["body"],obj)
         return txt
+

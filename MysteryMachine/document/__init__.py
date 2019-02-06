@@ -46,7 +46,7 @@ def generate_doctree(pattern,home):
         element = attrib.getSelf()
         #We have a problem here - 
         #  an element can impose a section push/pop
-        elenodes = parser.ProcessRawRst(element.get_raw() ,src ="<%r / %r>" % (element,home))
+        elenodes = parser.ProcessRawRst(element.get_raw_rst() ,src ="<%r / %r>" % (element,home))
         section_stack[-1] += elenodes
         # We check the existance of needs_push & needs_pop
         # as this means we can have standard attributes in the
@@ -55,7 +55,7 @@ def generate_doctree(pattern,home):
            section_stack += [ elenodes[ element.needs_push() ] ] 
 
         if hasattr(element,"needs_pop") and  element.needs_pop(): 
-           section_stack = section_stack[:-1]        
+           section_stack = section_stack[:-1]
 
     return doc
 
