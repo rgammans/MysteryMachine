@@ -301,7 +301,7 @@ class ObjectTests(unittest.TestCase):
             obj['.defname'] ='x'
             obj['.defname']
             del obj['.defname']
-            self.assertNotEquals(obj['.defname'],'x')
+            self.assertNotEqual(obj['.defname'],'x')
 
         test_new(self.object)
 
