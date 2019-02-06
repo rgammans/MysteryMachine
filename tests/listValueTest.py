@@ -31,13 +31,14 @@ import unittest
 from MysteryMachine import * 
 import six
 import copy
+import itertools
 
-#Get izip longest from itertools, or make it up with map
-# if too early a python
 try:
-    izip_longest = itertools.izip_longest
-except AttributeError:
-    izip_longest = functools.partial(map,None)
+    #Assume python 3
+    from itertools import zip_longest
+except ImportError:
+    #Fallback to py2.
+    from itertools import izip_longest as zip_longest
 
 from mock.schema_top import *
 
@@ -230,7 +231,7 @@ class ListValTest(unittest.TestCase):
         # - note we also test return order s correct here,
         names = [ 0,1,2,3 ]
         fndNames= []
-        for i,(k,v) in izip_longest(names,attr.items()):
+        for i,(k,v) in zip_longest(names,attr.items()):
             self.assertEqual(attr[i] , attr[k])
             self.assertEqual(attr[i] ,  v)
             self.assertFalse(k in fndNames)
