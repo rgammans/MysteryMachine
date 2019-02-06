@@ -175,7 +175,7 @@ class attribTest(unittest.TestCase):
         b = m._set_attr_item("name","no string")
         self.assertEqual(a,b)
         c = m._set_attr_item("notname","foo")
-        self.assertNotEquals(b,c)
+        self.assertNotEqual(b,c)
         b = m._set_attr_item("name",c)
         self.assertEqual(six.text_type(a),"foo")
     

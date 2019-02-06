@@ -54,7 +54,7 @@ class TrustExtManTest(unittest.TestCase):
         self.assertEqual(len(plugins),1)
         for plugin_info in plugins:
             self.plugin_info = plugin_info
-            self.assert_(self.plugin_info)
+            self.assertTrue(self.plugin_info)
             self.assertEqual(self.plugin_info.name,"FirstPlugin")
 
     def testRejected(self):

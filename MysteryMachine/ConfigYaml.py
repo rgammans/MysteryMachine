@@ -85,7 +85,7 @@ class ConfigYaml(object):
                 self.cfg = yaml.safe_load(f)
         except IOError as e:
             self.logger.debug(str(e))
-            self.logger.warn("Using empty config")
+            self.logger.warning("Using empty config")
             self.cfg = { }
             #If not FILE NOT FOUND , disable writeback.
             # to avoid clobbering an otherwise good config.

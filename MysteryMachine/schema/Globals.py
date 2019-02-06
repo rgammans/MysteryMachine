@@ -47,7 +47,6 @@ def EscapeSystemUri(uri):
     return uri
 
 def UnEscapeSystemUri(uri):
-    modlogger.warn("*** Func UnEscapeSystemUri Not complete***")
     def findChar(match):
         return  binascii.unhexlify(match.group(1))
     #Uri % percent generate utf-8 sequences; so convert to utf; 

@@ -192,7 +192,7 @@ class MMListAttribute(MMAttributeValue):
             if obj:
                 tobj = obj[k]
             else:
-                self.logger.warn("compose without an obj for %s"%k)
+                self.logger.debug("compose without an obj for %s"%k)
                 tobj = None
             self.logger.debug( "L compose %s %r %r",i,obj,tobj)
             i._compose(tobj)

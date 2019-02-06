@@ -130,7 +130,7 @@ class sysTests(unittest.TestCase):
         self.assertEqual(len(allobjs),3)
         self.assertEqual(len(list(iter(self.sys))),3)
         for o in allobjs:
-            self.assertNotEquals(type(self.sys[o]),type(None))
+            self.assertNotEqual(type(self.sys[o]),type(None))
         
    
         self.sys.DeleteObject(repr(o12))

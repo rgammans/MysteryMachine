@@ -125,7 +125,7 @@ class ObjectTests(unittest.TestCase):
         p["test"] = "test"
         self.assertEqual(six.text_type(self.object["test"]),six.text_type(p["test"]))
         self.object["test"] = "other"
-        self.assertNotEquals(six.text_type(self.object["test"]),six.text_type(p["test"]))
+        self.assertNotEqual(six.text_type(self.object["test"]),six.text_type(p["test"]))
         #Test parent update
         p[".defname"] = "parent"
         #Test parent de-ref

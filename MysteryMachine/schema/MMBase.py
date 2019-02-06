@@ -211,7 +211,7 @@ class MMBase(SchemaCommon):
       #
       #This occurs when a client has follow the instructions in
       # register_notify.__doc__  and kept their own reference.
-      if hasattr(self,"notify") and self.notify: self.logger.warn("Notify still active at del:%s"%self.notify)
+      if hasattr(self,"notify") and self.notify: self.logger.warning("Notify still active at del:%s"%self.notify)
 
   def end_write(self,xaction):
     self.get_root().tm.end_write(self,xaction)
