@@ -373,7 +373,24 @@ class MMContainer(MMBase):
             guard = lambda x:x[0] != '.'
 
         seen = set()
-        for k,v in self.cache.items():
+        def cache_iter():
+            """ Allow iteration around a possibly changing
+            dictionary"""
+            more = True
+            #Using the outer seen var causing endless iteration
+            my_seen = set()
+            while more:
+                # Items in keys but not in seen
+                todo = set(self.cache.keys()).difference(my_seen)
+                if todo:
+                    k = todo.pop()
+                    my_seen.add(k)
+                    yield k,self.cache[k]
+                else:
+                    more = False
+
+
+        for k,v in cache_iter():
             if not guard(k): continue
             if not val_guard(v): continue
             seen.add(k)
