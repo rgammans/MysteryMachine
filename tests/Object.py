@@ -212,7 +212,7 @@ class ObjectTests(unittest.TestCase):
  
         self.assertEqual(set( o.name for o in  iter(self.object)) , set( names ))
         fndNames= []
-        for k,v in self.object.iteritems():
+        for k,v in self.object.items():
             self.assertTrue(k in names)
             self.assertFalse(k in fndNames)
             fndNames += [ k ]
@@ -249,7 +249,7 @@ class ObjectTests(unittest.TestCase):
             self.exception = None
             try:
                 attr = [ x.name for x in obj]
-                for k,v in self.val.iteritems():
+                for k,v in self.val.items():
                     self.assertTrue(k in attr,"%s not in attributes"%k)
                     self.assertEqual(six.text_type(obj[k]),v)
             except Exception as e:

@@ -389,10 +389,11 @@ class MMContainer(MMBase):
                 yield k
 
 
-    def iteritems(self):
+    def items(self):
         for a in self.iterkeys():
             yield (a ,self[a])
 
+    iteritems = items
     def __iter__(self):
         for a in self.iterkeys():
             yield self[a]

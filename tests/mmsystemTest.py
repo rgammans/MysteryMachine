@@ -145,7 +145,7 @@ class sysTests(unittest.TestCase):
     
         names = list(self.sys.EnumContents()) 
         fndNames= []
-        for k,v in self.sys.iteritems():
+        for k,v in self.sys.items():
             self.assertTrue(k in names)
             self.assertFalse(k in fndNames)
             fndNames += [ k ]

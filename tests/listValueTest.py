@@ -230,7 +230,7 @@ class ListValTest(unittest.TestCase):
         # - note we also test return order s correct here,
         names = [ 0,1,2,3 ]
         fndNames= []
-        for i,(k,v) in izip_longest(names,attr.iteritems()):
+        for i,(k,v) in izip_longest(names,attr.items()):
             self.assertEqual(attr[i] , attr[k])
             self.assertEqual(attr[i] ,  v)
             self.assertFalse(k in fndNames)

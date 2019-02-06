@@ -309,7 +309,7 @@ class storeTests(object):
             self.store.commit("First")
             self.doCleanTst()
             self.store.revert(next(self.store.getChangeLog()))
-            for k,v in self.attrnames.iteritems():
+            for k,v in self.attrnames.items():
                 self.assertEqual(self.store.GetAttribute(k),v)
 
 

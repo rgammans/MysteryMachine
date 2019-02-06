@@ -307,20 +307,23 @@ class MMAttribute (MMAttributeContainer):
     else: return key
 
 
-  def iteritems(self):
+  def items(self):
      if '__iter__' not in self.valueobj.exports:
        raise TypeError("%s is not iterable (MM)" % self.valueobj.__class__)
      
      for name in self.valueobj.__iter__(obj = self):
        yield (self._keymap(name) , self._get_item(self._keymap(name),self._makeattr,self._keymap(name)) )
   
-  def iterkeys(self):
+  iteritems = items
+  def keys(self):
      if '__iter__' not in self.valueobj.exports:
        raise TypeError("%s is not iterable (MM)" % self.valueobj.__class__)
      
      for name in self.valueobj.__iter__(obj = self):
        yield self._keymap(name) 
-  
+ 
+  iterkeys = keys
+  values = __iter__
   itervalues = __iter__ 
 
   @staticmethod

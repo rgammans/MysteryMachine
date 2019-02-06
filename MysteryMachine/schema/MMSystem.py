@@ -643,14 +643,16 @@ class MMCategory(MMAttributeContainer):
         item = self._del_item(name,MMObject.delete_callback(self,self.name + ":" + name))
   
 
-    def iteritems(self):
+    def items(self):
        for objkey in self.EnumObjects():
             yield  objkey , self[objkey] 
+    iteritems = items
 
-    def iterkeys(self):
+    def keys(self):
        for objkey in self.EnumObjects():
            yield objkey 
 
+    iterkeys = keys
     def get_parent(self):
         return self['.parent'].getSelf()
 
