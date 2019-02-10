@@ -363,7 +363,8 @@ class MMAttribute (MMAttributeContainer):
                 
         return super(MMAttribute,self).start_write(*args)
 
-  def discard(self,):    
+  def discard(self,):
+        super(MMAttribute,self).discard()
         self.oldvalue , self.valueobj = None, self.oldvalue
 
 

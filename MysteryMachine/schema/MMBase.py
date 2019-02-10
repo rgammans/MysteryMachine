@@ -471,7 +471,11 @@ class MMContainer(MMBase):
     def discard(self,):
         clogger.debug ("(%r discard) new=%r"%(self,self.new_items))
         self.deleted_items = [ ]
-        self.new_items = [ ]
+        # We need to evict new items fro the cache; as they can't
+        # discard themselves. deleted markers know to do just that.
+        new_items, self.new_items =  self.new_items, [ ]
+        for item in new_items:
+           self._invalidate_item_(item.name)
         super(MMContainer,self).discard()
 
 
