@@ -48,9 +48,10 @@ class ObjectTests(unittest.TestCase):
         self.logger = logging.getLogger("MysteryMachine.schema.MMObject.tests")
         self.logger.debug( "-----STARTING NEW TEST---")
         self.mpath = tempfile.mkdtemp(prefix="mysmac")
+
         #self.system=MMSystem.OpenUri("attrfile:"+self.mpath)
-        
         self.system=MMSystem.Create("dict:ObjectTests")
+
         self.system.NewCategory( "Template" )
         self.dummyparent             = self.system.NewObject( "Template" )
         self.dummyparent[".defname"] = "name"
@@ -378,9 +379,8 @@ class ObjectTests(unittest.TestCase):
 
 
 
-    def test_contains_looks_at_xaction_state(self,):
-        """ do test inside a xaction to chack that 'in' looks at
-        chnages to the current state"""
+    def test_has_methds_looks_at_xaction_state(self,):
+        """ do test inside a xaction to chrck that 'in' operator looks at changes to the current state"""
         @Writer
         def test_new(obj):
             obj['newattr'] ='x'
@@ -398,27 +398,33 @@ class ObjectTests(unittest.TestCase):
 
 
 
-    def test_attribute_rollback(self,):
-        """ do test inside a xaction to chack that 'in' looks at
-        chnages to the current state then tthow and sxception anc
-        chekc the state appears unchanged"""
+    def test_attribute_rollback_setattr(self,):
+        """ do test inside a xaction to check that the 'in'
+        operaot looks at
+        changes to the current state then throw an exception and
+        check the state appears unchanged"""
         @Writer
         def test_new(obj):
             obj['newattr'] ='x'
-            self.assertIn('newattr',list(obj.iterkeys()))
-            raise RuntimeError()
-
-        @Writer
-        def test_del(obj):
-            del obj['newattr']
-            self.assertNotIn('newattr',obj)
+            print ("X")
+            self.assertIn('newattr',self.object)
             raise RuntimeError()
 
         self.assertRaises(RuntimeError,test_new,self.object)
+        print ("Y")
         self.assertNotIn('newattr',self.object)
-        self.object['newattr']='x'
+
+
+    def test_attribute_rollback_delattr(self,):
+        @Writer
+        def test_del(obj):
+            del obj['delattr']
+            self.assertNotIn('delattr',obj)
+            raise RuntimeError()
+
+        self.object['delattr']='x'
         self.assertRaises(RuntimeError,test_del,self.object)
-        self.assertIn('newattr',self.object)
+        self.assertIn('delattr',self.object)
 
 
 
