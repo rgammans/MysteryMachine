@@ -30,6 +30,11 @@ from MysteryMachine.parsetools.grammar import identifier
 from MysteryMachine.schema.Locker import Reader,Writer
 import pyparsing
 import logging
+logger = logging.getLogger(__name__)
+#Allow the really verbose stuff which logs interactions
+# between self.cache and transactions to be turned on
+# seperately
+clogger = logging.getLogger(__name__+"_txncache")
 
 #For the container base class
 import weakref
@@ -76,7 +81,6 @@ class MMBase(SchemaCommon):
     @return  :
     @author
     """
-    self.logger = logging.getLogger("MysteryMachine.schema")
     self.notify = []
     self._lock = None
     self.is_deleted = False
@@ -200,7 +204,7 @@ class MMBase(SchemaCommon):
                     to_remove += [ fn ]
                 #warn about any exceptions from notify.
                 except Exception as e: 
-                    self.logger.warn(e,exc_info = 1)
+                    logger.warn(e,exc_info = 1)
         for entry in to_remove:
             self.notify.remove(entry)
                 
@@ -211,7 +215,7 @@ class MMBase(SchemaCommon):
       #
       #This occurs when a client has follow the instructions in
       # register_notify.__doc__  and kept their own reference.
-      if hasattr(self,"notify") and self.notify: self.logger.warning("Notify still active at del:%s"%self.notify)
+      if hasattr(self,"notify") and self.notify: logger.warning("Notify still active at del:%s"%self.notify)
 
   def end_write(self,xaction):
     self.get_root().tm.end_write(self,xaction)
@@ -240,17 +244,29 @@ class MMBase(SchemaCommon):
   lock = property(_get_lock,None,None)
   
   @Writer
-  def _new(self): pass
+  def _new(self):
+    """Called to mark a node as new.
+
+    Most critically ensure a lock is also held on
+    the new node.
+    """
+    # Locking is done via the Writer decorator
+    pass
 
   @Writer 
   def _delete(self,):
     self.is_deleted = True
-    
+
   def discard(self,):
+    """Called by the transaction manager during rollback,
+    and all transiet modifications should be discarded"""
     self.is_modified = False
     self.is_deleted = False
-    
+
   def writeback(self,):
+    """Called by the transaction manager during commit,
+    and all transiet modifications should be written to
+    the configured backing store"""
     self.is_modified = False
 
 
@@ -269,7 +285,7 @@ class MMDeletedNode(MMBase):
         self.name = name
         self.is_deleted = True
         self.callback = callback
-    
+
 
     @Writer
     def _delete(self): pass
@@ -278,7 +294,7 @@ class MMDeletedNode(MMBase):
         if hasattr(self.owner,"_invalidate_item_"):
             self.owner._invalidate_item_(self.name)
         else:
-            logger.warn("cant incalidate %s",self.get_nodeid())
+            clogger.warn("cant incalidate %s",self.get_nodeid())
 
     def writeback(self,):
         self.callback()
@@ -310,6 +326,12 @@ class MMContainer(MMBase):
         self._invalidate_item_(item)
 
     def _invalidate_item_(self,item):
+        """Invalidate without a transaction.
+
+        It is an error to Reader/Writer functions during
+        commit or rollback
+        """ 
+        clogger.debug ("invalidating %r|%s"%(self,item))
         try:
             del self.cache[item]
         except KeyError: pass
@@ -351,9 +373,11 @@ class MMContainer(MMBase):
     def _contains_helper(self,name,store_fn ):
        if name in self.cache:
             a = not self.cache[name].is_deleted
+            logger.debug ("Cache contains",name,a)
        else:
             a = store_fn(name) 
-       self.logger.debug( "** %s does %s exist** ", name , ("" if a else "not"))
+            logger.debug ("Store contains",name,a)
+       logger.debug( "** %s does %s exist** ", name , ("" if a else "not"))
        return a
 
 
@@ -428,20 +452,26 @@ class MMContainer(MMBase):
 
     @Writer
     def _set_item(self,k,v):
+        clogger.debug ("caching %r|%s"%(self,k))
         self.cache[k] = v
-    
+
     @Writer
     def _new_item(self,k,v):
         self.new_items.append(v)
+        clogger.debug ("caching new %r|%s"%(self,k))
         self.cache[k] = v
         v._new()
-       
+
     def writeback(self,):
+        clogger.debug ("(%r (writeback) new=%r"%(self,self.new_items))
         self.new_items = [ ]
         self.deleted_items = [ ]
         super(MMContainer,self).writeback()
-    
+
     def discard(self,):
+        clogger.debug ("(%r discard) new=%r"%(self,self.new_items))
         self.deleted_items = [ ]
         self.new_items = [ ]
         super(MMContainer,self).discard()
+
+

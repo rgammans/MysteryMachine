@@ -32,6 +32,7 @@ import functools
 import sys
  
 import logging
+logger    = logging.getLogger(__name__)
 import copy as _copy
  
 
@@ -61,10 +62,10 @@ class MMAttributeContainer(MMContainer):
             attrvalue=attrvalue.get_value()
 
         if  attrobj  is None:
-            self.logger.debug("Creating new value object")
+            logger.debug("Creating new value object")
             attrobj = MMAttribute(attrname,attrvalue,self,complete_write = True)
         else:
-            self.logger.debug("basic set_value")
+            logger.debug("basic set_value")
             attrobj.set_value(attrvalue )
 
         #if notify: self._do_notify()
@@ -117,8 +118,6 @@ class MMAttribute (MMAttributeContainer):
      self.valueobj=CreateAttributeValue(value , copy)
      self.owner=owner
      self.oldvalue = None
-     self.logger    = logging.getLogger("MysteryMachine.schema.MMAttribute")
-     #self.logger.setLevel(logging.DEBUG)
      if complete_write:
         self._complete_write()
 
@@ -195,7 +194,7 @@ class MMAttribute (MMAttributeContainer):
      try:
         self.valueobj.assign(val)
      except Exception as e:
-        if str(e): self.logger.warning(e)
+        if str(e): logger.warning(e)
         val = CreateAttributeValue(val,copy)
         ##Check assignment is valid
         val.can_assign_to(self.valueobj)
@@ -224,7 +223,7 @@ class MMAttribute (MMAttributeContainer):
 
   #This is intend for method lookup
   def __getattr__(self,name):
-      self.logger.debug("dereffing attr %s for %s" % (name , repr(self)))
+      logger.debug("dereffing attr %s for %s" % (name , repr(self)))
       if name in self.valueobj.exports:
         return functools.partial(getattr(self.valueobj,name),obj = self)
       else: raise AttributeError("%s not in %s"% ( name,repr(self) ) )
@@ -243,7 +242,7 @@ class MMAttribute (MMAttributeContainer):
      to a stored object.
      """
      
-     self.logger.debug("dereffing ref %s " % repr(self))
+     logger.debug("dereffing ref %s " % repr(self))
      if "get_object" in self.valueobj.exports:
         return self.valueobj.get_object(self)
      
@@ -338,16 +337,16 @@ class MMAttribute (MMAttributeContainer):
   def writeback(self,):
     store = self.get_root().store
     if not self.is_deleted:
-        self.logger.debug("writing back a %s to %r"%(self.valueobj.get_type(),self))
+        logger.debug("writing back a %s to %r"%(self.valueobj.get_type(),self))
         #print ("writing back a %s to %r"%(self.valueobj.get_type(),self))
         #Don't writeback if our parent is also an attribute, as then
         # it is it's resopnibility to do store stuf
         ancestor = self.get_ancestor()
         if not isinstance(ancestor,MMAttribute):
-            self.logger.debug("\t(t,v)->(%r,%r)"%( self.valueobj.get_type(),self.valueobj.get_parts() ))
+            logger.debug("\t(t,v)->(%r,%r)"%( self.valueobj.get_type(),self.valueobj.get_parts() ))
             store.SetAttribute(self.get_nodeid(),self.valueobj.get_type(),self.valueobj.get_parts())    
         else: 
-            self.logger.debug("\tterminated writeback as contained by %r"%ancestor)
+            logger.debug("\tterminated writeback as contained by %r"%ancestor)
         self.oldvalue = None
     else:
         store.DelAttribute(self.get_nodeid())
