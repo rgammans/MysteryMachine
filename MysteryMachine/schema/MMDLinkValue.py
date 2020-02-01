@@ -206,7 +206,7 @@ def _measure_path_diff(frm,to):
     for f,t in zip_longest(frm_path,to_path):
         if count >0 and t is not None: RuntimeError("invalid path %r"%to_path)
         if f is not None and t is not None:
-            if f != t: raise RuntimeError('%r is not a parent of %r'%(frm,to))
+            if f != t: raise RuntimeError('%r is not a parent of %r'%(to,frm))
             #Don't count common elements
             else: continue
 

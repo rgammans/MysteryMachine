@@ -282,7 +282,7 @@ class filestore(Base):
         self.newattr[attrkey] = []
         for partname,value in parts.items():
             if not isinstance(value,six.binary_type): 
-                raise StoreApiViolation("%s has part %s of type %s"%(attr,partname,type(value)))
+                raise StoreApiViolation("%s has part %s of type %s (value:'%r')"%(attr,partname,type(value),value))
             filename = "%s.%s.%s" % (filename_base,attrtype,partname)
             self.tlog.Add_File(self.tx,filename,value)
             #Ensure any RCS knows about the file.

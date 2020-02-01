@@ -112,7 +112,7 @@ class dict_store(Base):
         #  this will pick up issues in tests where we use dict_store.
         for p,v in parts.items():
             if not isinstance(v,six.binary_type):
-                raise StoreApiViolation("%s has part %s of type %s"%(attr,p,type(v)))
+                raise StoreApiViolation("%s has part %s of type %s (value:'%r')"%(attr,p,type(v),v))
 
         d[dbpath[-1]]=(attrtype,parts)
 
