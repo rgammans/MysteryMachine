@@ -79,7 +79,7 @@ class DlinkTests(unittest.TestCase):
         self.assertEqual(self.object2["link"].get_anchor(),self.object2)        
  
     def testMove(self):
-        """This behaviour is needed so simpleton UI don't need to mocuh
+        """This behaviour is needed so simpleton UI don't need to much
         extra support for Dlink, they can ue Unstored, and then move/copy"""
         dlk.CreateBiDiLink(self.object1,"link",self.object2,"link" )
         self.assertEqual(self.object1["link"].get_object(),self.object2)
@@ -106,7 +106,10 @@ class DlinkTests(unittest.TestCase):
         #New code does something different here!
         #self.assertRaises(dlk.BiDiLinkTargetMismatch,raiseerror,self.object1,"newlink")
         #self.assertRaises(KeyError,self.object1.__getitem__,"newlink")    
-        
+
+        #move from object3 to object1 (Required for Py3.5)
+       # self.object1["newlink"]=dlk.CreateAnchorPoint(self.object1) 
+
         self.object1["newlink"] = self.object2["link"]
         self.assertEqual(self.object2["link"].get_object(),None)        
         self.assertEqual(self.object2["link"].get_anchor(),self.object2)  
@@ -126,9 +129,13 @@ class DlinkTests(unittest.TestCase):
         #self.assertEqual(self.object1["link"].get_anchor(),self.object1)        
         #self.assertEqual(self.object1["link"].get_object(),object3)        
 
+        ## Copy/move anchorpoint
+        ##PY3.6 Fail
         self.object1["link"] = self.object2["link"]
-        self.assertEqual(self.object1["link"].get_partner(),None)        
-        self.assertEqual(self.object1["link"].get_anchor(),self.object1)        
+        self.assertEqual(self.object1["link"].get_partner(),None)
+        self.assertEqual(self.object2["link"].get_partner(),None)
+        self.assertEqual(self.object1["link"].get_anchor(),self.object1)
+        self.assertEqual(self.object2["link"].get_anchor(),self.object2)
 
 
         #self.object1["link"]=self.object2["link"] 
@@ -136,12 +143,12 @@ class DlinkTests(unittest.TestCase):
         #FIXME:(reinstate test) Just breaking a link...
         dlk.CreateBiDiLink(self.object1,"1link",self.object2,"1link" )
         self.object1["1link"] = dlk.CreateAnchorPoint(self.object1)
-        self.assertEqual(self.object1["1link"].get_anchor(),self.object1)        
-        self.assertEqual(self.object2["1link"].get_anchor(),self.object2)        
-        self.assertEqual(self.object1["1link"].get_object(),None)        
-        self.assertEqual(self.object2["1link"].get_object(),None)        
-        self.assertEqual(self.object1["1link"].get_partner(),None)        
-        self.assertEqual(self.object2["1link"].get_partner(),None)        
+        self.assertEqual(self.object1["1link"].get_anchor(),self.object1)
+        self.assertEqual(self.object2["1link"].get_anchor(),self.object2)
+        self.assertEqual(self.object1["1link"].get_object(),None)
+        self.assertEqual(self.object2["1link"].get_object(),None)
+        self.assertEqual(self.object1["1link"].get_partner(),None)
+        self.assertEqual(self.object2["1link"].get_partner(),None)
 
 
 

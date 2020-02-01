@@ -349,7 +349,7 @@ class MMDLinkValue(MMAttributeValue):
             other is the result of a connectTo  already connected Link object.
             other is a attribute being moved!
           #
-           Invaldid cases wherw dircet assinemtn as been tried. 
+           Invalid cases are where direct assignment as been tried. 
 
       """
       self.logger.debug( "in assign")
@@ -380,14 +380,15 @@ class MMDLinkValue(MMAttributeValue):
                 self.logger.debug("\tother %s %r %r",other.mode,self.parts,other.parts)
                 self.old_partner_path = self.partner_path
                 self.partner_path = other.partner_path
-                self.parts = other.parts
+                self.parts = _copy.copy(other.parts)
                 if 'target' in other.parts:
                     self.mode = 'connect_to_gestate'
                 else:
                     #Some wort of Anchorpint move, do simple valid test
                     if other.anchorp is not None:
+                        #Reset anchor point; and compiose will reinit it from dist
+                        self.anchorp = None#other.anchorp
                         self.mode = 'anchor_point_gestate'
-                        self.anchorp = other.anchorp
 
     def _process_parts(self):
        self.logger.debug( "_pp>%s"%self.parts)
@@ -457,20 +458,22 @@ class MMDLinkValue(MMAttributeValue):
         #Now we have a handle on the system find our objects etc,
 
         #Verify anchordist, and correct parts if an anchorpoint
-        # this is needed for some unstoreable cornercases
+        # this is needed for some unstoreable cornercases, and
+        # anchorpoint set may also need to set anchordist if
+        # we currently only have a anchor instance.
         if self.anchorp is not None:
             self.anchordist = _measure_path_diff(obj,self.anchorp)
-            if 'anchordist' in self.parts:
+            if 'anchordist' in self.parts or self.mode == 'anchor_point_gestate':
                 self.parts = {'anchordist' : str( self.anchordist).encode('ascii') }
 
 
         if self.mode == 'connect_to_gestate':
             npartner =  _container_walk(obj.get_root(),self.partner_path)
             self.anchor = self.get_anchor(obj = obj)
-            #We set us and out parnter to mutually point at each other.
-            # it is importat to move ourselves first, to chortcut recursion.
+            #We set us and our partner to mutually point at each other.
+            # it is importat to move ourselves first, to shortcut recursion.
             self._connect_to(npartner,path = self.old_partner_path, obj=obj)
-            # buyt only do our end if we are 'unstorable'
+            # but only do our end if we are 'unstorable'
             if not isinstance(obj,MMUnstorableAttribute):
                 _resolve_value(npartner)._connect_to(obj,obj = npartner)
 
@@ -488,8 +491,6 @@ class MMDLinkValue(MMAttributeValue):
                 if oldp is not None:
                     oldp.disconnect()
 
-            self.anchordist = _measure_path_diff(obj,self.anchorp)
-            self.parts = {'anchordist' : str( self.anchordist).encode('ascii') }
             self._process_parts()
 
         else:

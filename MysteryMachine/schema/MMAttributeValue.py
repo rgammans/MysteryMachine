@@ -69,7 +69,7 @@ def CreateAttributeValue(val, copy = True):
 
 
 def GetClassForType(typename):
-    if not hasattr(AttrTypes,typename):
+    if not  typename in AttrTypes:
         from MysteryMachine import StartApp
         with StartApp() as ctx:
             possible_plugins = ctx.GetExtLib().findPluginByFeature(ATTRIBUTE_MMTYPE_EXPOINTNAME,typename)
@@ -77,8 +77,8 @@ def GetClassForType(typename):
             for plugin in possible_plugins:
                 ctx.GetExtLib().loadPlugin(plugin)
                 #Just load one module to handle the type.
-                if hasattr(AttrTypes,typename): break
-              
+                if typename in AttrTypes: break
+
     return AttrTypes[typename]
 
 
@@ -311,7 +311,7 @@ class MMAttributeValue (six.with_metaclass(_AttrMeta,SchemaCommon) ):
      """
      if isinstance(other,MMAttributeValue):
          if self.__class__ is other.__class__:
-             self.parts =  other.parts        
+             self.parts =  _copy.copy(other.parts)
          else:
              raise TypeError(type(other))
      else:
