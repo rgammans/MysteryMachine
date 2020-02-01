@@ -45,7 +45,7 @@ class DlinkTests(unittest.TestCase):
         self.ctx = StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"]) 
 
 
-        self.system=MMSystem.Create("dict:ObjectTests")
+        self.system=MMSystem.Create("dict:DlinkTests")
         self.system.NewCategory( "Template" )
         self.dummyparent             = self.system.NewObject( "Template" )
         self.dummyparent[".defname"] = "name"

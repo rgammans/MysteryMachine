@@ -51,7 +51,7 @@ class complexValTest(unittest.TestCase):
         d=tempfile.mkdtemp()
         os.rmdir(d)
         #self.system=MMSystem.Create("hgafile:"+d)
-        self.system=MMSystem.Create("dict:ObjectTests")
+        self.system=MMSystem.Create("dict:ComplexTests")
         self.system.NewCategory( "Template" )
         self.dummyparent             = self.system.NewObject( "Template" )
         self.dummyparent[".defname"] = "name"
