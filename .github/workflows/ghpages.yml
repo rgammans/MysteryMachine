@@ -35,5 +35,5 @@ jobs:
             cd $GITHUB_WORKSPACE/docs
             for file in *.rst; do rst2html.py $file >  ${file%%rst}html; done
             git add .
-            git --author "Workflow ghpages <null>" commit -m 'Rebuild HTML for gh-pages'
+            git commit -m 'Rebuild HTML for gh-pages'
             git push
