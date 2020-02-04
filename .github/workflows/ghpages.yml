@@ -1,4 +1,4 @@
-name: Python Unittests
+name: Build Github pages
 
 on:
     push:
@@ -21,7 +21,7 @@ jobs:
         python-version: 3.7
     - name: Merge Old docs
       run: |
-        git fetch origin _+refs/heads/gh-pages:refs/remotes/origin/gh-pages
+        git fetch origin  +refs/heads/gh-pages:refs/remotes/origin/gh-pages
         git merge -s ours origin/gh-pages
         git checkout -b gh-pages
     - name: Install docutils
