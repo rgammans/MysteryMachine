@@ -23,6 +23,8 @@ jobs:
         python-version: 3.7
     - name: Merge Old docs
       run: |
+        git config --global user.email "null@null"
+        git config --global user.name "GH Page builder"
         git fetch origin  +refs/heads/gh-pages:refs/remotes/origin/gh-pages
         git  merge -s ours origin/gh-pages
         git checkout -b gh-pages
