@@ -15,6 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - name: Setup python3.7
       uses: actions/setup-python@v1
       with:
@@ -22,7 +24,7 @@ jobs:
     - name: Merge Old docs
       run: |
         git fetch origin  +refs/heads/gh-pages:refs/remotes/origin/gh-pages
-        git merge -s ours origin/gh-pages
+        git  merge -s ours origin/gh-pages
         git checkout -b gh-pages
     - name: Install docutils
       run: |
@@ -31,5 +33,5 @@ jobs:
             cd $GITHUB_WORKSPACE/docs
             for file in *.rst; do rst2html.py $file >  ${file%%rst}html; done
             git add .
-            git commit -m 'Rebuild HTML for gh-pages'
+            git --author "Workflow ghpages <null>" commit -m 'Rebuild HTML for gh-pages'
             git push
