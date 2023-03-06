@@ -1,6 +1,10 @@
 Installation
 ============
 
+Note:
+    This readme is currently somewhat out of date, as the newer
+    python3 builds are more standardised.
+
 If you are installing from a built source distribution then the command:-
 
      python setup.py install -d <DirectoryToInstallInto>
@@ -30,7 +34,7 @@ don't have or want to install virtualenv by running
 instead. But to do this you will need write access to the global environment.
 
 On windows you may need to elevate to Administrator access and on a Linux
-or Mac you will need to either sudo , or run athe comand as root.
+or Mac you will need to either sudo , or run the command as root.
 
 If you are installing from the mercurial repo you need the following 
 libraries on your PYTHONPATH. Once the libraries below and MysteryMachine
@@ -42,13 +46,13 @@ the patches directory) and paver then use:-
 
 to build you own source distribution and install from that.
 
-Unfortuantely virtualenv changes it defaults in 1.7 so you will need
+Unfortunately virtualenv changes it defaults in 1.7 so you will need
 my paver 1.1.0 or greater if you wish to build and installer that
 works with it. Again a custom patched version of paver can be found
 in my github account.
 
 You will also find it useful to install wxPython and mercurial (at least 1.9)
-seperately . Similiary bpython is recommended for cli affiondadios on 
+separately . Similarly bpython is recommended for cli aficionados on 
 platforms which support it.
 
 
@@ -75,7 +79,7 @@ Installation on Debian/Unbuntu
     2. From the MysteryMachine zip file run 
             python setup.py install -d /opt/mysterymachine
 
-    3 Add a Link to the /opt/mysterynachine/mmcli and /opt/mysterymachine/binmmwx
+    3 Add a Link to the /opt/mysterymachine/mmcli and /opt/mysterymachine/binmmwx
         to your desktop
 
 
@@ -90,23 +94,20 @@ mercurial > 1.9.0
 (Note, Pyparsing was included here but setup.py now handles that
 dependency for you)
 
-Yapsy 
-'''''
-Yapsy does not currently meet our python3 or other requirements.
-
-MysteryMachine ships with a patched version of Yapsy which should be backwardly
-compatible with 1.7 - but adds a filter mechanism which is currently used so
-we ignore UnTrusted plugins.
-
 
 Mercurial
 '''''''''
-MysteryMachine no longers needs to be able to use Mercurial as a library ,
+MysteryMachine no longer needs to be able to use Mercurial as a library,
 but does require mercuial 1.9 or later for the cmd server feature.
 
 However this be now be the standard version pyexe, or other binary version
 of mercuial downloaded form the usual sources (ie. selenic.com) .
 
+
+Git
+'''
+As an alternative to mercurial git is now available as a Version
+manager option, via the gitpython library.
 
 Bpython
 '''''''
@@ -131,6 +132,7 @@ PyYaml
 Yaml is the current prefered format for the MysteryMachine config file , and if you
 intend to start MysteryMachine with it default settings it will need PyYaml.
 PyYaml can be install easily using easy_install. Like so:
+
     easy_install pyyaml
 
 But it should pulled in with the installer.
@@ -178,7 +180,7 @@ shorten it.
 
 
 GUI
-'''
+---
 
 Your more likely to be interested in running the New MysteryMachine GUI 
 and this can be starting by running the mmwx binary from either the bin
