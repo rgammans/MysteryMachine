@@ -81,8 +81,8 @@ class GitStoreMixin(object):
         self.lock()
         try:
             rv = self.cmd.commit('-m', msg )
-        except xxx as c:
-            self.logger.error("git Command error E:",c.err,"R:",c.ret,"O:",c.out,"A:",c.args)
+        except git.GitCommandError as c:
+            self.logger.error("git Command error E:",c.stderr,"R:",c.status,"O:",c.stdout,"A:",c.args)
             raise
         self.unlock()
         return rv
