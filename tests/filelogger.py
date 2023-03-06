@@ -287,10 +287,10 @@ class floggerTests(unittest.TestCase):
             #Step through a second at a time to allow early
             #completion in the passing case.
             time.sleep(1)
-            if  not cleanup.isAlive(): return
+            if  not cleanup.is_alive(): return
         #prevent teardown going back in to the deadlocked cleaner.
         self.flog = None
-        self.assertFalse(cleanup.isAlive(),"flog.close() still running after 30 seconds")
+        self.assertFalse(cleanup.is_alive(),"flog.close() still running after 30 seconds")
 
 #
 #def getTestNames():

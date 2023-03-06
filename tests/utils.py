@@ -122,7 +122,7 @@ class UtilsTest(unittest.TestCase):
         workthread.join(60.0)
         #If the test is still running we consider the
         # system to be deadlocked!
-        self.assertFalse(workthread.isAlive()) 
+        self.assertFalse(workthread.is_alive()) 
 
     def testLocks_RRwLock(self):
         test = self
@@ -220,7 +220,7 @@ class UtilsTest(unittest.TestCase):
         workthread.join(60.0)
         #If the test is still running we consider the
         # system to be deadlocked!
-        self.assertFalse(workthread.isAlive()) 
+        self.assertFalse(workthread.is_alive()) 
 
 def getTestNames():
 	return [ 'utils.UtilsTest' ] 
