@@ -141,6 +141,6 @@ class scmTests(object):
         self.store.clean()
         for dirpath,dirs,files in os.walk(self.store.get_path()):
              self.processDirs(dirs)
-             self.assertEqual(len(files),0)
+             self.assertEqual(len(files),0, f"Unexpected ({dirpath}) files: {files}")
         self.store.unlock() 
 
