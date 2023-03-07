@@ -26,6 +26,9 @@ import os
 import contextlib
 import itertools
 import git
+import logging
+
+logger = logging.getLogger(__name__)
 
 class GitStoreMixin(object):
     """
@@ -81,8 +84,8 @@ class GitStoreMixin(object):
         self.lock()
         try:
             rv = self.cmd.commit('-m', msg )
-        except xxx as c:
-            self.logger.error("git Command error E:",c.err,"R:",c.ret,"O:",c.out,"A:",c.args)
+        except git.GitCommandError as c:
+            logger.error("git Command error E:",c.stderr,"R:",c.status,"O:",c.stdout,"A:",c.args)
             raise
         self.unlock()
         return rv
@@ -132,7 +135,7 @@ class GitStoreMixin(object):
         if hasattr(mysuper,"clean"):
             mysuper.clean(*args,**kwargs)
         if not self.uptodate():
-            self.logger.warn("%slean requested in non-up-todate repo." % (
+            logger.warn("%slean requested in non-up-todate repo." % (
                          "Forced c" if kwargs.get('force') else "C" )) 
             if not kwargs.get('force'): return
 
