@@ -10,12 +10,15 @@ from yapsy.IPlugin import IPlugin
 import MysteryMachine.store.file_store
 import MysteryMachine.store.dict_store
 import MysteryMachine.store.hgfile_class
+import MysteryMachine.store.gitfile_class
 import MysteryMachine.Packfile
 import MysteryMachine.Extension
 
 import logging
 
-_storeClasses =  { 'hg_store'   : MysteryMachine.store.hgfile_store.HgStoreMixin,
+_storeClasses =  { 
+                   'git_store'  : MysteryMachine.store.gitfile_base.GitStoreMixin,
+                   'hg_store'   : MysteryMachine.store.hgfile_store.HgStoreMixin,
                    'file_store' : MysteryMachine.store.file_store.filestore }
 
 class Core(Extension):
