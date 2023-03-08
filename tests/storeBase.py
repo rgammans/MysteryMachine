@@ -46,11 +46,14 @@ class sysTests(unittest.TestCase):
         self.assertRaises(KeyError,GetStore,"test:")
         class teststore(Base):
             uriScheme = "test"
+            def __init__(self,uri,create=None):
+                super().__init__(uri)
         self.assertTrue(isinstance(GetStore("test:") , teststore))
 
     def test_duplicate_Registration_raises_a_Dupereg_exception(self):
         class teststore(Base):
             uriScheme = "test3"
+
         with self.assertRaises(MysteryMachine.Exceptions.DuplicateRegistration):
             class another_teststore(Base):
                 uriScheme = "test3"
@@ -79,6 +82,8 @@ class sysTests(unittest.TestCase):
     def testLoaded(self):
         class teststore(Base):
             uriScheme = "test2"
+            def __init__(self,uri,create=None):
+                super().__init__(uri)
         # Test create.
         testobj = CreateStore("test2:qwertyuiop:e")
         self.assertTrue(isinstance(testobj,teststore))
