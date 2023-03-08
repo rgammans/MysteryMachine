@@ -28,7 +28,7 @@ class dict_store(Base):
         return uri
 
     def __init__(self,uri,create = False):
-        Base.__init__(self,uri,create)
+        Base.__init__(self,uri,)
         self.logger = logging.getLogger("MysteryMachine.store.dict_store")
         path = GetPath(uri)
         if create:

@@ -38,9 +38,10 @@ import sys
 class BasicStore(Base):
     uriScheme = "basic"
     def __init__(self,*args,**kwargs):
+        create = kwargs.pop('create',None)
         super(BasicStore,self).__init__(*args,**kwargs)
-        self.path = GetPath(args[0])         
-        if 'create' in kwargs and kwargs['create']:
+        self.path = GetPath(args[0])
+        if create:
             os.mkdir(self.path)
     
     def get_path(self):
@@ -48,7 +49,6 @@ class BasicStore(Base):
 
     def ReadFile(self,name):
         f = open(os.path.join(self.path,name),"r")
-
         rv = f.read()
         f.close()
         return rv
