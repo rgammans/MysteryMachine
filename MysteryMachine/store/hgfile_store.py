@@ -169,3 +169,6 @@ class HgStoreMixin(object):
                 # standard libary does.
                 os.unlink(os.path.join(self.get_path(),f.decode('ascii')))
 
+    def close(self):
+        self.repo.close()
+        super().close()
