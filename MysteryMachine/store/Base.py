@@ -21,12 +21,11 @@
 """
 """
 
-import six
 from MysteryMachine.store import * 
 
 
 #__metaclass__ = storeMeta
-class Base(six.with_metaclass(storeMeta, object)):
+class Base(metaclass=storeMeta):
     """
     New base class for Mystery Machine store to inherit from.
 
@@ -47,7 +46,6 @@ class Base(six.with_metaclass(storeMeta, object)):
     """
 
     supports_txn = False
-
     def canonicalise(self,name):
         """Splits a object or attribute name into it's component parts"""
         if len(name) == 0: return  []
@@ -56,6 +54,8 @@ class Base(six.with_metaclass(storeMeta, object)):
     def __init__(self,uri,*args,**kwargs):
         self.uri   = GetCanonicalUri(uri)
         self.owner = None
+        super().__init__( *args, **kwargs)
+
 
     def getUri(self):
         """Returns the canonical uri of the store"""

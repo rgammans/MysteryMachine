@@ -94,9 +94,9 @@ class filestore(Base):
     def __init__(self,*args,**kwargs):
         self.logger = logging.getLogger("MysteryMachine.store.file_store")
         self.logger.debug( args)
-        super(filestore,self).__init__(*args,**kwargs)
+        create = kwargs.pop('create',False)
+        super().__init__(*args,**kwargs)
         uri = args[0]
-        create = kwargs.setdefault('create',False)
         self.path = self.GetCanonicalUri(GetPath(uri))
         self._lock = RRwLock()
         if create:

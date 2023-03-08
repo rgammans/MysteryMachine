@@ -54,9 +54,15 @@ class GitStoreMixin(object):
 
     def commit_store_transaction(self,):
         super().commit_store_transaction()
-        for op,filename in self.filechanges:
-            if   op == "a":  self._Add_file(filename)
-            elif op == "r":  self._Remove_file(filename)
+        for idx,(op,filename) in enumerate(self.filechanges):
+            if   op == "a":
+                # Don't add it we we remove it later
+                # as it won't be in the fs and will confuse git
+                if ('r', filename) not in self.filechanges[idx+1:]:
+                    self._Add_file(filename)
+            elif op == "r":
+                    self._Remove_file(filename)
+ 
 
     def Add_file(self,filename):
         if self.supports_txn:
@@ -75,7 +81,7 @@ class GitStoreMixin(object):
 
     def _Remove_file(self,filename):
         self.cmd.rm(
-            '--force',
+            '--cached',
             '--ignore-unmatch',
             os.path.join(self.path,filename)
         )
@@ -110,7 +116,7 @@ class GitStoreMixin(object):
                     for x in self.commit.tree.traverse()
                     if x.type == 'blob'
                 ]
-        return [GitCommit(x) for x in self.repo.iter_commits()]
+        return (GitCommit(x) for x in self.repo.iter_commits())
 
     def uptodate(self,*args,**kwargs):
         """
@@ -153,6 +159,5 @@ class GitStoreMixin(object):
             #Basic clean - just remove files in the manifest and marked as added.
             for f, _ in self.repo.index.entries.keys():
                 with contextlib.suppress(FileNotFoundError):
-                    print(f"REmoving {f}")
                     os.unlink(os.path.join(self.get_path(),f))
 
