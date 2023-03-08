@@ -34,8 +34,16 @@ try:
 except ImportError:
     pass
 
-if bpython_installed + idle_installed < 1:
-    raise ImportError("Must have one of BPython or Idle installed")
+
+ipython_installed = 0
+try:
+    import IPython
+    ipython_installed =1
+except ImportError:
+    pass
+
+if bpython_installed + idle_installed + ipython_installed < 1:
+    raise ImportError("Must have one of BPython, IPython, or Idle installed")
 
 import MysteryMachine
 from MysteryMachine.schema.MMAttribute import MMAttribute
@@ -46,8 +54,11 @@ import os
 import sys
 import logging
 
+def first(it):
+    return next(iter(it))
+
 class UiBase(object):
-    def __init__(self,args = [] ):    
+    def __init__(self,args = [] ):
         self.args      = args
         self.in_curses = False 
         self.logger = logging.getLogger("MysteryMachine.Ui.cli")
@@ -60,7 +71,7 @@ class UiBase(object):
         myval   =  attr.get_value()
         myparts = myval.get_parts()
         if len ( myparts ) == 1:
-            key = myparts.keys()[0]
+            key = first(myparts.keys())
             newstr = self.edit_str(myparts[key])
             newpart  = { key: newstr}
             newval   = MakeAttributeValue(myval.get_type(),newpart)
@@ -77,11 +88,11 @@ class UiBase(object):
         #  is a complete blowout under windows - where there
         #  is no way to unlock the file and *not* delete it
         fd, fname  = tempfile.mkstemp(suffix=".attribute")
-        f = os.fdopen(fd,"w+")
+        f = os.fdopen(fd,"wb+")
         f.write(string)
         f.close()
         self.launch_edit(fname)
-        f = open(fname,"r")
+        f = open(fname,"rb")
         newval = f.readlines()
         f.close()
         try:
@@ -89,7 +100,7 @@ class UiBase(object):
         except (WindowsError,OSError) as e:
             self.logger.warn(str(e))
             pass
-        return "".join(newval)
+        return b"".join(newval)
 
     def launch_edit(self,filename):
         """
@@ -110,15 +121,16 @@ class UiBase(object):
             curses.reset_prog_mode()
             try:
                 bpython.cli.stdscr.redrawwin()
-            except NameError,AttributeError:
+            except (NameError, AttributeError) as e:
                 #This means we bython is updated or we are not 
                 #uses the curses implemenation
                 pass
 
     def DoPatches(self):
          #Monkeypatch MAttributr to call out to a local editor.
-         MMAttribute.edit =  types.UnboundMethodType(self.edit_attribute,None,MMAttribute)
-
+         MMAttribute.edit =  property(
+            lambda attr: types.MethodType(self.edit_attribute,attr)
+        )
 
 if bpython_installed:
     class BPython(UiBase):
@@ -130,6 +142,14 @@ if bpython_installed:
                 self.in_curses = True
                 bpython.cli.main(args=["--quiet",] ,locals_ = { 'ctx': ctx })
 
+
+if ipython_installed:
+    class IPythonUI(UiBase):
+        def Run(self):
+            self.DoPatches()
+
+            with MysteryMachine.StartApp(self.args) as ctx:
+                IPython.start_ipython(user_ns={ 'ctx': ctx })
 
 
 if idle_installed:
@@ -180,11 +200,12 @@ def main():
     options = process_args()
     if bpython_installed:
         ui = BPython(options)
+    elif ipython_installed:
+        ui = IPythonUI(options)
     elif idle_installed:
         ui = Idle(options)
     else:
         raise LogicError("Can't get here - should have raised ImportError during import")
-        
 
     ui.Run() 
 
