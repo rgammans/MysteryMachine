@@ -62,6 +62,9 @@ def FileStoreAttributePart(filename,partname):
 class FileLogger(MysteryMachine.store.FileLogger.FileLogger):
     def _get_logname(self,seq):
         basename = os.path.basename(self.home)
+        # Remove any '.'s - it import the the '.' seperated
+        # fields a still indexable
+        basename = basename.replace("_-","__-").replace(".","_-")
         parent   = os.path.realpath(os.path.join(self.home ,os.path.pardir))
         name =  ".%s.xaction.%s.log"%(basename,seq)
         return parent,name
