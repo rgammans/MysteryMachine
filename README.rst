@@ -1,64 +1,21 @@
 Installation
 ============
 
-Note:
-    This readme is currently somewhat out of date, as the newer
-    python3 builds are more standardised.
+Note / TLDR:
 
-If you are installing from a built source distribution then the command:-
+If you are installing from a source distribution, or a git checkout then the command:-
 
-     python setup.py install -d <DirectoryToInstallInto>
+     pipx install .
 
 should work.
 
-You will need to have Python  and if you don't have root privileges you
-will also need python virtualenv and setuptools already installed, and
-windows users should see the note under pyparsing below. 
-
-
-Additionally  there are two other packages I also advise installing  first is
-mercurial 1.9 or higher, although technically not required the only save
-format which is currently support and included requires it. The next is
-wxPython which is required if you wish to use the graphical Ui.
-
-
-Setup.py's install will create a python virtualenv in the specified 
-installation directory and install MysteryMachine, a customised yapsy plus
-all of the dependencies into to it.
-
-You can still install MysteryMachine into you global environment if you 
-don't have or want to install virtualenv by running
-
-     python setup.py install_here
-
-instead. But to do this you will need write access to the global environment.
-
-On windows you may need to elevate to Administrator access and on a Linux
-or Mac you will need to either sudo , or run the command as root.
-
-If you are installing from the mercurial repo you need the following 
-libraries on your PYTHONPATH. Once the libraries below and MysteryMachine
-itself are on your python path the scripts in the 'scripts' directory
-should work. Or you can install a patched version of yapsy (patch is in
-the patches directory) and paver then use:- 
-
-    paver sdist
-
-to build you own source distribution and install from that.
-
-Unfortunately virtualenv changes it defaults in 1.7 so you will need
-my paver 1.1.0 or greater if you wish to build and installer that
-works with it. Again a custom patched version of paver can be found
-in my github account.
-
-You will also find it useful to install wxPython and mercurial (at least 1.9)
-separately . Similarly bpython is recommended for cli aficionados on 
-platforms which support it.
+Ipython (or bpython) is recommended for cli aficionados on  platforms which support them.
 
 
 Windows Install Quick Reference
 -------------------------------
 
+(outdated - need checking, but this is for the old paver /python2 installation )
 To install on windows I suggest the following commands, if you use python for
 other applications want more control I suggest you read all of this README
 before doing this
@@ -75,12 +32,8 @@ before doing this
 Installation on Debian/Unbuntu
 ------------------------------
 
-    1. Run 'aptitude install python2.6  python-wxgtk2.8 mercurial'
-    2. From the MysteryMachine zip file run 
-            python setup.py install -d /opt/mysterymachine
-
-    3 Add a Link to the /opt/mysterymachine/mmcli and /opt/mysterymachine/binmmwx
-        to your desktop
+    1. Run 'sudo apt install pipx'
+    2. pipx install MysteryMachine
 
 
 Libraries Required
@@ -90,7 +43,7 @@ You will need to install the following Python packages to use the
 MysteryMachine .
 
 mercurial > 1.9.0
-
+git
 (Note, Pyparsing was included here but setup.py now handles that
 dependency for you)
 
@@ -98,10 +51,10 @@ dependency for you)
 Mercurial
 '''''''''
 MysteryMachine no longer needs to be able to use Mercurial as a library,
-but does require mercuial 1.9 or later for the cmd server feature.
+but does require mercurial 1.9 or later for the cmd server feature.
 
 However this be now be the standard version pyexe, or other binary version
-of mercuial downloaded form the usual sources (ie. selenic.com) .
+of mercurial downloaded form the usual sources (ie. selenic.com) .
 
 
 Git
@@ -118,18 +71,20 @@ Use easy_install or your OS package manager
 to install it. If it ia not already installed the installer will try to fetch and 
 install it automatically.
 
+MysteryMachine now supports Ipython, instead on other platforms.
+
 Docutils
 ''''''''
 MysteryMachine was first developed with docutils 0.4 but I'm currently using 0.6 myself
 as it generates less noise of on the python comaptiblity tests. I suspect 0.5 and 0.6 should
 work equally. 0.4 will probably work too but I haven't tested it in a while.
 
-Docutils can either be installed wiht easy_install or the installer will pull in the
+Docutils can either be installed with easy_install or the installer will pull in the
 latest version for you.
 
 PyYaml
 ''''''
-Yaml is the current prefered format for the MysteryMachine config file , and if you
+Yaml is the current preferred format for the MysteryMachine config file , and if you
 intend to start MysteryMachine with it default settings it will need PyYaml.
 PyYaml can be install easily using easy_install. Like so:
 
@@ -146,6 +101,7 @@ to fix this you need ensure the TCL_LIBARRY environmenr variable point to the TC
 and srtart up files. The easiest way to do this is to add a line to your
 activate.bat which set this varaibell to pint to the tcl directories tghat ship with
 python.
+
 
 Running MysteryMachine
 ======================
@@ -182,6 +138,7 @@ shorten it.
 GUI
 ---
 
+(temporary not wokring)
 Your more likely to be interested in running the New MysteryMachine GUI 
 and this can be starting by running the mmwx binary from either the bin
 or scripts directory depending on your platform.
