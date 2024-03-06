@@ -1,0 +1,64 @@
+[project]
+name = "MysteryMachine"
+description = ""
+version = "0.4.0"
+readme = "README.rst"
+license = {file = "LICENSE"}
+authors = [
+  {name = "Roger Gammans", email = "rgammans@gammascience.co.uk"},
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "docutils",
+    "pyparsing>1.5",
+    "PyYaml",
+    "yapsy",
+    "six"
+]
+
+[tool.setuptools]
+#py_modules=[]
+packages = [
+    "MysteryMachine",
+    "MysteryMachine.schema",
+    "MysteryMachine.store",
+    "MysteryMachine.parsetools",
+    "MysteryMachine.Ui",
+    "MysteryMachine.utils",
+    "MysteryMachine.policies",
+    "MysteryMachine.document"
+]
+
+[project.scripts]
+mysterymachine = "MysteryMachine.Main:main"
+mmcli   = "MysteryMachine.Ui.cli:main"
+#Disabled (not wokring) gui script.
+# "mmwx          = MysteryMachine.Ui.wx:main"
+[project.optional-dependencies]
+git = [
+    "gitpython"
+]
+hg = [
+    "python-hglib"
+]
+
+
+[build-system]
+requires = ["setuptools", "wheel" ]
+build-backend = "setuptools.build_meta"
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py27, py35, py36,py37 
+# ,py36,py37
+skipsdist=True
+skip_missing_interpreters=True
+
+[testenv]
+passenv = *
+commands = python -m unittest discover -p '{posargs:*.py}' -s tests
+"""
