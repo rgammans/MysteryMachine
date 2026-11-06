@@ -29,6 +29,7 @@ from base.store import storeTests
 
 import tempfile 
 import shutil
+from unittest import mock
 
 class DummySystemClass:
     def getSelf(self):
@@ -167,19 +168,12 @@ class test2(filestoreTests):
     """
     def mySetUp(self):
         StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])
-        prefix = ""
-        self.tmpexists = True
-        try:
-            import posix
-            #Under possix try the same thing in a home dir.
-            prefix = "~" 
-        except ImportError:
-            pass
-        self.mpath = tempfile.mkdtemp(prefix="mysmac")
-        os.rmdir(self.mpath)
-        self.mpath = prefix + self.mpath
-        self.parentpath = os.path.normpath(os.path.expanduser(self.mpath+os.path.sep+".."))
-        self.tmpexists = os.path.exists(self.parentpath)
+        #Point HOME at a scratch directory, so we can test '~' handling
+        # without touching the real home directory.
+        self.home = tempfile.mkdtemp(prefix="mysmachome")
+        self.home_patch = mock.patch.dict(os.environ, {"HOME": self.home})
+        self.home_patch.start()
+        self.mpath = os.path.join("~", "mysmac")
         os.makedirs(os.path.expanduser(self.mpath))
 
         self.store=filestore("attrfile:"+self.mpath,create = False)
@@ -190,9 +184,8 @@ class test2(filestoreTests):
         self.store.lock()
         self.store.close()
         self.store = None
-        shutil.rmtree(os.path.expanduser(self.mpath))
-        if not self.tmpexists: 
-            os.rmdir(self.parentpath)
+        self.home_patch.stop()
+        shutil.rmtree(self.home)
 
 def getTestNames():
     	return [ 'file_store.filestoreTests' , 'file_store.tests2' ] 
