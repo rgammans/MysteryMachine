@@ -21,90 +21,120 @@
 # The original location of this file is /home/roger/sources/MysteryMachine/generated/ExtensionInfo.py
 #
 #
+import configparser
 import logging
-logger = logging.getLogger(__name__)
-
-from yapsy.PluginManager import *
-from .ExtensionSecureID import ExtensionSecureID
+import os
 import re
 
+from .ExtensionSecureID import ExtensionSecureID
+from .VersionNr import VersionNr
+
+logger = logging.getLogger(__name__)
+
 EXTENSION_POINT_SECTION_NAME="ExtensionPoints"
- 
-class ExtensionInfo (PluginInfo):
+
+class ExtensionInfo(object):
 
   """
+  The description of a plugin, read from its .mm-plugin file, and
+  once loaded the plugin's Extension instance (plugin_object).
 
-  :version: 1.0
+  :version: 2.0
   :author:  R Gammans
   """
 
-  """ ATTRIBUTES
+  @classmethod
+  def from_file(cls,infofile):
+    """
+    Read a plugin description (.mm-plugin) file.
+    """
+    details = configparser.ConfigParser(interpolation=None)
+    with open(infofile,encoding="utf-8") as f:
+        details.read_file(f,infofile)
+    name   = details.get("Core","Name")
+    module = details.get("Core","Module")
+    return cls(name,os.path.join(os.path.dirname(infofile),module),details)
 
-
-  secureId  (private)
-
-  """
-
-
-  def __init__(self,plugin_name,plugin_path):
+  def __init__(self,plugin_name,plugin_path,details=None):
     """
     Create a plugin info instance.
+
+    plugin_path is the plugin's module path without the .py suffix.
     """
-    super(ExtensionInfo,self).__init__(plugin_name,plugin_path)
-    self._points = { }
+    self.name = plugin_name
+    self.path = plugin_path
+    if details is None:
+        details = configparser.ConfigParser(interpolation=None)
+    self.details = details
+    self.plugin_object = None
+    self.is_activated  = False
+    self._points = None
     self.secureID= ExtensionSecureID.fromPathName(self.path+".py")
 
+  def __repr__(self):
+    return "<%s %s %s>" % (self.__class__.__name__,self.name,self.path)
+
+  def _doc_field(self,field,default=""):
+    return self.details.get("Documentation",field,fallback=default)
+
+  @property
+  def version(self):
+    return VersionNr(self._doc_field("Version","0.0"))
+
+  @property
+  def author(self):
+    return self._doc_field("Author")
+
+  @property
+  def website(self):
+    return self._doc_field("Website")
+
+  @property
+  def description(self):
+    return self._doc_field("Description")
 
   @property
   def points(self,):
-    #Details is set after __init__ so we have to lazyily evaluate points
-    if not self._points:
+    if self._points is None:
+        self._points = { }
         if self.details.has_section(EXTENSION_POINT_SECTION_NAME):
             for opt in self.details.options(EXTENSION_POINT_SECTION_NAME):
                 provides = self.details.get(EXTENSION_POINT_SECTION_NAME,opt)
-                provides = re.split("\s*,\s*",provides)
-                if len(provides) > 0:
-                    provides[0] = provides[0].strip()
-                    provides[-1] = provides[-1].rstrip()
-                    self._points[opt.lower()]=provides
-        
-
+                provides = [ p.strip() for p in re.split(r",",provides) ]
+                self._points[opt.lower()]=provides
     return self._points
 
   def getName(self):
     """
-    
     @return string : Name of the plugin.
-    @authorx
     """
     return self.name
 
   def getSecureID(self):
     """
-   Return the secure hash of the plugins source files.  
-  
+    Return the secure hash of the plugins source files.
+
     @return ExtensionSecureID :
-    @author
     """
     return self.secureID
 
   def activate(self):
     """
-    Activates a trusted plugin - no-op on untrusted plugin
+    Activates a loaded plugin - no-op on a plugin which isn't loaded
     """
-    if self.plugin_object != None:
+    if self.plugin_object is not None:
        self.plugin_object.activate()
-
+       self.is_activated = True
 
   def deactivate(self):
     """
-    Deactivates a trusted plugin , this should be a no-op
-    on an untrusted plugin - although may be called on a plugin
+    Deactivates a loaded plugin , this should be a no-op
+    on an unloaded plugin - although may be called on a plugin
     when it's trust is removed.
     """
-    if self.plugin_object != None:
+    if self.plugin_object is not None:
        self.plugin_object.deactivate()
-
+    self.is_activated = False
 
   def isLoaded(self):
     """

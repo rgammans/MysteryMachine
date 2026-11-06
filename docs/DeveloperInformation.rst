@@ -20,7 +20,7 @@ Features are connected to 'Points' which describe the API exposed by the plugin,
 can lost a set of 'features' it exposes on each 'Point' .  Both a 'Point' and a feature , are 
 simple textual names·
 
-The plugin system is based on Yapsy, and The `mm-plugin <plugin_file>`_ file is a simple ini-file format file , the usual yapsy format. 
+Each plugin is a single python module, described by a `mm-plugin <plugin_file>`_ file, which is a simple ini-file format file.
 
 Extension Points
 ----------------

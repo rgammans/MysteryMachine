@@ -3,5 +3,4 @@ pyparsing>1.5
 python-hglib
 gitpython
 PyYaml
-yapsy
 six

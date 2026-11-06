@@ -26,7 +26,7 @@
 Tests for the MysteryMachine.ExtensionInfo class
 """
 
-from yapsy.PluginManager import PluginManager
+from MysteryMachine.PluginManager import PluginManager
 from MysteryMachine.ExtensionInfo import ExtensionInfo
 from MysteryMachine.ExtensionSecureID import ExtensionSecureID
 import os
@@ -38,18 +38,16 @@ import logging
 class ExtInfoTest(unittest.TestCase):
 	def setUp(self):
 		# create the plugin manager - use the base plugin manager to
-                # remove any unecessary dependencies
-		self.simplePluginManager = PluginManager(directories_list=[
+		# remove any unecessary dependencies
+		self.simplePluginManager = PluginManager([
 				os.path.join(
 					os.path.dirname(os.path.abspath(__file__)),"Plugins")
-			       ], 
-                              plugin_info_ext="mm-plugin",
-			)
-    		#Set mode to test info class
-		self.simplePluginManager.setPluginInfoClass(ExtensionInfo)
+			       ])
 
 		# load the plugins that may be found
-		self.simplePluginManager.collectPlugins()
+		self.simplePluginManager.locate()
+		for plugin in self.simplePluginManager.candidates():
+			self.simplePluginManager.load(plugin)
 		# Will be used later
 		self.plugin_info = None
 
@@ -59,17 +57,14 @@ class ExtInfoTest(unittest.TestCase):
 		Test the plugins load.
 		"""
 		if self.plugin_info is None:
-			# check nb of categories
-			self.assertEqual(len(self.simplePluginManager.getCategories()),1)
-			sole_category = self.simplePluginManager.getCategories()[0]
 			# check the number of plugins
-			self.assertEqual(len(self.simplePluginManager.getPluginsOfCategory(sole_category)),2)
-			self.plugin_info = [ None , None ]
-			self.plugin_info[0] = self.simplePluginManager.getPluginsOfCategory(sole_category)[0]
-			self.plugin_info[1] = self.simplePluginManager.getPluginsOfCategory(sole_category)[1]
+			self.plugin_info = self.simplePluginManager.loaded()
+			self.assertEqual(len(self.plugin_info),2)
 			# test that the name of the plugin has been correctly defined
 			self.assertTrue("FirstPlugin" in [x.name for x in  self.plugin_info])
-			self.assertEqual(sole_category,self.plugin_info[0].category)
+			for plugin in self.plugin_info:
+				self.assertIsInstance(plugin,ExtensionInfo)
+				self.assertTrue(plugin.isLoaded())
 
 
 	def testBasic(self):

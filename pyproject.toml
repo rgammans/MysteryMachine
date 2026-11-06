@@ -15,7 +15,6 @@ dependencies = [
     "docutils",
     "pyparsing>1.5",
     "PyYaml",
-    "yapsy",
     "six"
 ]
 

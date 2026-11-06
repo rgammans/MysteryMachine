@@ -1,7 +1,8 @@
 Plugin Description file
 =======================
 
-The plugin system is based on Yapsy, and The mm-plugin file is a simple ini-file format file , the the usual yapsy format, described fully here for completeness.
+The mm-plugin file is a simple ini-file format file, which sits in the same directory as the plugin's python module. (The format
+originated with Yapsy, which MysteryMachine used to use.)
 
 As it is an INI-file it is broken into sections.
 
@@ -10,11 +11,16 @@ Core
 ----
 The mandatory core section defines the name and the python module, hence this must contain a 'Name', and a 'Module entry.
 
-The 'Name', should be a unique name for your plugin, and the moduel
-should be the python module or package to import.
+The 'Name', should be a unique name for your plugin, and the module
+should be the name of the plugin's python file, without the '.py'.
 
-Eg, If your python file is X.py, you would normally import with
-'import X'. So your plugin file should contain 'module = X'.
+Eg, If your python file is X.py, your plugin file should contain
+'module = X'.
+
+A plugin must be a single python file (not a package), as its secure hash,
+used to decide whether it is trusted, only covers that file. The file must
+define exactly one subclass of MysteryMachine.Extension.Extension, which is
+instantiated when the plugin is loaded.
 
 
 Documentation

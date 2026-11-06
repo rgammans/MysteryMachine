@@ -6,7 +6,6 @@ by using the extensions API andlooking in the `Extension'.
 
 from MysteryMachine.Extension import Extension
 
-from yapsy.IPlugin import IPlugin
 import MysteryMachine.store.file_store
 import MysteryMachine.store.dict_store
 import MysteryMachine.store.hgfile_class

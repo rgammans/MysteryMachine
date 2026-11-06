@@ -79,7 +79,7 @@ class ExtensionSecureID(object):
     @return bool :
     """
     if isinstance(other , self.__class__):
-        return [self._hashtype, self._value] == [self._hashtype , other._value ]
+        return [self._hashtype, self._value] == [other._hashtype , other._value ]
     else:
         return self.__str__() == str(other)
 

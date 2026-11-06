@@ -22,9 +22,7 @@
 #
 #
 
-from yapsy.IPlugin import IPlugin
-
-class Extension (IPlugin):
+class Extension(object):
 
   """
    This is the class from which and extension interacts with the 
@@ -35,7 +33,15 @@ class Extension (IPlugin):
    :author: R Gammans`
   """
   def __init__(self):
-    IPlugin.__init__(self)
+    pass
+
+  def activate(self):
+    """Called when the extension is activated. Override as required."""
+    pass
+
+  def deactivate(self):
+    """Called when the extension is deactivated. Override as required."""
+    pass
 
   def getInterfaces(self):
     raise Exception("This function must be overriden")

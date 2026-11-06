@@ -23,7 +23,7 @@ Current Status
 
 Mystery Machine is currently in alpha. Basic code exist to support the data schema and to create docutils doctrees from which final documents can be output using the standard docutils api.
 
-The plugin system is currently flawed due to problem with Yapsy on which it is based. This is the next big milestone to replace.
+The plugin system uses MysteryMachine's own small plugin loader (MysteryMachine.PluginManager), which replaced Yapsy.
 
 Although MysteryMachine support Plugable api's (or main()'s ) , currently the only exuant API is a bpython shell which provide you with direct access the the MysteryMachine API Calls.
 

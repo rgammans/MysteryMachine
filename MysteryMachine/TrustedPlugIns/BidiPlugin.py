@@ -10,7 +10,6 @@ value type.
 
 from MysteryMachine.Extension import Extension
 
-from yapsy.IPlugin import IPlugin
 
 import logging
 
@@ -19,5 +18,5 @@ import MysteryMachine.schema.MMDLinkValue
 class BidiTypePlugin(Extension):
     def activate(self):
         pass
-    def deactivated(self):
+    def deactivate(self):
         pass

@@ -11,7 +11,6 @@ provides the list attribute value type.
 
 from MysteryMachine.Extension import Extension
 
-from yapsy.IPlugin import IPlugin
 
 import logging
 
@@ -21,5 +20,5 @@ class ListTypePlugin(Extension):
     def activate(self):
         import MysteryMachine.schema.MMListAttribute
 
-    def deactivated(self):
+    def deactivate(self):
         pass

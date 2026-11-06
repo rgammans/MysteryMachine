@@ -22,10 +22,7 @@
 #
 #
 
-from . import Extension
-from .ExtensionInfo import ExtensionInfo 
-from . import TrustedPluginManager
-from .CorePluginManager import   CorePluginManager 
+from .PluginManager import PluginManager, TrustedPluginManager
 from .VersionNr import VersionNr
 
 import os
@@ -59,30 +56,19 @@ class ExtensionLib(object):
     def __init__(self,cfg):
         if not 'extensions' in cfg:
             cfg['extensions'] = {'path':[] , 'trusted': [] }
-        self.plugin_man =TrustedPluginManager.TrustedPluginManager(
-                      directories_list=cfg['extensions']['path'],
-                      plugin_info_ext="mm-plugin",  
-         			  categories_filter={"Default":Extension.Extension}, 
-                      trustList=  cfg['extensions']['trusted']
-                     )
+        self.plugin_man = TrustedPluginManager(cfg['extensions']['path'],
+                                               cfg['extensions']['trusted'])
 
         ##Allow the trusted path to be overridden
         self.trusteddirs = cfg['extensions'].get('trustedpath')
         if not self.trusteddirs:
             self.trusteddirs = [ DEFAULT_TRUSTEDPLUGIN_PATH ]
-        self.trusted_man = CorePluginManager(
-                      directories_list = self.trusteddirs,
-                      plugin_info_ext="mm-plugin",  
-         			  categories_filter={"Default":Extension.Extension}, 
-                     )
+        self.trusted_man = PluginManager(self.trusteddirs)
 
-        self.trusted_man.setPluginInfoClass(ExtensionInfo)
-        self.trusted_man.locatePlugins()
-        self.plugin_man.locatePlugins()
-    #    self.known_extentions = cfg['extensions']['known']
+        self.trusted_man.locate()
+        self.plugin_man.locate()
         self.helpers=dict()
         self.mixins=dict()
-        self._loadedPlugins  = []
 
     def register_helper(self,cls,helper_factory):
         """
@@ -131,8 +117,7 @@ class ExtensionLib(object):
         @param Extension extension : 
         @return  : true - if the extension is trusted
         """
-        if extension in self.trusted_man.getAllPlugins(): return True
-        else: return self.plugin_man.isPluginOk(extension)
+        return self.IsSystemPlugin(extension) or self.plugin_man.is_trusted(extension)
 
     def SetTrust(self, ext, trusted):
         """
@@ -141,47 +126,34 @@ class ExtensionLib(object):
         @param Extension ext : 
         @param bool trusted : 
         """
-        if ext in self.trusted_man.getAllPlugins():
+        if self.IsSystemPlugin(ext):
             raise TrustError("Cannot change the trust status of system Plugins")
 
         if trusted:
-            self.plugin_man.trustPlugin(ext)
+            self.plugin_man.trust(ext)
         else:
-            self.plugin_man.untrustPlugin(ext)
+            self.plugin_man.untrust(ext)
 
-    def getExtension(self, name, category = "Default", version = None):
+    def getExtension(self, name, version = None):
         """
-        Returns extensionInfo for extension named name if and only if extension is trusted.
+        Returns extensionInfo for the loaded extension named name.
 
 
         @param string name :   Name of extension to return 
-        @param string category:Category if extension
         @param string version: Reserved for later use. Must be None.
         @return Extension :
         """
-        plugin = self.trusted_man.getPluginByName(name, category)
-        return plugin or self.plugin_man.getPluginByName(name, category)
+        plugin = self.trusted_man.get_by_name(name)
+        return plugin or self.plugin_man.get_by_name(name)
 
 
     def get_extension_list(self):
         """
         Generates the list of extension names known about.
         """
-        # Iterate through system plugins
-        for plugin in self.trusted_man.getCandidateInfo():
-             yield plugin
-
-        #Do trusted plugins
-        for plugin in self.plugin_man.getCandidateInfo():
-             yield plugin
-        
-        # Return rejected plugins.
-        for plugin in self.plugin_man.getRejectedPluginInfo():
-            yield plugin
-    
-        #Return loaded plugins.
-        for plugin in self._loadedPlugins:
-            yield plugin
+        return itertools.chain(self.trusted_man.candidates(),  # System plugins
+                               self.plugin_man.candidates(),   # Trusted plugins
+                               self.plugin_man.rejected())
 
     def findPluginByFeature(self,extension_point,featurecode, version = None ):
         """
@@ -189,7 +161,7 @@ class ExtensionLib(object):
         in extension point 'extension_point'.
         """
 
-        for plugin in itertools.chain(self.plugin_man.getCandidateInfo(),self._loadedPlugins ,self.trusted_man.getCandidateInfo() , ):
+        for plugin in self._usable_plugins():
             if plugin.provides(extension_point,featurecode):
                 if VersionNr(None) and  VersionNr(version) <= VersionNr(plugin.version)  : yield plugin
 
@@ -199,7 +171,7 @@ class ExtensionLib(object):
         in extension point 'extension_point'.
         """
         features = set() 
-        for plugin in itertools.chain(self.plugin_man.getCandidateInfo(),self._loadedPlugins ,self.trusted_man.getCandidateInfo() , ):
+        for plugin in self._usable_plugins():
             features |= set(plugin.features_on_point(extension_point))
         return features
 
@@ -212,15 +184,16 @@ class ExtensionLib(object):
         """
         if plugin.isLoaded(): return
 
-        if plugin in  self.plugin_man.getCandidateInfo():
-            self.plugin_man.loadPlugin(plugin)
-        elif plugin in  self.trusted_man.getCandidateInfo():
-            self.trusted_man.loadPlugin(plugin)
+        if plugin in  self.plugin_man.candidates():
+            self.plugin_man.load(plugin)
+        elif plugin in  self.trusted_man.candidates():
+            self.trusted_man.load(plugin)
         else: raise InvalidPlugin(plugin.name)    
-
-        self._loadedPlugins.append(plugin)
 
 
     def IsSystemPlugin(self,plugin):
-        return ((plugin in self.trusted_man.getAllPlugins() ) or 
-               (plugin in  self.trusted_man.getCandidateInfo() ) )
+        return plugin in self.trusted_man.candidates()
+
+    def _usable_plugins(self):
+        """Trusted then system plugins, ie. those which may be loaded."""
+        return itertools.chain(self.plugin_man.candidates(), self.trusted_man.candidates())

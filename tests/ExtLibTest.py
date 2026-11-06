@@ -29,6 +29,7 @@ from __future__ import with_statement
 
 
 from MysteryMachine import *
+from MysteryMachine.ExtensionLib import TrustError
 import unittest
 import os
 import logging
@@ -107,8 +108,9 @@ class ExtensionLibTest(unittest.TestCase):
          with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])  as g:
             self.extlib = g.GetExtLib()
             # Remove all from trustlist.
-            for reject in self.extlib.get_extension_list():
-                self.extlib.SetTrust(reject,False)
+            for reject in list(self.extlib.get_extension_list()):
+                if not self.extlib.IsSystemPlugin(reject):
+                    self.extlib.SetTrust(reject,False)
 
             plugins = self.gettrustedlist()  
             self.assertEqual(len(plugins),0)
@@ -119,6 +121,13 @@ class ExtensionLibTest(unittest.TestCase):
             self.extlib = g.GetExtLib()
             plugins = list(self.extlib.findPluginByFeature("Test","test_plugin")  )
             self.assertEqual(len(plugins),1)
+
+    def test_cannot_change_trust_of_system_plugins(self):
+        with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])  as g:
+            self.extlib = g.GetExtLib()
+            system = self.getsystemlist()[0]
+            self.assertTrue(self.extlib.IsTrusted(system))
+            self.assertRaises(TrustError,self.extlib.SetTrust,system,False)
 
     def test_should_treat_all_plugins_as_trusted_in_trusteddir(self):
         with StartApp(["--cfgengine=ConfigYaml", "--cfgfile=tests/test.yaml", "--testmode"])  as g:

@@ -27,7 +27,7 @@ Tests for the MysteryMachine.TrustedPluginManager class
 """
 
 from MysteryMachine.ExtensionSecureID import ExtensionSecureID
-from MysteryMachine.TrustedPluginManager import TrustedPluginManager
+from MysteryMachine.PluginManager import TrustedPluginManager, PluginLoadError
 import unittest
 import os
 
@@ -40,17 +40,14 @@ class TrustExtManTest(unittest.TestCase):
         self.config = { "FirstPlugin" : trustedp }        
     
         #2. Create Trustmanager class and collect plugins.
-        self.myPluginManager = TrustedPluginManager(
-                directories_list=[ extpath ], 
-                plugin_info_ext="mm-plugin",  
-                trustList=[ self.config ] )
+        self.myPluginManager = TrustedPluginManager([ extpath ], [ self.config ])
 
-        self.myPluginManager.locatePlugins()
+        self.myPluginManager.locate()
         # Will be used later
         self.plugin_info = None
 
     def testTrusted(self):
-        plugins = list(self.myPluginManager.getCandidateInfo())
+        plugins = list(self.myPluginManager.candidates())
         self.assertEqual(len(plugins),1)
         for plugin_info in plugins:
             self.plugin_info = plugin_info
@@ -60,7 +57,7 @@ class TrustExtManTest(unittest.TestCase):
     def testRejected(self):
         #Check plugins accestp/reject are the ones we expect.
         rejects = []
-        for r in self.myPluginManager.getRejectedPluginInfo():
+        for r in self.myPluginManager.rejected():
             rejects.append(r)
         #Check correct number of rejects
         self.assertEqual(len(rejects) , 1)
@@ -70,24 +67,36 @@ class TrustExtManTest(unittest.TestCase):
     def testAddTrust(self):
         #Add second to trust list.
         orig=len(self.config)
-        for reject in self.myPluginManager.getRejectedPluginInfo():
-            self.myPluginManager.trustPlugin(reject)
+        for reject in self.myPluginManager.rejected():
+            self.myPluginManager.trust(reject)
 
-        plugins = list(self.myPluginManager.getCandidateInfo())
+        plugins = list(self.myPluginManager.candidates())
         self.assertEqual(len(plugins),2)
         self.assertEqual(len(self.config),2)
 
     def testUntrust(self):
         # check the number of plugins
-        plugins = list(self.myPluginManager.getCandidateInfo())
+        plugins = list(self.myPluginManager.candidates())
         self.assertEqual(len(plugins),1)
-        rejects = list( self.myPluginManager.getRejectedPluginInfo())
+        rejects = list( self.myPluginManager.rejected())
         self.assertEqual(len(rejects),1)
-        self.myPluginManager.untrustPlugin(plugins[0])
-        plugins = list(self.myPluginManager.getCandidateInfo())
-        rejects = list( self.myPluginManager.getRejectedPluginInfo())
+        self.myPluginManager.untrust(plugins[0])
+        plugins = list(self.myPluginManager.candidates())
+        rejects = list( self.myPluginManager.rejected())
         self.assertEqual(len(rejects),2)
         self.assertEqual(len(plugins),0)
+
+    def testCantLoadRejected(self):
+        reject = list(self.myPluginManager.rejected())[0]
+        self.assertRaises(PluginLoadError,self.myPluginManager.load,reject)
+        self.assertFalse(reject.isLoaded())
+
+    def testUntrustUnloads(self):
+        plugin = list(self.myPluginManager.candidates())[0]
+        self.myPluginManager.load(plugin)
+        self.assertIs(self.myPluginManager.get_by_name(plugin.name),plugin)
+        self.myPluginManager.untrust(plugin)
+        self.assertIsNone(self.myPluginManager.get_by_name(plugin.name))
  
 
 def getTestNames():
