@@ -32,6 +32,7 @@ import MysteryMachine.schema.MMAttributeValue
 import MysteryMachine.schema.MMDLinkValue as dlk
 import unittest
 import logging
+import gc
 
 import sys
 
@@ -78,7 +79,6 @@ class DlinkTests(unittest.TestCase):
         self.assertEqual(self.object1["link"].get_anchor(),self.object1)        
         self.assertEqual(self.object2["link"].get_anchor(),self.object2)        
 
-    @unittest.skip("causes an error - needs debugging, maybe a real issue")
     def testMove(self):
         """This behaviour is needed so simpleton UI don't need to much \
         extra support for Dlink, they can ue Unstored, and then move/copy"""
@@ -199,6 +199,18 @@ class DlinkTests(unittest.TestCase):
         self.assertEqual(self.object2["2link"].get_partner(),None)        
         self.assertEqual(self.object2["2link"].get_object(),None)
 
+
+    def testReconnect_with_local_copy(self):
+        #Hold the values so they stay in the cache, and prime get_object()
+        dlk.CreateBiDiLink(self.object1,"rlink",self.object2,"rlink" )
+        self.attr_o1_rlink = self.object1["rlink"]
+        self.assertEqual(self.object1["rlink"].get_object(),self.object2)
+        #Reconnect to a different object; the cached referent must not go stale.
+        self.object3["rlink"] = dlk.CreateAnchorPoint(self.object3)
+        self.object1["rlink"] = dlk.ConnectTo(self.object3["rlink"])
+        self.assertEqual(self.object1["rlink"].get_object(),self.object3)
+        self.assertEqual(self.object3["rlink"].get_object(),self.object1)
+        self.assertEqual(self.object2["rlink"].get_object(),None)
 
     def testShadowing_unconnected_connecting(self):
         self.dummyparent["objlink1"] = dlk.CreateAnchorPoint(self.dummyparent)
@@ -341,8 +353,40 @@ class DlinkTests(unittest.TestCase):
         self.assertEqual(self.object2["notlink"].get_raw(),b'')
 
 
+class DlinkTestsNoGC(DlinkTests):
+    """Rerun DlinkTests with the cyclic GC disabled.
+
+    Attribute values live in a weakref cache, so whether a test sees a
+    cached value object or one freshly reloaded from the store depends on
+    GC timing. Links must behave identically either way; this pins the
+    'still cached' case so a regression fails every time, not occasionally.
+    """
+    def setUp(self):
+        self._gc_was_enabled = gc.isenabled()
+        gc.disable()
+        super(DlinkTestsNoGC,self).setUp()
+
+    def tearDown(self):
+        super(DlinkTestsNoGC,self).tearDown()
+        if self._gc_was_enabled: gc.enable()
+        gc.collect()
+
+
+class DlinkTestsEagerGC(DlinkTests):
+    """Rerun DlinkTests collecting as often as possible, pinning the
+    'evicted and reloaded from the store' case. See DlinkTestsNoGC."""
+    def setUp(self):
+        self._gc_threshold = gc.get_threshold()
+        gc.set_threshold(1,1,1)
+        super(DlinkTestsEagerGC,self).setUp()
+
+    def tearDown(self):
+        super(DlinkTestsEagerGC,self).tearDown()
+        gc.set_threshold(*self._gc_threshold)
+
+
 def getTestNames():
-	return [ 'Dlink.DlinkTests' ] 
+	return [ 'Dlink.DlinkTests', 'Dlink.DlinkTestsNoGC', 'Dlink.DlinkTestsEagerGC' ] 
 
 if __name__ == '__main__':
 #    loader = unittest.TestLoader()

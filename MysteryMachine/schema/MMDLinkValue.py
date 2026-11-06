@@ -204,7 +204,7 @@ def _measure_path_diff(frm,to):
 
     count = 0
     for f,t in zip_longest(frm_path,to_path):
-        if count >0 and t is not None: RuntimeError("invalid path %r"%to_path)
+        if count >0 and t is not None: raise RuntimeError("invalid path %r"%to_path)
         if f is not None and t is not None:
             if f != t: raise RuntimeError('%r is not a parent of %r'%(to,frm))
             #Don't count common elements
@@ -453,7 +453,7 @@ class MMDLinkValue(MMAttributeValue):
             #Iniitialise from parts.
             return
 
-        if obj is None: raise BidiCantCreate("Cannot compose as owned by None") 
+        if obj is None: raise BiDiCantCreate("Cannot compose as owned by None") 
         self.logger.debug( "%s _compose (%r,%s)" % (object.__repr__(self) ,obj, self.parts))
         #Now we have a handle on the system find our objects etc,
 
@@ -512,12 +512,17 @@ class MMDLinkValue(MMAttributeValue):
     def __copy__(self):
         #print "cpy",self.mode
         mode = 'copied_'+self.mode#[:-4]+"gestate"
-        self.logger.debug("copy",self.mode,self.parts)
+        self.logger.debug("copy %s %s",self.mode,self.parts)
         ##Uncomment this for different behaviour
         #FIXME WHY!
         #x=str(self.anchorp)
         cpy = self.__class__(parts=_copy.copy(self.parts),mode = self.mode)
-        cpy.anchorp = self.anchorp
+        #Once anchordist is known the anchor is relative to the home
+        # object, so only carry an absolute anchorp across if we have not
+        # been composed yet. Otherwise the copy would behave differently
+        # depending on whether this value was still alive in the (weakref)
+        # attribute cache or had been reloaded from the store.
+        cpy.anchorp = self.anchorp if self.anchordist is None else None
         cpy.anchordist = self.anchordist
         ## These next three lines seem to have no effect, so they are commented out!
         #if hasattr(self,'old_partner_path'):
