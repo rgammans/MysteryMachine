@@ -25,11 +25,6 @@
 import types
 from copy import copy
 from .utils.RichCompare import RichComparisonMixin
-distutils_Ver = None
-try:
-    from distutils.version import Version
-    distutils_Ver = Version
-except ImportError:pass
 
 class VersionNr(RichComparisonMixin):
 
@@ -47,8 +42,6 @@ class VersionNr(RichComparisonMixin):
             self.SetValue(args[0].nrs)
         elif isinstance(args[0],str):
             self.SetValue(args[0].split("."))
-        elif isinstance(args[0],distutils_Ver):
-            self.SetValue(list(args[0].version))
         #Assume list type.
         else:
             self.SetValue(list(args))
@@ -85,7 +78,7 @@ class VersionNr(RichComparisonMixin):
         return len(cflist)>0
     
     def __hash__(self):
-        return hash(self.__repr())
+        return hash(tuple(None if n is None else int(n) for n in self.nrs))
 
     def __eq__(self, other):
         """

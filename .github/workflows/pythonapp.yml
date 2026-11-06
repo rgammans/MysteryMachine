@@ -2,29 +2,38 @@ name: Python Unittests
 
 on:
     push:
-        branches:
-            - master
     pull_request:
-        branches:
-            - master
-
+    # Weekly, so new releases of our dependencies (and of Python
+    # prereleases) are tested even when the code doesn't change.
+    schedule:
+        - cron: '17 4 * * 1'
 
 jobs:
   python_matrix:
     strategy:
+        fail-fast: false
         matrix:
-            version: ['3.7', '3.8', '3.9', '3.10', '3.11']
+            # Supported: every CPython release which hasn't reached end of life.
+            # Keep in step with pyproject.toml and tox.ini.
+            version: ['3.11', '3.12', '3.13', '3.14', '3.15']
+            experimental: [false]
+            include:
+                # Early warning for the next release; allowed to fail.
+                - version: '3.16'
+                  experimental: true
+    continue-on-error: ${{ matrix.experimental }}
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.version }}
+        allow-prereleases: true
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install -r requirements.txt mercurial
     - name: Set git identity
       run: |
         git config --global user.email "testrunner@github.local"

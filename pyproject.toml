@@ -8,8 +8,17 @@ authors = [
   {name = "Roger Gammans", email = "rgammans@gammascience.co.uk"},
 ]
 
+# Supported: every CPython release which hasn't reached end of life.
+# Keep in step with tox.ini and .github/workflows/pythonapp.yml.
+requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
 ]
 dependencies = [
     "docutils",
@@ -48,16 +57,3 @@ hg = [
 [build-system]
 requires = ["setuptools", "wheel" ]
 build-backend = "setuptools.build_meta"
-
-[tool.tox]
-legacy_tox_ini = """
-[tox]
-envlist = py27, py35, py36,py37 
-# ,py36,py37
-skipsdist=True
-skip_missing_interpreters=True
-
-[testenv]
-passenv = *
-commands = python -m unittest discover -p '{posargs:*.py}' -s tests
-"""

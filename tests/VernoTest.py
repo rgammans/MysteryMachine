@@ -59,6 +59,7 @@ class VernoTest(unittest.TestCase):
 		self.assertFalse( VersionNr(None) == VersionNr(None) )
 
 	def testCopy(self):
+		self.assertEqual( hash(VersionNr(3,1)), hash(VersionNr("3.1")) )
 		a=VersionNr(3,1)
 		b=VersionNr(a)
 		self.assertEqual( a , b )
