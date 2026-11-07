@@ -28,7 +28,7 @@ import MysteryMachine.Exceptions
 
 import unittest
 
-class fakeBase(object):
+class fakeBase:
     pass
 
 class fakeSys(fakeBase):
@@ -62,10 +62,10 @@ class sysTests(unittest.TestCase):
     def testUriHandlers(self):
         # Test GetPath
         self.assertEqual(GetPath("kks:asdas"),"asdas")
-        self.assertEqual(GetPath("kksia:hsasdas:a\sad:"),"hsasdas:a\sad:")
+        self.assertEqual(GetPath(r"kksia:hsasdas:a\sad:"),r"hsasdas:a\sad:")
         # Test GetScheme
         self.assertEqual(GetScheme("kks:asdas"),"kks")
-        self.assertEqual(GetScheme("kksia:hsasdas:a\sad:"),"kksia")
+        self.assertEqual(GetScheme(r"kksia:hsasdas:a\sad:"),"kksia")
         # Test GetCanonical
         class cantest1(Base): 
             uriScheme = "identity"

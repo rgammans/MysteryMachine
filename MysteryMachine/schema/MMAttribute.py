@@ -26,7 +26,6 @@ from .MMBase import *
 from .MMAttributeValue import MMAttributeValue , CreateAttributeValue , MMAttributeValue_MMRef , ShadowAttributeValue
 from MysteryMachine.schema.Locker import Reader,Writer
 
-import six
 import operator
 import functools
 import sys
@@ -83,7 +82,6 @@ class MMAttributeContainer(MMContainer):
                              **kwargs)
 
 
-@six.python_2_unicode_compatible
 class MMAttribute (MMAttributeContainer):
 
   """
@@ -113,7 +111,7 @@ class MMAttribute (MMAttributeContainer):
   """
     
   def __init__(self,name,value,owner , copy = True ,complete_write = False):
-     super(MMAttribute,self).__init__(self,name,value,owner,copy)
+     super().__init__(self,name,value,owner,copy)
      self.name=str(name)
      self.valueobj=CreateAttributeValue(value , copy)
      self.owner=owner
@@ -361,10 +359,10 @@ class MMAttribute (MMAttributeContainer):
                 # reinstated on rollback not a copy..
                 self.valueobj,self.oldvalue = self.oldvalue,self.valueobj
                 
-        return super(MMAttribute,self).start_write(*args)
+        return super().start_write(*args)
 
   def discard(self,):
-        super(MMAttribute,self).discard()
+        super().discard()
         self.oldvalue , self.valueobj = None, self.oldvalue
 
 
@@ -406,7 +404,7 @@ class MMUnstorableAttribute(MMAttribute):
     # You may need some special hadnling in compose.
 
     def __init__(self,*args,**kwargs):
-        super(MMUnstorableAttribute,self).__init__(*args,**kwargs)
+        super().__init__(*args,**kwargs)
 
 
     def writeback(self):

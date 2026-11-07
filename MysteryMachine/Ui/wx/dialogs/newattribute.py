@@ -27,7 +27,6 @@ import logging
 
 import wx
 import wx.lib.newevent
-import six
 
 import MysteryMachine
 from MysteryMachine.schema.MMAttribute import MMAttribute , MMUnstorableAttribute
@@ -62,7 +61,7 @@ class NewAttributeDialog(wx.Dialog):
         if self.writemethod not in ("set_value","insert","append"):
             raise ValueError("write value `%s' not known"%self.writemethod)
 
-        super(NewAttributeDialog,self).__init__(parent,id,**kwargs)
+        super().__init__(parent,id,**kwargs)
         self.typepanels = {}
         self.current_type = None
         self.BuildUi()
@@ -75,7 +74,7 @@ class NewAttributeDialog(wx.Dialog):
     
         self.namefield =wx.TextCtrl(self,wx.ID_ANY)       
         self.sizer.Add(self.namefield,0,wx.EXPAND)
-        self.namefield.SetValue(six.text_type(self.name))
+        self.namefield.SetValue(str(self.name))
         self.namefield.Show(self.writemethod == "set_value")
         
         self.typechoice = wx.Choice(self,self.__class__.ID_CHOICE,choices =sorted(GetAttributeTypeList()) )

@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 """Simple reader-writer locks in Python
 Many readers can hold the lock XOR one and only one writer"""
 

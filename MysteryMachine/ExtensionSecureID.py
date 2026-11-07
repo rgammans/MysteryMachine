@@ -23,7 +23,7 @@
 import hashlib
 import os
 
-class ExtensionSecureID(object):
+class ExtensionSecureID:
 
   """
    This class represents a secure hash for an extension. Trust of one version of an

@@ -22,7 +22,6 @@
 #
 
 
-from __future__ import with_statement
 
 
 #We import identifier to allow to ensure consisentcy 
@@ -41,7 +40,7 @@ import weakref
 
 
 
-class SchemaCommon(object):
+class SchemaCommon:
     """This is class which handles the utility bits and piesces which are used by schema
     related claess such as MMAttribueValue which aren't actaully nodes
     """
@@ -280,7 +279,7 @@ class MMDeletedNode(MMBase):
     This allows faster deletes.
     """
     def __init__(self,owner,name,callback,*args,**kwargs):
-        super(MMDeletedNode,self).__init__(self,*args,**kwargs)
+        super().__init__(self,*args,**kwargs)
         self.owner = owner
         self.name = name
         self.is_deleted = True
@@ -313,7 +312,7 @@ class MMContainer(MMBase):
     a start/end_read/write pair.
     """
     def __init__(self,*args,**kwargs):
-        super(MMContainer,self).__init__(self,*args,**kwargs)
+        super().__init__(self,*args,**kwargs)
         self.deleted_items= []
         self.new_items = [ ]
         self._invalidate_cache()
@@ -466,7 +465,7 @@ class MMContainer(MMBase):
         clogger.debug ("(%r (writeback) new=%r"%(self,self.new_items))
         self.new_items = [ ]
         self.deleted_items = [ ]
-        super(MMContainer,self).writeback()
+        super().writeback()
 
     def discard(self,):
         clogger.debug ("(%r discard) new=%r"%(self,self.new_items))
@@ -476,6 +475,6 @@ class MMContainer(MMBase):
         new_items, self.new_items =  self.new_items, [ ]
         for item in new_items:
            self._invalidate_item_(item.name)
-        super(MMContainer,self).discard()
+        super().discard()
 
 

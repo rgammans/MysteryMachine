@@ -31,7 +31,6 @@ from MysteryMachine.schema.MMSystem import MMSystem
 from MysteryMachine.schema.MMAttribute import MMAttribute
 from MysteryMachine.schema.MMObject import MMObject
 from MysteryMachine.Ui.wx import event_handler
-import six
 import logging
 
 import functools
@@ -56,7 +55,7 @@ def _node_name(node):
     #contain attirbutes..
     if isinstance(node,MMAttribute):
         return node.name
-    else:return six.text_type(node) 
+    else:return str(node) 
 
 
 def _pop(seq):
@@ -70,7 +69,7 @@ def _none_guard(value,fn):
     return fn(value)
 
 
-class NotifyClosure(object):
+class NotifyClosure:
     """Check the target of the notify is non-zero at notify time.
 
     This object can hold be registered on multiple nodes as
@@ -121,12 +120,12 @@ class MMTreeView(wx.TreeCtrl):
         self.logger = logging.getLogger("MysteryMachine.Ui.wx.widgets.TreeView")
 
 
-        super(MMTreeView,self).__init__(parent,id,**kwargs)
+        super().__init__(parent,id,**kwargs)
         self.id = id
 
         self.notifyclosure = NotifyClosure(self,self.node_notifier)
 
-        self.rootItem = self.AddRoot(six.text_type(self.system),-1,-1,wx.TreeItemData(obj=self.system))
+        self.rootItem = self.AddRoot(str(self.system),-1,-1,wx.TreeItemData(obj=self.system))
         self.notifyclosure.register(self.system)
         #Use the empty string as the db path for the root node.
         self.nodes = { '' : self.rootItem }

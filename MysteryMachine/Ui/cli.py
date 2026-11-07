@@ -57,7 +57,7 @@ import logging
 def first(it):
     return next(iter(it))
 
-class UiBase(object):
+class UiBase:
     def __init__(self,args = [] ):
         self.args      = args
         self.in_curses = False 
@@ -97,7 +97,7 @@ class UiBase(object):
         f.close()
         try:
             os.remove(fname)
-        except (WindowsError,OSError) as e:
+        except OSError as e:
             self.logger.warn(str(e))
             pass
         return b"".join(newval)

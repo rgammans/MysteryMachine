@@ -3,7 +3,7 @@
 
 #http://www.voidspace.org.uk/cgi-bin/voidspace/downman.py?file=richcomparisonmixin.py
 
-class RichComparisonMixin(object):
+class RichComparisonMixin:
 
     def __eq__(self, other):
         raise NotImplementedError("Equality not implemented")

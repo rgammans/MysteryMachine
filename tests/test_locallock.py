@@ -30,7 +30,7 @@ def start_new_thread( func, args ,kwargs = None):
     threading.Thread(target = func, args =args,kwargs = kwargs).start()
 
 
-class Node(object):
+class Node:
     def __init__(self,lock):
         self.lock = lock
 

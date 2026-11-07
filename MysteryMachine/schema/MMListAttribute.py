@@ -21,25 +21,8 @@
 from MysteryMachine.schema.MMAttributeValue import MMAttributeValue ,MakeAttributeValue , CreateAttributeValue 
 
 
-#If we deprecated py2.5 this mess can be replaced
-#with from 'itertools import izip_longest'
-import itertools
 import functools
-import six
-
-# izip_longest only exists from2.6 onwards 
-# but  map(None,.) 
-try:
-    zip_longest = itertools.izip_longest
-except Exception:
-    zip_longest = itertools.zip_longest
-
-try:
-    dummy = xrange
-except NameError:
-    #Xrange not defined; define it to match range
-    # which is a py3 equivalent
-    xrange = range
+from itertools import zip_longest
 
 
 class MMListAttribute(MMAttributeValue):
@@ -55,7 +38,7 @@ class MMListAttribute(MMAttributeValue):
         if not parts:
             kwargs["parts"] = {'0element': b''}
 
-        super(MMListAttribute,self).__init__(self,*args,**kwargs)
+        super().__init__(self,*args,**kwargs)
         self.special = ["0element"]
         self.uncomposed = {}
         if self.value is not None:
@@ -91,7 +74,7 @@ class MMListAttribute(MMAttributeValue):
 
 
     def __copy__(self,):
-        cpy = super(MMListAttribute ,self).__copy__()
+        cpy = super().__copy__()
         cpy.uncomposed = dict(self.uncomposed)
         return cpy
 
@@ -127,8 +110,7 @@ class MMListAttribute(MMAttributeValue):
         return self._convert_to_val(key,self.parts[key],obj)        
 
     def __iter__(self, obj = None):
-        for key in xrange(len(self)):
-            yield key 
+        yield from range(len(self))
 
     def __setitem__(self,index,value , obj = None):
         key = self.GetStableIndex(index,obj)
@@ -227,14 +209,14 @@ class MMListAttribute(MMAttributeValue):
         #value.
         data = v.split(b":",2)
         if len(data) == 3:
-            parts =  { six.text_type(data[1],'ascii'): data[2]}
+            parts =  { str(data[1],'ascii'): data[2]}
         else:
             parts = {}
-        return MakeAttributeValue(six.text_type(data[0],'ascii'),parts = parts )
+        return MakeAttributeValue(str(data[0],'ascii'),parts = parts )
 
 
 
-class _Key(object):
+class _Key:
     """
     Encodes the actually logic used for generating dict keys for
     our ordered list.

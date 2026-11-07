@@ -59,7 +59,7 @@ class MyParser(ConfigParser):
     def optionxform(self,opt):
         return opt
 
-class pyConfigDictSection(object):
+class pyConfigDictSection:
  
     def __init__(self, cfg, section ,parent ,ro):
         self.cfg = cfg
@@ -85,11 +85,10 @@ class pyConfigDictSection(object):
         self.cfg.remove_option(self.section, name)
 
     def __iter__(self):
-        for i in self.cfg.items(self.section):
-            yield i
+        yield from self.cfg.items(self.section)
 
 
-class pyConfigList(object):
+class pyConfigList:
     def  __init__(self,*args,**kwargs):
        # self.start = kwargs['start'] or 0
        # self.end   = kwargs['end'] or None
@@ -144,7 +143,7 @@ def argshift(args,default):
 
     return value,remaining 
 
-class pyConfigDict(object):
+class pyConfigDict:
         
     def __init__(self, *args, **kwargs):
         self.persistent,args = argshift(args,True)

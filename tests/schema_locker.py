@@ -21,7 +21,6 @@
 """
 Tests for the MysteryMachine.Schema.Locker module
 """
-from __future__ import with_statement
 
 import logging
 
@@ -32,7 +31,7 @@ from mock.schema_top import *
 ## Ensure there is alogging handler
 logging.getLogger("").addHandler(logging.StreamHandler())
 
-class MockNode(object):
+class MockNode:
     def __init__(self,):
         self.in_write = False
         self.in_read = False

@@ -101,7 +101,7 @@ def GetPath(uri):
 
 class storeMeta(type):
     def __init__(self, name, bases, ns):
-        super(storeMeta, self).__init__(name,bases,ns)
+        super().__init__(name,bases,ns)
         if name != "Base":
             RegisterStore(self.uriScheme,self)
 

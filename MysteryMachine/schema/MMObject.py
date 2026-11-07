@@ -29,11 +29,9 @@ from MysteryMachine.schema.MMAttribute import *
 from MysteryMachine.schema.MMAttributeValue import  * 
 
 import MysteryMachine.Exceptions as Error
-import six
 import weakref
 import logging
 
-@six.python_2_unicode_compatible
 class MMObject (MMAttributeContainer):
 
   """
@@ -67,7 +65,7 @@ class MMObject (MMAttributeContainer):
     @return  :
     @author
     """
-    super(MMObject,self).__init__(self,**kwargs)
+    super().__init__(self,**kwargs)
 #    self.logger.debug( "Creating %s" % id)
     self.name = id
     #Ensure strong ref to owner.
@@ -181,8 +179,7 @@ class MMObject (MMAttributeContainer):
 
   @Reader
   def iterkeys(self):
-    for k in self.EnumAttributes(inc_parent=False,inc_hidden=False):
-        yield k
+    yield from self.EnumAttributes(inc_parent=False,inc_hidden=False)
 
 
   @Reader
@@ -278,7 +275,7 @@ class MMObject (MMAttributeContainer):
     #
     # Fall back to Schema ID if defname attribute doesnot exist
     try:
-        name = six.text_type(self[".defname"])
+        name = str(self[".defname"])
     except KeyError: name=self.get_nodeid()
     return self.parser.GetString(name,repr(self))
 
@@ -299,7 +296,7 @@ class MMObject (MMAttributeContainer):
       if self.is_deleted:
           self.get_root().store.DeleteObject(self.get_nodeid())
 
-      super(MMObject,self).writeback()
+      super().writeback()
 
   @staticmethod
   def delete_callback(system,name):

@@ -30,7 +30,6 @@ This base modules encapuslates the globals for the mystery machine
 system.
 """
 
-import six
 import sys
 import types
 import re
@@ -54,23 +53,8 @@ import types
 #Configuration details...
 defaults=dict()
 
-#Compatible with python 2.5,2.6 and 3.0+
 def _myCallable(obj):
-    import collections
-    try:
-        #Py3.0 doesn't have callable but collections.Callable replaces
-        #   it from 2.6
-        #
-
-        #work round a 2.6 bug (7624) in collections.Callable 
-        #which doesn't handle old style classes.
-        # - not entirely accurate but will have to do!.
-        if type(obj) is types.InstanceType: return False
-        
-        return isinstance(obj,collections.Callable)
-    except AttributeError:
-        #Py2.5 Doesn't have collections.Callable
-        return callable(obj)
+    return callable(obj)
 
 def set_mysterymachine_default(name,value):
     """
@@ -124,7 +108,7 @@ def _parse_options(args):
     Returns: opts(dict), args(list)
     """
     #Basic syntax regex for options.
-    option=re.compile("^-(([\w])|(-([\w]+)))[=\s]?([^\s]+)?")
+    option=re.compile(r"^-(([\w])|(-([\w]+)))[=\s]?([^\s]+)?")
 
     #Setup initial 'state'
     state=None
@@ -174,13 +158,13 @@ class _SingletonWithExternalLocking(type):
     An internal singleton metaclass 
     """
     def __init__(self, name, bases, dict):
-        super(_SingletonWithExternalLocking, self).__init__(name, bases, dict)
+        super().__init__(name, bases, dict)
         self.instance = None
         self.mutex = threading.Lock()
  
     def __call__(self, *args, **kw):
         if self.instance is None:
-            self.instance = super(_SingletonWithExternalLocking, self).__call__(*args, **kw)
+            self.instance = super().__call__(*args, **kw)
         return self.instance
 
     def IsInstantiated(self):
@@ -201,7 +185,7 @@ class _SingletonWithExternalLocking(type):
         finally:
             self.mutex.release()
 
-class _LibraryContext(six.with_metaclass(_SingletonWithExternalLocking,object)):
+class _LibraryContext(metaclass=_SingletonWithExternalLocking):
 
     def __init__(self,args):
         ###DO all initialisation.
@@ -321,7 +305,7 @@ class _LibraryContext(six.with_metaclass(_SingletonWithExternalLocking,object)):
         self.logger.debug( "MM:cfg:fetching %s -> %s" % (name,val))
         #print "MM:cfg:fetching %s -> %s" % (name,val)
 
-        if isinstance(val,six.string_types):
+        if isinstance(val,str):
             #Go down the names list importing it all. 
             elements =  val.split(".")
             modname  =  val
@@ -398,7 +382,7 @@ class _LibraryContext(six.with_metaclass(_SingletonWithExternalLocking,object)):
         return MMSystem.Create(uri)            
 
 
-class StartApp(object):
+class StartApp:
     """
     Start up the main Mystery machine application.
 

@@ -52,14 +52,14 @@ def WriteFile(store,name,content):
      if store.supports_txn: store.commit_store_transaction()
 
 def ReadFile(store,name):
-     f = open(os.path.join(store.get_path(),name),"r")
+     f = open(os.path.join(store.get_path(),name))
      rv = f.read()
      f.close()
      return rv
 
 
 
-class scmTests(object):
+class scmTests:
     def testSCM(self):
         WriteFile(self.store,"test1","Test data")
         self.store.commit("commit msg")

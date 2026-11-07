@@ -25,7 +25,6 @@
 Tests for the MysteryMachine.ExtensionLib class
 """
 
-from __future__ import with_statement
 
 
 from MysteryMachine import *

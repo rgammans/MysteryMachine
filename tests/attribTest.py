@@ -25,14 +25,13 @@ from MysteryMachine.schema.MMAttributeValue import MMAttributeValue
 from MysteryMachine.schema.MMAttribute import * 
 from MysteryMachine import StartApp 
 import unittest
-import six
 
 NoneType = type(None)
 
 from mock.schema_top import *
 
 
-class DummyPart(object):
+class DummyPart:
     def __init__(self,x):
         self.x=x
     def get_value(self):
@@ -73,8 +72,7 @@ class container(MMAttributeContainer):
         self._invalidate_item(i)
 
     def __iter__(self):
-        for k in self.cache.keys():
-            yield k
+        yield from self.cache.keys()
     def get_parent(self):
         return self.parent
 
@@ -92,7 +90,7 @@ class attribTest(unittest.TestCase):
     def testCreate(self):
        p = fakeParent()
        attr=MMAttribute("document","test\n----\n\n\nA Message",p)
-       #sys.stderr.write(six.text_type(attr.get_raw_rst))
+       #sys.stderr.write(str(attr.get_raw_rst))
        self.assertEqual(attr.get_raw_rst(),"test\n----\n\n\nA Message")
        attr2 =MMAttribute("otherdoc",attr.get_value(),p)
        self.assertEqual(attr.get_value(),attr2.get_value())
@@ -130,14 +128,14 @@ class attribTest(unittest.TestCase):
 #       attr.set_value("diff")
 #       self.assertTrue(p.Updated())
 #       v1 = attr.get_value()
-#       self.assertEqual("diff",six.text_type(v1))
+#       self.assertEqual("diff",str(v1))
 
 
     def testNotify(self):
        def testexpect(obj):
             self.exception = None
             try:
-                self.assertEqual(six.text_type(obj) , self.val)
+                self.assertEqual(str(obj) , self.val)
             except Exception as e:
                 self.exception =e
 
@@ -170,14 +168,14 @@ class attribTest(unittest.TestCase):
         a = m._set_attr_item("name","str")
         self.assertEqual(type( a ) , MMAttribute )
         self.assertEqual(type( m._get_item("name",DummyPart,"Crap")) , MMAttribute )
-        self.assertEqual(six.text_type(a),"str")
+        self.assertEqual(str(a),"str")
         self.assertEqual( m._get_item("name",DummyPart,"Crap") , a )
         b = m._set_attr_item("name","no string")
         self.assertEqual(a,b)
         c = m._set_attr_item("notname","foo")
         self.assertNotEqual(b,c)
         b = m._set_attr_item("name",c)
-        self.assertEqual(six.text_type(a),"foo")
+        self.assertEqual(str(a),"foo")
     
     def testInheritance(self):
         parentobj = container()
@@ -195,15 +193,15 @@ class attribTest(unittest.TestCase):
         m = container()
         m["encoded"] = "String"
         self.assertRaises(UnicodeDecodeError,m._set_attr_item,"fake",b"Not ascii\xa5")
-        self.assertEqual(six.text_type(m["encoded"]),"String")
+        self.assertEqual(str(m["encoded"]),"String")
         self.assertRaises(KeyError,m.__getitem__,"fake")
-        self.assertEqual(six.text_type(m["encoded"]),"String")
+        self.assertEqual(str(m["encoded"]),"String")
 
     def testUnstorableCreate(self):
        m = container()
        attr=MMUnstorableAttribute("document","test\n----\n\n\nA Message",m)
        self.assertRaises(KeyError,m.__getitem__,"document")
-       #sys.stderr.write(six.text_type(attr.get_raw_rst))
+       #sys.stderr.write(str(attr.get_raw_rst))
        self.assertEqual(attr.get_raw_rst(),"test\n----\n\n\nA Message")
        attr2 =MMUnstorableAttribute("otherdoc",attr.get_value(),m)
        self.assertRaises(KeyError,m.__getitem__,"otherdoc")
@@ -221,13 +219,13 @@ class attribTest(unittest.TestCase):
         # but can be evaluated.
         a = MMUnstorableAttribute("name","str",obj)
         self.assertRaises(KeyError,obj.__getitem__,"name" )
-        self.assertEqual(six.text_type(a),"str")
+        self.assertEqual(str(a),"str")
         
 
         #Check set_value changes our attribute without modify it's claimed container.
         a.set_value("a different string")
         self.assertRaises(KeyError,obj.__getitem__,"name" )
-        self.assertEqual(six.text_type(a),"a different string")
+        self.assertEqual(str(a),"a different string")
 
 
 def getTestNames():

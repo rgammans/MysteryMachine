@@ -23,7 +23,6 @@ import functools
 
 from widgets import  NotifyClosure
 from MysteryMachine.Ui.wx import event_handler
-import six
 
 import logging
 logger = logging.getLogger(__name__)
@@ -61,7 +60,7 @@ _Factory["null"] = _null
 
 class MysterySchemaValidatorBase(wx.PyValidator):
     def __init__(self,*args,**kwargs):
-        super(MysterySchemaValidatorBase,self).__init__(*args)
+        super().__init__(*args)
         self.attribute = kwargs.get('attribute')
 
         self.notify = NotifyClosure(self,self.notifychange)
@@ -82,12 +81,12 @@ class MysterySchemaValidatorBase(wx.PyValidator):
 
 class BasicMMAttributeValidator(MysterySchemaValidatorBase):
     def __init__(self,*args,**kwargs):
-        super(BasicMMAttributeValidator,self).__init__(*args,**kwargs)
+        super().__init__(*args,**kwargs)
 
 
     @event_handler(level = logging.ERROR, debug_tb  =True)
     def TransferToWindow(self):
-        self.GetWindow().SetValue(six.text_type(self.attribute.get_raw()))
+        self.GetWindow().SetValue(str(self.attribute.get_raw()))
         return True 
 
     @event_handler(level = logging.ERROR, debug_tb  =True)    
@@ -134,7 +133,7 @@ class _listitem_wx_widget(wx.Panel):
     ID_DELETE = wx.NewId()
     ID_INSERT = wx.NewId()
     def __init__(self,parent,item,index):
-        super(_listitem_wx_widget,self).__init__(parent,-1)
+        super().__init__(parent,-1)
         self.item = item
         self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -177,7 +176,7 @@ class _listitem_wx_widget(wx.Panel):
 class _list_wx_widget(wx.Panel):
     ID_APPENDBUTTON = wx.NewId()
     def __init__(self,parent,attribute):
-        super(_list_wx_widget,self).__init__(parent,-1)
+        super().__init__(parent,-1)
         self.attribute = attribute
         self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -199,7 +198,7 @@ class _list_wx_widget(wx.Panel):
         #Use list comprehension to copy elements into a list
         # - ignore the first (append button) element of the list display objects
         display_items = [ x.GetWindow() for x in sizer.GetChildren()][1:]
-        index_elements = [x for x in self.attribute]
+        index_elements = [*self.attribute]
 
         element = _pop(index_elements)
         child   = _pop(display_items)
@@ -246,11 +245,11 @@ _Factory["list"]      = _list_wx_widget
 
 class MMRefAttributeValidator(MysterySchemaValidatorBase):
     def __init__(self,*args,**kwargs):
-        super(MMRefAttributeValidator,self).__init__(*args,**kwargs)
+        super().__init__(*args,**kwargs)
 
     @event_handler(level = logging.ERROR, debug_tb  =True)
     def TransferToWindow(self):
-        self.GetWindow().SetLabel(u"Reference to " + six.text_type(self.attribute.getSelf()))
+        self.GetWindow().SetLabel("Reference to " + str(self.attribute.getSelf()))
         self.GetWindow().GetParent().Layout()
         return True 
 
@@ -266,7 +265,7 @@ class _ref_wx_widget(wx.Panel):
     ID_EXPANDBUTTON = wx.NewId()
 
     def __init__(self,parent,attribute):
-        super(_ref_wx_widget,self).__init__(parent,wx.ID_ANY)
+        super().__init__(parent,wx.ID_ANY)
         self.attribute = attribute  
         self.sizer     = None
         self.buildUI()
@@ -336,7 +335,7 @@ _Factory["ref"]      = _ref_wx_widget
 
 class BidiAnchorValidator(MysterySchemaValidatorBase):
     def __init__(self,*args,**kwargs):
-        super(BidiAnchorValidator,self).__init__(*args,**kwargs)
+        super().__init__(*args,**kwargs)
 
     @event_handler(level = logging.ERROR, debug_tb  =True)
     def TransferToWindow(self):
@@ -364,7 +363,7 @@ class BidiDestValidator(MMRefAttributeValidator):
 
     @event_handler(level = logging.ERROR, debug_tb  =True)
     def TransferToWindow(self):
-        super(BidiDestValidator,self).TransferToWindow()
+        super().TransferToWindow()
         #Disable the anchor movement of the reference is set.
         self.GetWindow().GetParent().anchors.Enable(self.attribute.get_object() is None)
 
@@ -377,7 +376,7 @@ class BidiDestValidator(MMRefAttributeValidator):
 class _bidi_wx_widget(_ref_wx_widget):
     ID_ANCHORCHOICE = wx.NewId()
     def __init__(self,parent,attribute):
-        super(_bidi_wx_widget,self).__init__(parent,attribute)
+        super().__init__(parent,attribute)
         #sizer = self.GetSizer()
 
     def buildUI(self):
@@ -392,7 +391,7 @@ class _bidi_wx_widget(_ref_wx_widget):
         wx.EVT_CHOICE(self,self.__class__.ID_ANCHORCHOICE,functools.partial(_writeback,self.anchors))
         anchorsizer.Add(wx.StaticText(self,wx.ID_ANY,"Anchor:"))
         anchorsizer.Add(self.anchors)
-        super(_bidi_wx_widget,self).buildUI()
+        super().buildUI()
         #Change validator for the link dest for one that know how to update Bidi attr's 
         self.label.SetValidator(BidiDestValidator( attribute = self.attribute))
         

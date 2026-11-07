@@ -364,10 +364,10 @@ class DlinkTestsNoGC(DlinkTests):
     def setUp(self):
         self._gc_was_enabled = gc.isenabled()
         gc.disable()
-        super(DlinkTestsNoGC,self).setUp()
+        super().setUp()
 
     def tearDown(self):
-        super(DlinkTestsNoGC,self).tearDown()
+        super().tearDown()
         if self._gc_was_enabled: gc.enable()
         gc.collect()
 
@@ -378,10 +378,10 @@ class DlinkTestsEagerGC(DlinkTests):
     def setUp(self):
         self._gc_threshold = gc.get_threshold()
         gc.set_threshold(1,1,1)
-        super(DlinkTestsEagerGC,self).setUp()
+        super().setUp()
 
     def tearDown(self):
-        super(DlinkTestsEagerGC,self).tearDown()
+        super().tearDown()
         gc.set_threshold(*self._gc_threshold)
 
 

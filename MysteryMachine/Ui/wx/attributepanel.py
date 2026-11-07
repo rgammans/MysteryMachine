@@ -36,7 +36,7 @@ ID_CONTENT        = wx.NewId()
 
 class AttributePanel(wx.Panel):
     def __init__(self,parent,attribute):
-        super(AttributePanel,self).__init__(parent,-1,wx.DefaultPosition,wx.Size(0,0))
+        super().__init__(parent,-1,wx.DefaultPosition,wx.Size(0,0))
         self.attribute = attribute
         self.buildUi()
         self.TransferDataToWindow()

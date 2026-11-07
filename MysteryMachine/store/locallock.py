@@ -34,7 +34,7 @@ for use by the lock manager.
 
 
 
-class lock(object):
+class lock:
     classlock = threading.Lock()
     def __init__(self):
         self._ = None
@@ -49,7 +49,7 @@ class lock(object):
     def __del__(self):
         assert self._ and not self._.held() , "Lock deleted while held"
 
-class LocalLocks(object):
+class LocalLocks:
     """A local manager for simple in-process only locks
 
     

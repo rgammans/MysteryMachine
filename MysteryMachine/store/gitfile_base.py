@@ -30,7 +30,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class GitStoreMixin(object):
+class GitStoreMixin:
     """
     This class is a mixin which provide the SCM related functions require for a MysteryMachine
     store class.

@@ -66,7 +66,6 @@ SystemErrors = tuple(SystemErrors)
 TxF_Enabled = True
 
 
-import six
 import threading
 import time
 import os
@@ -104,7 +103,7 @@ except AttributeError:
 def start_new_thread( func, args ,kwargs = None):
     threading.Thread(target = func, args =args,kwargs = kwargs).start()
 
-class directory(object):
+class directory:
     """A class for directory which provides fileno() method so direcories can be fsync,
     and handed the same as file in lists of things to call fsync on."""
     def __init__(self,path):
@@ -125,12 +124,12 @@ _operation_type_map = { }
 
 class _OperationMeta(type):
     def __init__(self,name,bases,ns):
-        super(_OperationMeta,self).__init__(name,bases,ns)
+        super().__init__(name,bases,ns)
         if name != 'Tranasction': 
             _operation_type_map[self.operation_type] = self
 
 #__metaclass__ = _OperationMeta
-class JournaledOperation(six.with_metaclass(_OperationMeta,object)):
+class JournaledOperation(metaclass=_OperationMeta):
     """An base class for Transaction objects.
 
        Each record in our Transction log should be a record discribing
@@ -235,10 +234,7 @@ class JournaledOperation(six.with_metaclass(_OperationMeta,object)):
         return _operation_type_map[operation_type].load(opid,data, recovery_mode = recovery_mode)
 
     def __str__(self,):
-        if six.PY2:
-            return self.__bytes__()
-        else:
-            return str(bytes(self))
+        return str(bytes(self))
 
 
 class CheckpointOperation(JournaledOperation):
@@ -252,18 +248,18 @@ class CheckpointOperation(JournaledOperation):
 
     def __init__(self,*args,**kwargs):
         self.chkpoint_id =  args[0]
-        super(CheckpointOperation,self).__init__(*(args[1:]),**kwargs)
+        super().__init__(*(args[1:]),**kwargs)
 
     def _do(self,):
         return
 
     def __bytes__(self,):
-        v = super(CheckpointOperation,self).__bytes__()
+        v = super().__bytes__()
         v += str(self.chkpoint_id) +'\0'
         return v
 
     def __len__(self,):
-        v = super(CheckpointOperation,self).__len__() + 1
+        v = super().__len__() + 1
         v += len(str(self.chkpoint_id))
         return v
 
@@ -283,10 +279,10 @@ class ReplaceAll_Operation(JournaledOperation):
         #Placeholder for future expansion.
         self.content = args[1]
         self.target = args[0]
-        if type(self.content) is not six.binary_type:
+        if type(self.content) is not bytes:
             raise TypeError("File contents must be a byte stream")
 
-        super(ReplaceAll_Operation,self).__init__(*(args[2:]),**kwargs)
+        super().__init__(*(args[2:]),**kwargs)
         self.fobj    = None
 
     def _do(self,):
@@ -314,7 +310,7 @@ class ReplaceAll_Operation(JournaledOperation):
         
 
     def __bytes__(self,):
-        v = super( ReplaceAll_Operation ,self).__bytes__()
+        v = super().__bytes__()
         length = len(self.content) + len(self.target) + 1
         v += (str(length).encode('ascii') + b'\0')
         v += (self.target.encode('ascii') + b'\0')
@@ -342,16 +338,16 @@ class SingleDentry_Operation(JournaledOperation):
     def __init__(self,*args,**kwargs):
         #Placeholder for future expansion.
         self.target = os.path.normpath(args[0])
-        super(SingleDentry_Operation,self).__init__(*(args[1:]),**kwargs)
+        super().__init__(*(args[1:]),**kwargs)
         self.fobj    = None
 
     def __bytes__(self,):
-        v = super( SingleDentry_Operation ,self).__bytes__()
+        v = super().__bytes__()
         v += (self.target.encode('ascii') + b'\0')
         return v
 
     def __len__(self,):
-        v = super( SingleDentry_Operation ,self).__len__()
+        v = super().__len__()
         v += len(str(self.target) ) + 1
         return v
  
@@ -428,24 +424,24 @@ class CreateDir_Operation(SingleDentry_Operation):
         state.add_dir(self.target)
  
 
-class GenericTxOperation(object):
+class GenericTxOperation:
     """Mixin class to provide for transaction/start end markers."""
     
     def __init__(self,*args,**kwargs):
         modlogger.debug( "creating :%s"%object.__repr__(self))
         self.txn_id =  args[0]
-        super(GenericTxOperation,self).__init__(*(args[1:]),**kwargs)
+        super().__init__(*(args[1:]),**kwargs)
 
     def _do(self,):
         return
 
     def __bytes__(self,):
-        v = super(GenericTxOperation ,self).__bytes__()
+        v = super().__bytes__()
         v += str(self.txn_id).encode('ascii') +b'\0'
         return v
 
     def __len__(self,):
-        v = super(GenericTxOperation ,self).__len__() + 1
+        v = super().__len__() + 1
         v += len(str(self.txn_id))
         return v
 
@@ -483,12 +479,8 @@ class AbortTxOperation(GenericTxOperation,JournaledOperation):
 # vary between the to branches of python.
 #
 
-if six.PY2:
-    FIELD_DELIMITER = b'\0'
-    field_ctor = lambda x:b''.join(x)
-else:
-    FIELD_DELIMITER = 0
-    field_ctor = bytes
+FIELD_DELIMITER = 0
+field_ctor = bytes
 
 #Helper functions for parsign the logfile.
 def _read_delimited_field(d):
@@ -511,7 +503,7 @@ def _read_fixedlength(d,n):
     return field_ctor(map(_get,range(n)))
 
 
-class Dentry(object):
+class Dentry:
     def __init__(self,name,dtype, contents = None):
         self.name = name
         self.dtype = dtype
@@ -535,7 +527,7 @@ def _parent(pathname):
     pathname = os.path.dirname(pathname)
     return os.path.normpath(pathname)
 
-class LazyFSMap(object):
+class LazyFSMap:
     def __init__(self,home):
         self.home = home
         self.mymap = {}
@@ -648,7 +640,7 @@ class LazyFSMap(object):
         tdir = self[name]
         return len(tdir.contents)
 
-class Transaction(object):
+class Transaction:
     """A Transaction is a group of operations which either are all in the 
     store or none are.
 
@@ -711,7 +703,7 @@ class Transaction(object):
         self.state[name] = f
 
 
-class LogIterator(object):
+class LogIterator:
     def __init__(self,f):
         self.f = f
         self.dataptr = 0
@@ -753,7 +745,7 @@ class LogIterator(object):
         """Discard the top entry from the stack of saved file pointers."""
         self.stack.pop() 
 
-class stream_context(object):
+class stream_context:
     def __init__(self,f):
         self.f = f
 
@@ -768,7 +760,7 @@ class stream_context(object):
         return False
 
 
-class LogFile(object):
+class LogFile:
     """A LogFile is an append only file which 
         contains a sequence of transactions.
 
@@ -845,7 +837,7 @@ class LogFile(object):
                   raise RuntimeError("Cannot append to a closing logfile.")
 
             self.not_complete.append(op.opid)
-        self.fd.write(six.binary_type(op))
+        self.fd.write(bytes(op))
         self._write_terminator()
  
         op.set_callback(self._mark_xcompleted)
@@ -925,7 +917,7 @@ def _getid(op):
         r = op.opid
     return r
 
-class FileLoggerSimpleFS(object):
+class FileLoggerSimpleFS:
     def __init__(self, directory ,**kwargs ):
         """ Create a new controller object for our simplistic TxF implementation
 
@@ -1256,7 +1248,7 @@ class FileLoggerSimpleFS(object):
 
 
 
-class FileLoggerTxF(object):
+class FileLoggerTxF:
     def __init__(self,directory,*args,**kwargs):
         self.home = directory
         self.readonly = kwargs.get('readonly',False)

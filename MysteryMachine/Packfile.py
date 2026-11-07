@@ -77,13 +77,13 @@ def GetStoreBases(line,flags):
     *** UNTESTED CODE ***
     """
     rv = []
-    line = re.sub("^\s+","",line)
-    line = re.sub("\s+$","",line)
+    line = re.sub(r"^\s+","",line)
+    line = re.sub(r"\s+$","",line)
     modlogger.debug("basespec line %s",line )
  
     #TODO: Error reporting - this command is untrusted remember
     try:
-        schemename,req_version = re.split('\s+',line)
+        schemename,req_version = re.split(r'\s+',line)
     except ValueError as e:
         raise Exceptions.CoreError("Invalid schema spec at line %i (error:%s)"%(flags['line_nr'],e.message))
         
@@ -116,12 +116,12 @@ def LoadFormat1(workdir,formatfile,startup_flags = {} ):
     startup_flags['line_nr'] = 0
     for desc in formatDescriptors:
         startup_flags['line_nr']+=1
-        desc = re.sub("^\s+","",desc)
-        desc = re.sub("\s+$","",desc)
+        desc = re.sub(r"^\s+","",desc)
+        desc = re.sub(r"\s+$","",desc)
         modlogger.debug("spec line %s",desc )
         if len(desc) == 0:
             continue
-        desctype,line = re.split('\s+',desc,maxsplit=1)
+        desctype,line = re.split(r'\s+',desc,maxsplit=1)
         _processFormatLine(desctype,line,startup_flags)
         #print startup_flags
     
@@ -149,11 +149,11 @@ def OpenPackFile(filename):
     # but that has been deprecated in favour of a more complex .format file.
     try:
         formatfile = open(os.path.join(workdir,".format"))
-    except IOError as e:
+    except OSError as e:
         try:
             modlogger.debug("Loader cant find .format, falling back to .formatver")
             formatfile = open(os.path.join(workdir,".formatver"))
-        except IOError as e2:
+        except OSError as e2:
             raise (e2 , e)
 
     version = VersionNr(formatfile.readline())

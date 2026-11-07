@@ -18,7 +18,6 @@
 #
 # 
 
-import six
 import re
 import MysteryMachine.policies
 from MysteryMachine.store import *
@@ -87,7 +86,7 @@ class filestore(Base):
     uriScheme = "attrfile"
     supports_txn = True
 
-    invalidobj = re.compile("^\.")
+    invalidobj = re.compile(r"^\.")
 
     @staticmethod
     def GetCanonicalUri(uri):
@@ -175,7 +174,7 @@ class filestore(Base):
         except OSError as e:
             #Ignore Directory already exists errors .
             if e.errno != errno.EEXIST: raise
-        except WindowsError as e:
+        except OSError as e:
             #Ignore Directory already exists errors .
             if e.errno != 183: raise
         else:
@@ -284,7 +283,7 @@ class filestore(Base):
         attrkey = tuple(pathparts)
         self.newattr[attrkey] = []
         for partname,value in parts.items():
-            if not isinstance(value,six.binary_type): 
+            if not isinstance(value,bytes): 
                 raise StoreApiViolation("%s has part %s of type %s (value:'%r')"%(attr,partname,type(value),value))
             filename = "%s.%s.%s" % (filename_base,attrtype,partname)
             self.tlog.Add_File(self.tx,filename,value)

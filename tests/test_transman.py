@@ -21,7 +21,6 @@
 Tests for the MysteryMachine TransactionManager
 """
 
-from __future__ import with_statement
 
 from MysteryMachine.schema.TransactionManager import * 
 from MysteryMachine.schema.Locker import * 
@@ -37,7 +36,7 @@ def start_new_thread( func, args ,kwargs = None):
 class TestError(Exception):
     pass
 
-class RootNode(object):
+class RootNode:
      def __init__(self,tm,store):
         self.store = store
         self.tm    = tm
@@ -50,7 +49,7 @@ class RootNode(object):
         return self.tm.lm
 
 
-class Node(object):
+class Node:
     def __init__(self,root):
         self.in_write = False
         self.in_read = False

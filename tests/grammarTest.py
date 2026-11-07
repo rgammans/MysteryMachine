@@ -64,7 +64,7 @@ def helper(parser,input):
         rv += item 
     return rv
 
-class DummyAttribute(object):
+class DummyAttribute:
     def getSelf(self): return None
 
 class GraamarTest(unittest.TestCase):

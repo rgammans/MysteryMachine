@@ -20,7 +20,7 @@ _storeClasses =  { 'hg_store'   : MysteryMachine.store.hgfile_store.HgStoreMixin
 class Core(Extension):
     def __init__(self):
         global _storeClasses
-        super(Core,self).__init__()
+        super().__init__()
         self.logger = logging.getLogger("MysteryMachine.Extensions.Core")
         #Bring globals into our namespace - to ensure they have a ref.
         self._storeClasses = _storeClasses

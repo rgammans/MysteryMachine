@@ -52,7 +52,7 @@ class PluginLoadError(ImportError):
     pass
 
 
-class PluginManager(object):
+class PluginManager:
     """
     Locates and loads plugins. Every plugin found is trusted.
     """
@@ -158,7 +158,7 @@ class TrustedPluginManager(PluginManager):
     the first mapping.
     """
     def __init__(self, directories, trust_list, plugin_info_ext=PLUGIN_INFO_EXT):
-        super(TrustedPluginManager, self).__init__(directories, plugin_info_ext)
+        super().__init__(directories, plugin_info_ext)
         self.trust_list = trust_list
 
     def is_trusted(self, info):

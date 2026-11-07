@@ -23,7 +23,6 @@ in here handle things which interact more completey with the
 Global environment.
 """
 
-from __future__ import with_statement
 
 from MysteryMachine.schema.MMSystem import MMSystem
 from MysteryMachine import *

@@ -38,7 +38,6 @@ import MysteryMachine.Exceptions as Error
 import MysteryMachine.store.locallock
 
 from .Globals import *
-import six
 import re
 import time
 import weakref
@@ -55,7 +54,6 @@ def find_n_ancestor(obj,dist):
     for i in range(dist): obj = obj.get_ancestor()
     return obj 
 
-@six.python_2_unicode_compatible
 class MMSystem (MMAttributeContainer):
 
   """
@@ -90,7 +88,7 @@ class MMSystem (MMAttributeContainer):
     @return  :
     @author
     """
-    super(MMSystem,self).__init__(self,store,new)
+    super().__init__(self,store,new)
     self.store  = store
     self.policies = None #FIXME: what should this be?
     #Add back link to store - call as set in store.Base?
@@ -388,7 +386,7 @@ class MMSystem (MMAttributeContainer):
         attribute = MakeAttributeValue(*(self.store.GetAttribute(".defname")))
         if hasattr(attribute,"_compose"):
             attribute._compose(self)
-        return six.text_type(attribute)
+        return str(attribute)
     return None
 
   def _make_encoding(encoding):
@@ -531,11 +529,10 @@ class MMSystem (MMAttributeContainer):
         self.store = None
         self.tm = None
 
-@six.python_2_unicode_compatible
 class MMCategory(MMAttributeContainer):
 
     def __init__(self,owner,name,**kwargs):
-        super(MMCategory,self).__init__(self,owner,name,**kwargs)
+        super().__init__(self,owner,name,**kwargs)
         self.owner = owner
         self.name   = name
         self.logger = logging.getLogger("MysteryMachine.schema.MMCategory")
@@ -577,8 +574,7 @@ class MMCategory(MMAttributeContainer):
 
     @Reader
     def EnumObjects(self,):
-        for x in self.owner.EnumObjects(self.name):
-            yield x
+        yield from self.owner.EnumObjects(self.name)
 
     @Writer
     def __setitem__(self,item,value):
@@ -649,8 +645,7 @@ class MMCategory(MMAttributeContainer):
     iteritems = items
 
     def keys(self):
-       for objkey in self.EnumObjects():
-           yield objkey 
+       yield from self.EnumObjects()
 
     iterkeys = keys
     def get_parent(self):
@@ -669,7 +664,7 @@ class MMCategory(MMAttributeContainer):
         if self.is_deleted:
             self.owner.store.DeleteCategory(repr(self))
 
-        super(MMCategory,self).writeback()
+        super().writeback()
 
     @staticmethod
     def delete_callback(system,name):

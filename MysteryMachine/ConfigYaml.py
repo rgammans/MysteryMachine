@@ -42,7 +42,7 @@ def argshift(args,default):
 
 
 
-class ConfigYaml(object):
+class ConfigYaml:
     def __init__(self,*args,**kwargs):
         self.persistent,args = argshift(args,True)
         self.readonly ,args = argshift(args,False)
@@ -71,8 +71,7 @@ class ConfigYaml(object):
         return self.cfg[k]
 
     def __iter__(self):
-        for i in self.cfg:
-            yield i
+        yield from self.cfg
  
     def testmode(self):
         self.persistent=False
@@ -81,9 +80,9 @@ class ConfigYaml(object):
     def read(self,filename):
         self.filename=filename
         try:
-            with open(self.filename,"r") as f:
+            with open(self.filename) as f:
                 self.cfg = yaml.safe_load(f)
-        except IOError as e:
+        except OSError as e:
             self.logger.debug(str(e))
             self.logger.warning("Using empty config")
             self.cfg = { }

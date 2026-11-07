@@ -51,7 +51,7 @@ modlogger = logging.getLogger("MysteryMachine.schema.Locker")
 
 
 
-class GenericLock(object):
+class GenericLock:
     """A context manager type object for handling write locking"""
     def __init__(self,n,locktype):
         self.node = n
@@ -79,12 +79,12 @@ class GenericLock(object):
 class WriteLock(GenericLock):
     """A write locking context manager"""
     def __init__(self,n):
-        super(WriteLock,self).__init__(n,"write")
+        super().__init__(n,"write")
 
 class ReadLock(GenericLock):
     """A read locking context manager"""
     def __init__(self,n):
-        super(ReadLock,self).__init__(n,"read")
+        super().__init__(n,"read")
 
 
 def Locker(locktype,arg):

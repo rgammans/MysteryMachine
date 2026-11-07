@@ -28,14 +28,14 @@ import itertools
 import hglib
 import hglib.client
 
-class HgStoreMixin(object):
+class HgStoreMixin:
     """
     This class is a mixin which provide the SCM related functions require for a MysteryMachine
     store class.
     """
 
     def __init__(self,*args,**kwargs):
-        super(HgStoreMixin,self).__init__(*args,**kwargs)
+        super().__init__(*args,**kwargs)
         if kwargs.get('create',None):
             hglib.init(self.get_path(),encoding="utf-8")
         
@@ -44,14 +44,14 @@ class HgStoreMixin(object):
         
     def start_store_transaction(self,):
         self.filechanges = []
-        super(HgStoreMixin,self).start_store_transaction()
+        super().start_store_transaction()
 
     def abort_store_transaction(self,):
         self.filechanges = []
-        super(HgStoreMixin,self).abort_store_transaction()
+        super().abort_store_transaction()
 
     def commit_store_transaction(self,):
-        super(HgStoreMixin,self).commit_store_transaction()
+        super().commit_store_transaction()
         for op,filename in self.filechanges:
             if   op == "a":  self._Add_file(filename)
             elif op == "r":  self._Remove_file(filename)
@@ -130,7 +130,7 @@ class HgStoreMixin(object):
         if not kwargs.get("deleted"):
             significant_status += b"R"
 
-        return all( (x[0] not in significant_status for x in self.repo.status() ) )
+        return all( x[0] not in significant_status for x in self.repo.status()  )
 
     def clean(self,*args,**kwargs):
         """
@@ -140,7 +140,7 @@ class HgStoreMixin(object):
                     otherwise we just delete files in the hg manifest.
         """
         #Force the main store to remove any tempfiles
-        mysuper = super(HgStoreMixin,self)
+        mysuper = super()
         if hasattr(mysuper,"clean"):
             mysuper.clean(*args,**kwargs)
         if not self.uptodate():

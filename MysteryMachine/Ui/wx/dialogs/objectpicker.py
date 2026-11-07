@@ -55,7 +55,7 @@ class ObjectPicker(wx.Dialog):
         self.action = _get_argument('action',kwargs)
 
         _apply_default('size',(400,400),kwargs)
-        super(ObjectPicker,self).__init__(parent,id,**kwargs)
+        super().__init__(parent,id,**kwargs)
 
         self.BuildUi()
         self.value = None

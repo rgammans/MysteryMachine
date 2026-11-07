@@ -33,7 +33,6 @@ import types
 import operator
 import copy as _copy
 import codecs
-import six
 
 AttrTypes = dict()
 TypeLookup = dict()
@@ -158,7 +157,7 @@ def FindBestValueType(atype):
 
 class _AttrMeta(type):
    def __init__( self, name , bases, ns):
-        super( _AttrMeta , self).__init__(name,bases,ns)
+        super().__init__(name,bases,ns)
         if name != "MMAttributeValue":
             register_value_type(self.typename,self,self.contain_prefs)
     
@@ -168,8 +167,7 @@ class Error():
 
 
 #__metaclass__ = _AttrMeta
-@six.python_2_unicode_compatible
-class MMAttributeValue (six.with_metaclass(_AttrMeta,SchemaCommon) ):
+class MMAttributeValue (SchemaCommon, metaclass=_AttrMeta ):
   """
    This is the base class of MMAtributes actual value. Each 'type' of Attribure
    should have it's own speciallisation of this class. It is through this object
@@ -237,7 +235,7 @@ class MMAttributeValue (six.with_metaclass(_AttrMeta,SchemaCommon) ):
     else:
         # Round trip through the unicode escape codec to map any 
         #non-ascii characters
-        raw = six.text_type(self.get_raw(), "unicode_escape")
+        raw = str(self.get_raw(), "unicode_escape")
         rawlist = raw.split("\n")
         raw = b""
         for ele in rawlist:
@@ -246,7 +244,7 @@ class MMAttributeValue (six.with_metaclass(_AttrMeta,SchemaCommon) ):
         raw = raw[:-1]
         encoding = 'ascii'
 
-    return six.text_type(raw,encoding)
+    return str(raw,encoding)
 
   def get_raw(self, obj = None):
     """
@@ -359,7 +357,7 @@ class MMAttributeValue_BasicText(MMAttributeValue):
     This type is appropriate for String values.
     """
     typename      = "simple"
-    contain_prefs = { six.binary_type: 100 }
+    contain_prefs = { bytes: 100 }
 
 
     def __init__(self,*args,**kwargs):
@@ -370,7 +368,7 @@ class MMAttributeValue_BasicText(MMAttributeValue):
         MMAttributeValue.__init__(self,*args,**kwargs)
         #Get passed in value.
         if self.value is not None:
-            self.parts["txt"] = six.binary_type(self.value)
+            self.parts["txt"] = bytes(self.value)
 
     def _compose(self,obj):
         if obj is not None:
@@ -380,7 +378,6 @@ class MMAttributeValue_BasicText(MMAttributeValue):
             # will rasise an exception we will propagate if not decodeable.
             decode(self.parts["txt"])
 
-@six.python_2_unicode_compatible
 class MMAttributeValue_UnicodeText(MMAttributeValue):
     """
     A single Macro part value type.
@@ -389,7 +386,7 @@ class MMAttributeValue_UnicodeText(MMAttributeValue):
     returns unicode as an appropriate type and stores in values in utf8
     """
     typename      = "simple_utf8"
-    contain_prefs = { six.text_type: 120 }
+    contain_prefs = { str: 120 }
 
 
     def __init__(self,*args,**kwargs):
@@ -415,7 +412,7 @@ class MMAttributeValue_UnicodeText(MMAttributeValue):
 
         :returns str/unicode:
         """
-        return six.text_type(self.get_raw(obj),"utf8")
+        return str(self.get_raw(obj),"utf8")
 
     def _compose(self,obj):
         pass
@@ -433,7 +430,7 @@ class MMAttributeValue_MMRef(MMAttributeValue):
         parts = kwargs.get("parts")
         if not parts:
             kwargs["parts"] = {'obj':b''}
-        super(MMAttributeValue_MMRef, self).__init__(*args,**kwargs)
+        super().__init__(*args,**kwargs)
         if isinstance(self.value,MMBase):
             #Get string represenation of the object.
             #TODO Store object here so it cached.
@@ -470,7 +467,7 @@ class MMAttributeValue_MMRef(MMAttributeValue):
         # we need it to no longer be a bytes object ( in py3)
         # Utf8 is in py3 our standard encoding althogu
         # thi should ahve now non-ascii codes.
-        pstr = six.text_type(self.get_raw(obj),'utf8')
+        pstr = str(self.get_raw(obj),'utf8')
 
         #Special case answer.
         if pstr == "": return obj.get_root() 
@@ -483,7 +480,7 @@ class MMAttributeValue_MMRef(MMAttributeValue):
         return objref
 
     def get_raw_rst(self,obj = None):
-        pstr = six.text_type(self.get_raw(obj),'utf8')
+        pstr = str(self.get_raw(obj),'utf8')
         return ":mm:`"+  pstr + "`"
 
 
@@ -499,7 +496,7 @@ class MMNullReferenceValue(MMAttributeValue):
     contain_prefs = { None: 100 }
 
     def __init__(self,*args,**kwargs):
-        super(MMNullReferenceValue, self).__init__(*args,**kwargs)
+        super().__init__(*args,**kwargs)
         self.parts = { 'value' : b'' } 
             
         self.exports += [ "get_object" ]
@@ -517,7 +514,6 @@ class MMNullReferenceValue(MMAttributeValue):
     def get_raw_rst(self,obj = None):
         return ""
 
-@six.python_2_unicode_compatible
 class ShadowAttributeValue(MMAttributeValue):
     
     """
@@ -543,7 +539,7 @@ class ShadowAttributeValue(MMAttributeValue):
     contain_prefs = { }
 
     def __init__(self,*args,**kwargs):
-        super(ShadowAttributeValue, self).__init__(*args,**kwargs)
+        super().__init__(*args,**kwargs)
         self.obj       = kwargs.get("object",None)
         self.attrname  = kwargs.get("attrname","")
         self.exports   = self._get_target().exports
@@ -592,7 +588,7 @@ class ShadowAttributeValue(MMAttributeValue):
         return _copy.copy(self._get_target())
 
     def __str__(self):
-        return six.text_type(self._get_target())
+        return str(self._get_target())
         
     def get_raw_rst(self, obj = None):
         self.logger.debug("%s[%s].raw_rst ( obj = %s ) "% (  repr(self.obj), self.attrname , repr(obj) ))

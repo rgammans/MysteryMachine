@@ -76,8 +76,8 @@ def _noop(uri):
     return None
 
 class OpenUriDialog(wx.Dialog):
-    def __init__(self,parent,id, title = "Open from a URI", caption =u"Chose URI to open", action = _noop ):
-        super(OpenUriDialog,self).__init__(parent,id,title)
+    def __init__(self,parent,id, title = "Open from a URI", caption ="Chose URI to open", action = _noop ):
+        super().__init__(parent,id,title)
         self.action = action
         outersizer=wx.StaticBoxSizer(wx.StaticBox(self,1,caption),  wx.VERTICAL)
         sizer=wx.BoxSizer(  wx.HORIZONTAL)
@@ -388,7 +388,7 @@ class MMWxApp(wx.App):
     def __init__(self,**kwargs):
         self.args = kwargs.pop('options',[])
         self.ctx  = None
-        super( MMWxApp ,self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def OnInit(self,):
         self.SetVendorName("Roger Gammans")

@@ -25,7 +25,6 @@
 import weakref
 import re
 import binascii
-import six
 
 import logging
 
@@ -51,7 +50,7 @@ def UnEscapeSystemUri(uri):
         return  binascii.unhexlify(match.group(1))
     #Uri % percent generate utf-8 sequences; so convert to utf; 
     # do replacement as  bytes anc covnert back again
-    return six.text_type(
+    return str(
         re.sub(b"%([0-9a-fA-F]{2})", # Find %encoded bytes
                   findChar,             # Turn them into byteschars
                   uri.encode('utf-8')   # Process passed in data as utf

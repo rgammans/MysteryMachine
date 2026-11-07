@@ -391,8 +391,7 @@ class obj_storeproxy:
         return self.store.DelAttribute(self.obj + ":" +attr)
 
     def EnumAttributes(self):
-        for a in self.store.EnumAttributes(self.obj):
-            yield a
+        yield from self.store.EnumAttributes(self.obj)
 
     def HasAttribute(self,attr):
         return self.store.HasAttribute(self.obj + ":" +attr)

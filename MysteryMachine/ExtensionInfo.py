@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 EXTENSION_POINT_SECTION_NAME="ExtensionPoints"
 
-class ExtensionInfo(object):
+class ExtensionInfo:
 
   """
   The description of a plugin, read from its .mm-plugin file, and

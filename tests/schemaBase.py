@@ -21,7 +21,6 @@
 Tests for the MysteryMachine.schema MMBase class
 """
 
-from __future__ import with_statement
 
 from MysteryMachine.schema.MMBase import *
 from MysteryMachine import *
@@ -30,14 +29,14 @@ from mock.schema_top import *
 
 class foo(MMBase):
    def __init__(self):
-        super(foo,self).__init__() 
+        super().__init__() 
 
 #def __init__(self):
 #        print "foo init()"
 #        print super()
 #        super().__init__()
 
-class bar(object):
+class bar:
     def __init__(self,owner):
          self.owner = owner 
          self.is_deleted = False

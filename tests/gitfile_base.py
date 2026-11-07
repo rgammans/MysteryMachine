@@ -48,7 +48,7 @@ class BasicStore(Base):
         return self.path
 
     def ReadFile(self,name):
-        f = open(os.path.join(self.path,name),"r")
+        f = open(os.path.join(self.path,name))
 
         rv = f.read()
         f.close()

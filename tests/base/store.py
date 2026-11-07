@@ -32,7 +32,7 @@ def listHelper(seq):
         result.append(i)
     return result
 
-class storeTests(object):
+class storeTests:
     """
     These test are intended to be generic store tests so that this test suite
     can be updated to help form a basic test suite for MysteryMachine store modules
@@ -69,20 +69,20 @@ class storeTests(object):
         self.store.NewCategory(".Three")
         self.store.commit_store_transaction()
         cats=list(self.store.EnumCategories())
-        self.assertEqual(set(cats),set(['One','Two','.Three'] ))
+        self.assertEqual(set(cats),{'One','Two','.Three' })
 
         self.store.start_store_transaction()
         self.store.DeleteCategory("One")
         self.store.commit_store_transaction()
         cats=list(self.store.EnumCategories())
-        self.assertEqual(set(cats), set(['Two','.Three'] ))
+        self.assertEqual(set(cats), {'Two','.Three' })
 
         #Create and delete in the same txn.
         self.store.start_store_transaction()
         self.store.NewCategory("Four")
         self.store.DeleteCategory("Four")
         self.store.commit_store_transaction()
-        self.assertEqual(set(cats),set(['Two','.Three'] ))
+        self.assertEqual(set(cats),{'Two','.Three' })
         self.assertFalse(self.store.HasCategory("Four"))
 
         if False:
@@ -124,15 +124,15 @@ class storeTests(object):
         self.store.commit_store_transaction()
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
-        self.assertEqual(set(objs1),set([o11,o12]))
-        self.assertEqual(set(objs2),set([o21]))
+        self.assertEqual(set(objs1),{o11,o12})
+        self.assertEqual(set(objs2),{o21})
    
         #Recreate cateogory - should have no effect.
         self.store.start_store_transaction()
         self.store.NewCategory("Two")
         self.store.commit_store_transaction()
         objs2=list(self.store.EnumObjects("Two"))
-        self.assertEqual(set(objs2),set([o21]))
+        self.assertEqual(set(objs2),{o21})
        
         #Test deletion 
         self.store.start_store_transaction()
@@ -150,7 +150,7 @@ class storeTests(object):
         self.store.commit_store_transaction()
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
-        self.assertEqual(set(objs1),set([o11]))
+        self.assertEqual(set(objs1),{o11})
         self.assertEqual(len(objs2),0)
 
         #Create and delete in the same txn.
@@ -193,13 +193,13 @@ class storeTests(object):
         cat1=list(self.store.EnumAttributes("One"))
         objs2=list(self.store.EnumAttributes(".Two:"+o21))
         ##Cast to set as order is not part of the API.
-        self.assertEqual(set(objs1),set(['name', '.dotfile']))
-        self.assertEqual(set(cat1),set(['.dummyattr']))
+        self.assertEqual(set(objs1),{'name', '.dotfile'})
+        self.assertEqual(set(cat1),{'.dummyattr'})
         self.assertEqual(len(objs2),0)
 
         #Count objects to check that attributes aren't included
         objs1=list(self.store.EnumObjects("One"))
-        self.assertEqual(set(objs1),set([ o11,o12])) 
+        self.assertEqual(set(objs1),{ o11,o12}) 
 
        #Test presence
         self.assertTrue(self.store.HasAttribute("One:"+o12+":name"))
@@ -280,7 +280,7 @@ class storeTests(object):
         #Count attributes.
         objs1=list(o12store.EnumAttributes())
         objs2=list(o21store.EnumAttributes())
-        self.assertEqual(set(objs1) , set(['name']))
+        self.assertEqual(set(objs1) , {'name'})
         self.assertEqual(len(objs2),0)
         
         #Test presence
@@ -338,7 +338,7 @@ class storeTests(object):
         
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
-        self.assertEqual(set(objs1),set([o11,o12]))
+        self.assertEqual(set(objs1),{o11,o12})
         self.assertEqual(set(objs2),set(o21))
   
         self.assertTrue(self.store.HasCategory("One"))
@@ -356,7 +356,7 @@ class storeTests(object):
         self.store.NewCategory("Two")
         self.store.commit_store_transaction()
         objs2=list(self.store.EnumObjects("Two"))
-        self.assertEqual(set(objs2),set([o21]))
+        self.assertEqual(set(objs2),{o21})
        
         #Test deletion 
         self.store.start_store_transaction()
@@ -374,7 +374,7 @@ class storeTests(object):
         self.store.commit_store_transaction()
         objs1=list(self.store.EnumObjects("One"))
         objs2=list(self.store.EnumObjects("Two"))
-        self.assertEqual(set(objs1),set([o11]))
+        self.assertEqual(set(objs1),{o11})
         self.assertEqual(len(objs2),0)
 
     def test_rollback(self,):   
@@ -416,5 +416,5 @@ class storeTests(object):
                 
                 objs1=list(self.store.EnumObjects("One"))
                 objs2=list(self.store.EnumObjects("Two"))
-                self.assertEqual(set(objs1),set([o11,o12]))
-                self.assertEqual(set(objs2),set([o21]))
+                self.assertEqual(set(objs1),{o11,o12})
+                self.assertEqual(set(objs2),{o21})

@@ -30,7 +30,6 @@ from .grammar import Grammar
 
 from MysteryMachine.schema.MMBase import  MMBase
 
-import six
 import re
 import copy
 
@@ -52,7 +51,7 @@ class _stack(threading.local):
 
 docutils_stack = _stack()
 
-class MMParser (object):
+class MMParser :
 
   """
    This class handles the macro language which allows references between attributes
@@ -81,7 +80,7 @@ class MMParser (object):
         newval=value[0]
         for part in value[1:]:
             newval = newval + part
-        self.logger.debug( "\--evalled to --\n%s\n----\n" % newval.__repr__() )
+        self.logger.debug( "\\--evalled to --\n%s\n----\n" % newval.__repr__() )
         return newval
 
   def ProcessRawRst(self,rst_string,src=None,src_stack=[]):
@@ -146,11 +145,11 @@ class MMParser (object):
     nodes = self.ProcessRawRst(rst_string,src,src_stack)
     result = ""
     for n in nodes:
-      result += six.text_type(n)
+      result += str(n)
     self.logger.debug( "String->'%s',len %s"  % (result ,len(nodes)))
     if len(nodes) == 1:
       #Supress outer xml container.
-      result =re.sub("<(\w+)>([^>]*)</\\1>","\\2",result)
+      result =re.sub("<(\\w+)>([^>]*)</\\1>","\\2",result)
     self.logger.debug( "string->%s<-" %result)
     return result
  
@@ -183,7 +182,7 @@ def role_handler(role, rawtext, text, lineno, inliner,
                     current_parser = _findParser(rst)
 
                 #Return to docutils to get docutils node representation.
-                nodes += current_parser.ProcessRawRst(six.text_type(rst),src = repr(rst) ,
+                nodes += current_parser.ProcessRawRst(str(rst),src = repr(rst) ,
                                                       src_stack=content + [ text ] )
              except Exception:
                 import traceback

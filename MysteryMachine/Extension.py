@@ -22,7 +22,7 @@
 #
 #
 
-class Extension(object):
+class Extension:
 
   """
    This is the class from which and extension interacts with the 

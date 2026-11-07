@@ -29,7 +29,6 @@ from MysteryMachine.schema.MMSystem import MMSystem
 
 from attribute_controls import *
 from widgets import NotifyClosure
-import six
 
 Ui_Id = wx.ID_HIGHEST
 def NewUI_ID():
@@ -43,7 +42,7 @@ class ObjectPanel(wx.PyPanel):
         with a read/write sub-panel of attributes set at the top-level and readonly sub-panels of what is inherited"""
 
     def __init__(self,parent,obj):
-        super(ObjectPanel,self).__init__(parent,-1,wx.DefaultPosition,)
+        super().__init__(parent,-1,wx.DefaultPosition,)
         self.obj = obj
         self.buildUi()
         self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
@@ -58,7 +57,7 @@ class ObjectPanel(wx.PyPanel):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
         self.title = wx.StaticText(self,ID_LABEL)
-        self.title.SetLabel(repr(self.obj) +" - \"" +six.text_type(self.obj)+"\"") 
+        self.title.SetLabel(repr(self.obj) +" - \"" +str(self.obj)+"\"") 
         self.sizer.Add(self.title,0)
         self.notify = NotifyClosure(self,self.node_changed)
 
@@ -112,7 +111,7 @@ class ObjectPanel(wx.PyPanel):
     def TransferDataToWindow(self):
         #TODO: Walk thru attributes and hide/show  overridden and new sections
         self._syncUi()
-        super(ObjectPanel,self).TransferDataToWindow()
+        super().TransferDataToWindow()
         self.Layout()
 
     def _buildObjectPanel(self,obj,overridden_list,top_object):
@@ -135,9 +134,9 @@ class _object_section(wx.Panel):
         """
         self.included = []
         self.obj = obj
-        super(_object_section,self).__init__(parent,-1)
+        super().__init__(parent,-1)
         self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
-        box = wx.StaticBox(self, -1, label = six.text_type(obj))
+        box = wx.StaticBox(self, -1, label = str(obj))
         self.sizer = wx.StaticBoxSizer(box,wx.VERTICAL)
         self.SetSizer(self.sizer)
         for attr in obj:
@@ -172,7 +171,7 @@ class _attribute_section(wx.PyPanel):
 
     ID_MYBUTTON = NewUI_ID()
     def __init__(self,parent,id,attribute,top_object):
-        super(_attribute_section,self).__init__(parent,id)
+        super().__init__(parent,id)
         self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
         self.attribute = attribute
         self.top = top_object
@@ -215,7 +214,7 @@ class _attribute_section(wx.PyPanel):
         self.top[name] = self.attribute
 
     def TransferDataToWindow(self,):
-        super(_attribute_section,self).TransferDataToWindow()
+        super().TransferDataToWindow()
         self.mode  = self.onDelete if self.at_top else self.onOverride
         self.button.SetLabel("Delete" if self.at_top else "Override")
 

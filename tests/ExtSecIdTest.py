@@ -31,8 +31,8 @@ import unittest
 
 class ExtSecIdTest(unittest.TestCase):
 	def setUp(self):
-		self.cfvalue= str("sha256|230550d1627270f0cf2ff8bec59679a6079266d3c68ac3e1653cd0a97276fdec" )
-		self.testpath="CodingGuidelines"
+		self.cfvalue= "sha256|39f9473157ac0c9e31877a087e4cc2b6d83a91f0c382d3de9ea893f657a295ae"
+		self.testpath="tests/secureid-fixture.txt"
 	def testBasic(self):
 		hash1=ExtensionSecureID.fromPathName(self.testpath)
 		hash2=ExtensionSecureID.fromPathName(self.testpath)

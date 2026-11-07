@@ -26,7 +26,6 @@ from MysteryMachine.schema.MMObject import *
 import unittest
 from MysteryMachine import * 
 from functools import partial
-import six
 
 from mock.schema_top import *
 
@@ -42,7 +41,7 @@ class ObjectProxy(MMObject):
         else:
             l[0] =args[0]
             l[1] =args[1]
-        super(ObjectProxy,self).__init__(l[0] + ":" + l[1] , SystemProxy() ,None )
+        super().__init__(l[0] + ":" + l[1] , SystemProxy() ,None )
         self.items = {}
         for key in kwargs:
            self.items[key] = kwargs[key] 
@@ -77,7 +76,7 @@ class attribValTest(unittest.TestCase):
  
     def testUnderInit(self):
        val=MMAttributeValue(parts = {"1":b"test","2":b"this"})
-       self.assertEqual(val.get_raw_rst(),u"test\nthis")
+       self.assertEqual(val.get_raw_rst(),"test\nthis")
        self.assertEqual(len(val.get_parts()),2)
 
 
@@ -144,10 +143,10 @@ class attribValTest(unittest.TestCase):
 
 
     def testUnicode(self):
-        text = u"Some unicode text this is a pound sign \xa3, this is a special char \u2019"
+        text = "Some unicode text this is a pound sign \xa3, this is a special char \u2019"
         attr = CreateAttributeValue(text)
         self.assertEqual(attr.get_type(),"simple_utf8")
-        self.assertEqual(six.text_type(attr),text)
+        self.assertEqual(str(attr),text)
 
 
     def testGetAttributeTypes(self):

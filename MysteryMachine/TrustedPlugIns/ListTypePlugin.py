@@ -1,4 +1,3 @@
-
 """
 This plugin is design to import some of the Mysterymachine core. So elements
 in the core which provide simliar interfaces to the extensions can be found

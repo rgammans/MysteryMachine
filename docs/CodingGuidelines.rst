@@ -5,22 +5,24 @@ Coding Guidelines
 Python Version 
 ==============
 
-The initial release of MysteryMachine is intended to run with the python2.6
-interpreter however it is required that any code run under both python2.5
-and the '-3' switch in python 2.6 to ensure support for python 3 when pour
-libraries support it.
+MysteryMachine supports every CPython release which hasn't reached its end
+of life (see https://devguide.python.org/versions/). Currently that is
+Python 3.11 to 3.15.
 
-The unit testing framework will do these tests for you if you write useful unit
-tests for your code.
+The supported versions are listed in three places, which must be kept in
+step: requires-python and the classifiers in pyproject.toml, the envlist in
+tox.ini, and the test matrix in .github/workflows/pythonapp.yml. When a
+version reaches end of life, drop it from all three, and raise
+requires-python; when a new version is released, add it.
 
-Rationale
----------
-Sooner or later we are going to have to support python 3.0 as the libraries
-we use move over to python3.0. Critically however many linux distributions
-seem to have only got python2.5 in them at this stage. So we are
-stuck with ensure we support at least 2.5, and 2.6 . But we need to look forward
-to ensure that the code we write isn't going to cause a massive maintenance
-burden in the future, when python 3 become standard. Hence we must test with python2.6 -3.
+CI also runs the test suite on the next Python prerelease, allowed to fail,
+to give early warning of breakage.
+
+Python 2 is not supported, so don't use six or other Python 2 compatibility
+idioms in new code.
+
+The unit testing framework will check your code on each supported version
+if you write useful unit tests for it; run them locally with tox.
 
 Unit Tests
 ==========

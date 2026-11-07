@@ -27,13 +27,12 @@ This module contains AtttributeValue class for document pattern pieces.
 
 from MysteryMachine.schema.MMAttributeValue import MMAttributeValue
 import re
-import six
 
 class piece(MMAttributeValue):
     typename = "piecebase"
     contain_prefs = {}
     def __init__(self,*args,**kwargs):
-        super(piece,self).__init__(*args,**kwargs)
+        super().__init__(*args,**kwargs)
         self.exports += [ "needs_pop" , "needs_push"  ]
 
     def needs_pop(self, obj = None):
@@ -50,7 +49,7 @@ class piece(MMAttributeValue):
         if obj is not None:
             encoding = obj.get_root().get_encoding()
 
-        return six.text_type(txt,encoding)
+        return str(txt,encoding)
 
     def get_raw_rst(self,obj = None):
         return self._encode_raw(self.get_raw(obj))
@@ -75,7 +74,7 @@ class title(piece):
         return content
 
     def get_raw_rst(self, obj = None):
-        content = super(title,self).get_raw_rst()
+        content = super().get_raw_rst()
         # Replace newlines with spaces (title in rst
         # can't span lines).
         newln=re.compile("\n")

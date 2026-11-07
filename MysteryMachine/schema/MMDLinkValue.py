@@ -122,14 +122,8 @@ import threading
 
 import logging
 import weakref
-import six
 
-try:
-    #Assume python 3
-    from itertools import zip_longest
-except ImportError:
-    #Fallback to py2.
-    from itertools import izip_longest as zip_longest
+from itertools import zip_longest
 
 
 logger    = logging.getLogger("MysteryMachine.schema.MMDLinkValue")
@@ -297,7 +291,7 @@ class MMDLinkValue(MMAttributeValue):
     def __init__(self,*args,**kwargs):
         #FIXME
         """FIXME  Docuemnt this even if it is to say don;t use."""
-        super(MMDLinkValue,self).__init__(*args,**kwargs)
+        super().__init__(*args,**kwargs)
 
         self.logger    = logging.getLogger("MysteryMachine.schema.MMDLinkValue")
         self.obj            = kwargs.get("target",None)  # The schema obj at which we point.
@@ -394,7 +388,7 @@ class MMDLinkValue(MMAttributeValue):
        self.logger.debug( "_pp>%s"%self.parts)
        if "target" in self.parts:
             attributename,sniplen = self.parts["target"].rsplit(b",",1)
-            attributename = six.text_type(attributename,'ascii')
+            attributename = str(attributename,'ascii')
             attributename = attributename.split(":")
             #if int(sniplen) > 0: we used to ensure anchordist was never 0
             self.anchordist = int(sniplen)

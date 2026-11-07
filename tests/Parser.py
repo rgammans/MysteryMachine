@@ -27,7 +27,6 @@ from MysteryMachine.schema.MMSystem import MMSystem
 import unittest
 import pyparsing
 import re
-import six
 
 class ParsersTests(unittest.TestCase):
     def setUp(self):
@@ -50,7 +49,7 @@ class ParsersTests(unittest.TestCase):
         self.c["carries"]=self.i
         self.c.set_parent(self.p)
         self.c2.set_parent(self.p)
-        self.c2["name"]=u"Frodo"
+        self.c2["name"]="Frodo"
         #modlogger   = logging.getLogger("MysteryMachine.parsetools.MMParser")
         #logging.getLogger("MysteryMachine.parsetools.grammar").setLevel(logging.DEBUG)
         #modlogger.setLevel(logging.DEBUG)
@@ -61,12 +60,12 @@ class ParsersTests(unittest.TestCase):
 
     def testParser(self):
         self.assertEqual(self.c["carries"].GetFullExpansion(),"The one ring")
-        self.assertEqual(six.text_type(self.c),"Frodo")
+        self.assertEqual(str(self.c),"Frodo")
         self.p['.defname'] =  ":mm:`:name` :mm:`:lname`"
         self.p['lname'] = ""
         self.c['lname'] = "Baggins"
-        self.assertEqual(six.text_type(self.c),"Frodo Baggins")
-        self.assertEqual(six.text_type(self.i),"The one ring ")
+        self.assertEqual(str(self.c),"Frodo Baggins")
+        self.assertEqual(str(self.i),"The one ring ")
         #Test Invalid syntax
         self.c['foo'] = ':mm:`not_a_macro`'
         #We shouldn't raise but will have docutils XML reporting a ParseException
@@ -74,19 +73,19 @@ class ParsersTests(unittest.TestCase):
         self.assertTrue(re.search("<error",foo_str))
         self.assertTrue(re.search("ParseException",foo_str))
         #Test settings
-        self.assertEqual(six.text_type(self.i['bike'].GetFullExpansion()),"hovercraft")
+        self.assertEqual(str(self.i['bike'].GetFullExpansion()),"hovercraft")
         self.c['test']=":mm:`:carries:bike`"
-        self.assertEqual(six.text_type(self.c['test'].GetFullExpansion()),"hovercraft")
+        self.assertEqual(str(self.c['test'].GetFullExpansion()),"hovercraft")
         #Test mm roel state after recursion - eg state is restored on stack pop.
         self.c['test2']=":mm:`:carries:bike` :mm:`:name`" 
-        self.assertEqual( six.text_type(self.c['test2'].GetFullExpansion()),"hovercraft Frodo")
+        self.assertEqual( str(self.c['test2'].GetFullExpansion()),"hovercraft Frodo")
         #test literal values are handled
         self.c['test3']=":mm:`\"A Literal value\"`" 
-        self.assertEqual( six.text_type(self.c['test3'].GetFullExpansion()),"A Literal value")
+        self.assertEqual( str(self.c['test3'].GetFullExpansion()),"A Literal value")
 
 
     def testUnicode(self):
-        self.assertEqual(six.text_type(self.c2),u"Frodo")
+        self.assertEqual(str(self.c2),"Frodo")
         
 
     def testCycle(self):
@@ -95,7 +94,7 @@ class ParsersTests(unittest.TestCase):
         a=self.c["cycle"].GetFullExpansion()
         #Set up something that might look like a cycle but isn't.
         self.c["not_a_cycle"]=":mm:`"+repr(self.i)+":bike`"
-        self.assertEqual(six.text_type(self.c["not_a_cycle"].GetFullExpansion()),"hovercraft")
+        self.assertEqual(str(self.c["not_a_cycle"].GetFullExpansion()),"hovercraft")
 
 def getTestNames():
     	return [ 'Parser.ParserTests' ] 

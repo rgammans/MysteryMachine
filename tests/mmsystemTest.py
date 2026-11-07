@@ -26,7 +26,6 @@ from MysteryMachine.schema.MMSystem import *
 from MysteryMachine.schema.Locker import *
 
 import MysteryMachine.store.dict_store
-import six
 import unittest
 
 import logging
@@ -69,7 +68,7 @@ class sysTests(unittest.TestCase):
         self.assertRaises(LookupError,setObj,cat) 
         cat[".dummy"] = "data"
         self.assertEqual(type(cat[".dummy"]) , MMAttribute)
-        self.assertEqual(six.text_type(cat[".dummy"]),"data")
+        self.assertEqual(str(cat[".dummy"]),"data")
         o12=self.sys.NewObject("One",None)
         o12id = repr(o12).split(":")[-1]
         self.assertEqual(cat[o12id],o12)
@@ -94,11 +93,11 @@ class sysTests(unittest.TestCase):
         self.assertEqual(cat.get_root(),self.sys)
         
         #Cat object name.
-        self.assertEqual(six.text_type(cat),"one")
+        self.assertEqual(str(cat),"one")
         self.assertEqual(repr(cat),"one")
         cat[".defname"] = "Test"
         self.assertEqual(repr(cat),"one")
-        self.assertEqual(six.text_type(cat),"Test")
+        self.assertEqual(str(cat),"Test")
 
     def testObjects(self):
         #Check empty categories are..
@@ -190,8 +189,8 @@ class sysTests(unittest.TestCase):
         # __init__ del calls them ok.
         # Test open / create semanitcs.
         self.assertEqual(UnEscapeSystemUri(EscapeSystemUri("dict:test")),"dict:test")
-        self.assertEqual(EscapeSystemUri(self.scheme+self.mpath),six.text_type(self.sys))
-        self.assertTrue(GetLoadedSystemByName(six.text_type(self.sys)) is self.sys)
+        self.assertEqual(EscapeSystemUri(self.scheme+self.mpath),str(self.sys))
+        self.assertTrue(GetLoadedSystemByName(str(self.sys)) is self.sys)
       
      
 
@@ -213,7 +212,7 @@ class sysTests(unittest.TestCase):
         #Black box test - to enusre we get fetch in from the store
         self.assertEqual(set(self.sys.EnumContents())  ,set()  ) #Is empty
         self.assertEqual(set(self.sys.EnumAttributes(inc_hidden = False)) , set()) #Is empty
-        self.assertTrue(set(self.sys.EnumAttributes(inc_hidden = True))  > set(['.defname', ] ) )
+        self.assertTrue(set(self.sys.EnumAttributes(inc_hidden = True))  > {'.defname' } )
 
     def testConsistentEnumerationDuringTransaction(self):
 #        print "-----r--------"
@@ -243,14 +242,14 @@ class sysTests(unittest.TestCase):
 
 
     def testNaming(self):
-        self.assertEqual(repr(self.sys),six.text_type(self.sys))
+        self.assertEqual(repr(self.sys),str(self.sys))
         rname=repr(self.sys)
-        testname= u"A test name"
+        testname= "A test name"
         self.sys.set_name(testname)
         self.assertEqual(self.sys.get_name(),testname)
-        self.assertEqual(six.text_type(self.sys),testname)
+        self.assertEqual(str(self.sys),testname)
         self.assertEqual(repr(self.sys),rname)
-        self.assertEqual(six.text_type(self.sys[".defname"]),testname)
+        self.assertEqual(str(self.sys[".defname"]),testname)
 
 
     def testNotify(self):

@@ -24,7 +24,6 @@ dependencies = [
     "docutils",
     "pyparsing>1.5",
     "PyYaml",
-    "six"
 ]
 
 [tool.setuptools]

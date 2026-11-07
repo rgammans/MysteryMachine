@@ -21,7 +21,7 @@
 import threading
 import logging
 
-class Transaction(object):
+class Transaction:
     def __init__(self):
        self.reset()
 
@@ -78,7 +78,7 @@ class TransactionProperty(threading.local):
         self.xaction = value 
      
 
-class TransactionManager(object):
+class TransactionManager:
     """Transaction management for the MysteryMachine system
 
     This class implements the user level locking APIs or intent signalling

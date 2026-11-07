@@ -1,4 +1,3 @@
-import six
 import re
 import operator
 from MysteryMachine.policies.SequentialId import NewId
@@ -22,7 +21,7 @@ class dict_store(Base):
     
     uriScheme = "dict"
 
-    invalidobj = re.compile("^\.")
+    invalidobj = re.compile(r"^\.")
     @staticmethod
     def GetCanonicalUri(uri):
         return uri
@@ -115,7 +114,7 @@ class dict_store(Base):
         #Verify the StoreApi is being adhered too
         #  this will pick up issues in tests where we use dict_store.
         for p,v in parts.items():
-            if not isinstance(v,six.binary_type):
+            if not isinstance(v,bytes):
                 raise StoreApiViolation("%s has part %s of type %s (value:'%r')"%(attr,p,type(v),v))
 
         d[dbpath[-1]]=(attrtype,parts)

@@ -47,7 +47,7 @@ class loggingHandler(logging.Handler):
 
 class LogPanel(wx.PyPanel):
     def __init__(self,parent):
-        super(LogPanel,self).__init__(parent,-1,wx.DefaultPosition,wx.Size(0,0))
+        super().__init__(parent,-1,wx.DefaultPosition,wx.Size(0,0))
         self.buildUi()
         self.Layout()
         self.SetAutoLayout(True)

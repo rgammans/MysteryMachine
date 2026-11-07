@@ -23,7 +23,6 @@
 Many readers can hold the lock XOR one and only one writer"""
 
 
-from __future__ import print_function
 import threading
 
 #Based on public domain code from.

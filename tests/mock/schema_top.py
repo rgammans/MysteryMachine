@@ -43,7 +43,7 @@ class mock_lockman:
     def rlock(*args): pass
     def runlock(*args): pass
 
-class mock_store(object):
+class mock_store:
     def __init__(self,):
         self.txns_committed = 0
         self.txns_aborted = 0

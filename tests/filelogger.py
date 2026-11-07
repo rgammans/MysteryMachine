@@ -21,8 +21,6 @@
 Tests for the MysteryMachine store filelogger  module
 """
 
-from __future__ import print_function
-import six
 import unittest
 
 import os
@@ -230,7 +228,7 @@ class floggerTests(unittest.TestCase):
         f.close()
         xact = fl.ReplaceAll_Operation(f.name,b"testcontent","1")
         xact1 = fl.ReplaceAll_Operation(f.name,b"testcontent",2)
-        xact_str = six.binary_type(xact)
+        xact_str = bytes(xact)
         self.assertEqual(len(xact_str),len(xact))
         self.assertNotEqual(xact.opid,xact1.opid)
         

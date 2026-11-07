@@ -33,7 +33,7 @@ DEFAULT_TRUSTEDPLUGIN_PATH = os.path.realpath(os.path.join(__file__,".." + os.pa
 class InvalidPlugin(RuntimeError):pass
 class TrustError(RuntimeError):pass
 
-class ExtensionLib(object):
+class ExtensionLib:
     """
    This is a singleton class which handles MysteryMachines extention engine.
    It supports the concept of trusted and untrusted extensions, untrusted
