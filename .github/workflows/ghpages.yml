@@ -8,19 +8,21 @@ on:
         branches:
             - master
 
+permissions:
+    contents: write
 
 jobs:
   builddocs:
     name: Build Documenation files
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - name: Setup python3.7
-      uses: actions/setup-python@v1
+    - name: Setup python
+      uses: actions/setup-python@v5
       with:
-        python-version: 3.7
+        python-version: "3.x"
     - name: Merge Old docs
       run: |
         git config --global user.email "null@null"
@@ -35,9 +37,11 @@ jobs:
     - name: Build and commit new HTML
       run: |
             cd $GITHUB_WORKSPACE/docs
-            for file in *.rst; do rst2html.py $file >  ${file%%rst}html; done
+            for file in *.rst; do rst2html $file >  ${file%%rst}html; done
             git add .
-            git commit -m 'Rebuild HTML for gh-pages'
+            git diff --cached --quiet || git commit -m 'Rebuild HTML for gh-pages'
+    # Pull requests only check the docs build; they mustn't publish.
     - name: Push back to GH
+      if: github.event_name == 'push'
       run: |
             git push --verbose origin gh-pages:gh-pages
