@@ -21,8 +21,8 @@ classifiers = [
     "Programming Language :: Python :: 3.15",
 ]
 dependencies = [
-    "docutils",
-    "pyparsing>1.5",
+    "docutils>=0.18",
+    "pyparsing>=3.0",
     "PyYaml",
 ]
 

@@ -53,7 +53,7 @@ class SchemaCommon:
            tstname = name
            if tstname[0] == '.': tstname = tstname[1:]
            #Check that the identifier is good enough to match it.
-           identifier.parseString(tstname,parseAll=True)    
+           identifier.parse_string(tstname,parse_all=True)    
         except pyparsing.ParseException:
            raise ValueError("`%s` is not valid in the MysteryMachine Namespace" % name)
 
@@ -203,7 +203,7 @@ class MMBase(SchemaCommon):
                     to_remove += [ fn ]
                 #warn about any exceptions from notify.
                 except Exception as e: 
-                    logger.warn(e,exc_info = 1)
+                    logger.warning(e,exc_info = 1)
         for entry in to_remove:
             self.notify.remove(entry)
                 
@@ -293,7 +293,7 @@ class MMDeletedNode(MMBase):
         if hasattr(self.owner,"_invalidate_item_"):
             self.owner._invalidate_item_(self.name)
         else:
-            clogger.warn("cant incalidate %s",self.get_nodeid())
+            clogger.warning("cant incalidate %s",self.get_nodeid())
 
     def writeback(self,):
         self.callback()

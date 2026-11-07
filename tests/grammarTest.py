@@ -58,7 +58,7 @@ class SystemProxy:
     
 
 def helper(parser,input):
-    inlist = parser.parseString(input)
+    inlist = parser.parse_string(input)
     rv = inlist[0]
     for item in inlist[1:]:
         rv += item 
@@ -98,9 +98,9 @@ class GraamarTest(unittest.TestCase):
     def testInvalidSyntax(self):
         import pyparsing
         self.assertRaises(pyparsing.ParseException,helper,self.parserA,"NothingMeaningfull")    
-        self.assertRaises(NoAttribute,self.parserA.parseString,":not_here")
-        self.assertRaises(NullReference,self.parserA.parseString,":nullRef:foo")
-        self.assertRaises(NullReference,self.parserA.parseString,":nullAttr:foo")
+        self.assertRaises(NoAttribute,self.parserA.parse_string,":not_here")
+        self.assertRaises(NullReference,self.parserA.parse_string,":nullRef:foo")
+        self.assertRaises(NullReference,self.parserA.parse_string,":nullAttr:foo")
  
     def testObjectFetch(self):
         self.assertEqual(helper(self.parserA,"Object:1").__class__ ,    MMObject)

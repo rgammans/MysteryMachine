@@ -64,7 +64,7 @@ This lock can be acquired recursively.
     It is exclusive with write locks.
     """
     with self.monitor:
-        if self.rwlock == -1 and self.writer == threading.currentThread():
+        if self.rwlock == -1 and self.writer == threading.current_thread():
             #We already have a write lock - we don't acquire try to acquire
             # a read lock.- we increment the number of write locks.
             self.wcount +=1 
@@ -88,7 +88,7 @@ This lock can be acquired recursively.
 
   def _acquire_write(self):
       #If we currently hold the write lock - just inc our count.
-      if self.rwlock == -1 and self.writer == threading.currentThread():
+      if self.rwlock == -1 and self.writer == threading.current_thread():
           self.wcount +=1 
           return
       
@@ -96,7 +96,7 @@ This lock can be acquired recursively.
         self.writers_waiting += 1
         self.writers_ok.wait()
         self.writers_waiting -= 1
-      self.writer = threading.currentThread()
+      self.writer = threading.current_thread()
       self.wcount = 1
       self.rwlock = -1
 
@@ -115,7 +115,7 @@ This lock can be acquired recursively.
       self.writers_waiting += 1
       self.writers_ok.wait()
       self.writers_waiting -= 1
-    self.writer = threading.currentThread()
+    self.writer = threading.current_thread()
     self.rwlock = -1
     #Convert count of read locks to count of write locks,   
     # this converts allour held read lock to write, and adds one for our new lock!
@@ -157,7 +157,7 @@ This lock can be acquired recursively.
 
   def wake_readers(self):
       self.readers_ok.acquire()
-      self.readers_ok.notifyAll()
+      self.readers_ok.notify_all()
       self.readers_ok.release()
 
 if __name__ == '__main__':

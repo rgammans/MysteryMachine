@@ -75,7 +75,7 @@ class MMParser :
 
   def evaluate(self,expr):
         self.logger.debug( "\n--evaling--\n%s\n----\n" % expr)
-        value=self.grammar.parseString(expr) 
+        value=self.grammar.parse_string(expr) 
         self.logger.debug( "Parsed as->%s" % repr(value))
         newval=value[0]
         for part in value[1:]:

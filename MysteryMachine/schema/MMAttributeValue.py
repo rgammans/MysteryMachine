@@ -475,7 +475,7 @@ class MMAttributeValue_MMRef(MMAttributeValue):
         objref = None
         self.logger.debug( "MMA-O:go:pstr  ->%r<--" % pstr)
         g = Grammar(obj)
-        objref = g.parseString(pstr)[0]
+        objref = g.parse_string(pstr)[0]
         self.logger.debug( "ret = %r, class = %r" % (objref , objref.__class__ ))
         return objref
 

@@ -144,7 +144,7 @@ class HgStoreMixin:
         if hasattr(mysuper,"clean"):
             mysuper.clean(*args,**kwargs)
         if not self.uptodate():
-            self.logger.warn("%slean requested in non-up-todate repo." % (
+            self.logger.warning("%slean requested in non-up-todate repo." % (
                          "Forced c" if kwargs.get('force') else "C" )) 
             if not kwargs.get('force'): return
 

@@ -154,15 +154,16 @@ def OpenPackFile(filename):
             modlogger.debug("Loader cant find .format, falling back to .formatver")
             formatfile = open(os.path.join(workdir,".formatver"))
         except OSError as e2:
-            raise (e2 , e)
+            raise e2 from e
 
-    version = VersionNr(formatfile.readline())
-    
-    for lowestVer,highestVer,formatHandler in reversed(formatLoaders):
-        if ( version >= lowestVer ) and (version < highestVer) :
-            break
+    with formatfile:
+        version = VersionNr(formatfile.readline())
 
-    return formatHandler(workdir,formatfile  , startup_flags = { PACKFILENAME: filename } )
+        for lowestVer,highestVer,formatHandler in reversed(formatLoaders):
+            if ( version >= lowestVer ) and (version < highestVer) :
+                break
+
+        return formatHandler(workdir,formatfile  , startup_flags = { PACKFILENAME: filename } )
 
 
 

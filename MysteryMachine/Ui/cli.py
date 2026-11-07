@@ -98,7 +98,7 @@ class UiBase:
         try:
             os.remove(fname)
         except OSError as e:
-            self.logger.warn(str(e))
+            self.logger.warning(str(e))
             pass
         return b"".join(newval)
 

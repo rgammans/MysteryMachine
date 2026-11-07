@@ -59,7 +59,7 @@ only when no read locks are also held."""
     """Demote an already-acquired write lock to a read lock"""
     self.monitor.acquire()
     self.rwlock = 1
-    self.readers_ok.notifyAll()
+    self.readers_ok.notify_all()
     self.monitor.release()
   def release(self):
     """Release a lock, whether read or write."""
@@ -82,7 +82,7 @@ only when no read locks are also held."""
       self.writers_ok.release()
     elif wake_readers:
       self.readers_ok.acquire()
-      self.readers_ok.notifyAll()
+      self.readers_ok.notify_all()
       self.readers_ok.release()
 
 if __name__ == '__main__':

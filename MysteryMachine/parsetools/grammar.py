@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 ###Grammar stuff
-from pyparsing import Forward, OneOrMore, QuotedString , Literal, Word, alphas , nums , stringEnd
+from pyparsing import Forward, OneOrMore, QuotedString , Literal, Word, alphas , nums , StringEnd, ParserElement
 
 import logging
 import sys
@@ -90,10 +90,9 @@ def Grammar(home):
         return field
     
     ## Bind functions to parse actions
-    ExprField.setParseAction(ExprFieldAction)
-    BoolExpr.setParseAction(doBool)
-    QueryExpr.setParseAction(doQuery)
+    ExprField.set_parse_action(ExprFieldAction)
+    BoolExpr.set_parse_action(doBool)
+    QueryExpr.set_parse_action(doQuery)
 
-    ExprText.enablePackrat()
-    ExprText.validate()
-    return ExprText + stringEnd
+    ParserElement.enable_packrat()
+    return ExprText + StringEnd()

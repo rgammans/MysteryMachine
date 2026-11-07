@@ -152,7 +152,7 @@ class MMTreeView(wx.TreeCtrl):
         try:
             itemid = self.nodes[node_addr]
         except KeyError as e:
-            self.logger.warn("ignoring notify on unknown node %s"%node_addr)
+            self.logger.warning("ignoring notify on unknown node %s"%node_addr)
         else:
             self.updateNode(itemid,node) 
     

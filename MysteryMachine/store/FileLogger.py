@@ -156,7 +156,7 @@ class JournaledOperation(metaclass=_OperationMeta):
         raise RuntimeError("Base Transaction instance can't be done!")
   
     def update_state(self,state_obj):
-        modlogger.warn("Base Transaction instance asked to update state")
+        modlogger.warning("Base Transaction instance asked to update state")
 
 
     def do(self,**kwargs):
@@ -849,7 +849,7 @@ class LogFile:
         with self.not_complete_lock:
             modlogger.debug( "%s: completing %s"%(self,opid))
             self.not_complete.remove(opid)
-            if not self.not_complete: self.outstanding.notifyAll()
+            if not self.not_complete: self.outstanding.notify_all()
 
     def _checkpoint(self,):
         """Internal function to ensure the main store has

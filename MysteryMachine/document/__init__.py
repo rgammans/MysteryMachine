@@ -19,7 +19,7 @@
 # 
 
 import docutils.utils
-from docutils.frontend import OptionParser
+from docutils.frontend import get_default_settings
 from docutils.parsers.rst import Parser
 
 from MysteryMachine.parsetools.MMParser import MMParser
@@ -37,7 +37,7 @@ def generate_doctree(pattern,home):
     order = pattern[".order"]
     
     parser = home.get_parser()
-    settings = OptionParser(components=(Parser,)).get_default_values()
+    settings = get_default_settings(Parser)
     #FIXME _ Get mystery machine settings and merge.
     doc = docutils.utils.new_document(repr(home),settings)    
 
